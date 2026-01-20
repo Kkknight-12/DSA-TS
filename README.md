@@ -5,7 +5,7 @@
 > Following [Striver's A2Z DSA Sheet](https://takeuforward.org/strivers-a2z-dsa-course-sheet-2/) · Powered by Claude AI
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![Problems Solved](https://img.shields.io/badge/Problems-69-green.svg)](#problems-by-topic)
+[![Problems Solved](https://img.shields.io/badge/Problems-111-green.svg)](#problems-by-topic)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -95,7 +95,8 @@ Common techniques highlighted across problems
 DSA_Ts/
 ├── src/
 │   └── questions/
-│       ├── arrays/              # Array problems
+│       ├── arrays/              # Array problems (1D & 2D)
+│       ├── string/              # String problems
 │       ├── linked-list/         # Linked List problems
 │       ├── recursion/           # Recursion & Backtracking
 │       ├── stack/               # Stack problems
@@ -131,27 +132,93 @@ problem-name/
 
 ## 📊 Problems by Topic
 
-### Arrays (1 problem)
-| # | Problem | Difficulty | Approaches |
-|---|---------|-----------|------------|
-| 1 | [Trapping Rain Water](src/questions/arrays/1darray/hard/trapping-rain-water) | Hard | 3 approaches |
+### Arrays (30 problems)
 
-### Linked List (14 problems)
+#### 1D Array - Easy (10 problems)
 | # | Problem | Difficulty | Key Pattern |
 |---|---------|-----------|-------------|
-| 1 | [Palindrome Linked List](src/questions/linked-list/easy/palindrome-linked-list) | Easy | Two Pointer, Reverse |
-| 2 | [Linked List Cycle II](src/questions/linked-list/medium/linked-list-cycle-II) | Medium | Floyd's Cycle Detection |
-| 3 | [Odd Even Linked List](src/questions/linked-list/medium/odd-even-linked-list) | Medium | In-place rearrangement |
-| 4 | [Remove Nth Node From End](src/questions/linked-list/medium/remove-nth-node-from-end) | Medium | Two Pointer |
-| 5 | [Delete Middle Node](src/questions/linked-list/medium/delete-middle-node) | Medium | Slow-Fast Pointer |
-| 6 | [Sort List](src/questions/linked-list/medium/sort-list) | Medium | Merge Sort |
-| 7 | [Sort 0-1-2 in LL](src/questions/linked-list/medium/sort-012) | Medium | Three Pointer |
-| 8 | [Intersection of Two Linked Lists](src/questions/linked-list/medium/intersection-of-two-linked-lists) | Medium | Two Pointer |
-| 9 | [Add Two Numbers](src/questions/linked-list/medium/add-two-numbers) | Medium | Simulation |
-| 10 | [Rotate List](src/questions/linked-list/medium/rotate-list) | Medium | Two Pass |
-| 11 | [Copy List with Random Pointer](src/questions/linked-list/medium/copy-list-with-random-pointer) | Medium | Interweaving |
-| 12 | [Flatten Linked List](src/questions/linked-list/medium/flatten-linked-list) | Medium | Merge K Lists |
-| 13 | [Reverse Nodes in K Group](src/questions/linked-list/hard/reverse-nodes-in-k-group) | Hard | Recursion + Iteration |
+| 1 | [Two Sum](src/questions/arrays/1darray/easy/2-sum) | Easy | HashMap |
+| 2 | [Binary Search](src/questions/arrays/1darray/easy/binary-search) | Easy | Binary Search |
+| 3 | [Buy Sell Stock](src/questions/arrays/1darray/easy/buy-sell-stock) | Easy | Single Pass |
+| 4 | [Find Kth Rotation](src/questions/arrays/1darray/easy/find-Kth-rotation) | Easy | Modified Binary Search |
+| 5 | [Find Leaders](src/questions/arrays/1darray/easy/find-leaders) | Easy | Reverse Scan |
+| 6 | [Lower Bound](src/questions/arrays/1darray/easy/lower-bound) | Easy | Binary Search |
+| 7 | [Majority Element](src/questions/arrays/1darray/easy/majority-element) | Easy | Boyer-Moore |
+| 8 | [Number of Occurrence](src/questions/arrays/1darray/easy/number-of-occurence) | Easy | Binary Search |
+| 9 | [Search Insert](src/questions/arrays/1darray/easy/search-insert) | Easy | Binary Search |
+| 10 | [Upper Bound](src/questions/arrays/1darray/easy/upper-bound) | Easy | Binary Search |
+
+#### 1D Array - Medium (16 problems)
+| # | Problem | Difficulty | Key Pattern |
+|---|---------|-----------|-------------|
+| 1 | [3 Sum](src/questions/arrays/1darray/medium/3-sum) | Medium | Two Pointer |
+| 2 | [4 Sum](src/questions/arrays/1darray/medium/4-sum) | Medium | Two Pointer |
+| 3 | [Binary Search](src/questions/arrays/1darray/medium/binary-search) | Medium | Binary Search |
+| 4 | [Longest Consecutive](src/questions/arrays/1darray/medium/longest-consecutive) | Medium | HashSet |
+| 5 | [Longest Equal Subarray](src/questions/arrays/1darray/medium/longest-equal-subarray) | Medium | Sliding Window |
+| 6 | [Longest Subarray Sum Zero](src/questions/arrays/1darray/medium/longest-subarray-sum-zero) | Medium | Prefix Sum + HashMap |
+| 7 | [Majority Element II](src/questions/arrays/1darray/medium/majority-element-ii) | Medium | Boyer-Moore Extended |
+| 8 | [Maximum Subarray](src/questions/arrays/1darray/medium/maximum-subarray) | Medium | Kadane's Algorithm |
+| 9 | [Merge Intervals](src/questions/arrays/1darray/medium/merge-intervals) | Medium | Sorting + Merge |
+| 10 | [Next Permutation](src/questions/arrays/1darray/medium/next-permutation) | Medium | In-place Swap |
+| 11 | [Rearrange Array](src/questions/arrays/1darray/medium/rearrange-array) | Medium | Two Pointer |
+| 12 | [Sort Colors](src/questions/arrays/1darray/medium/sort-colors) | Medium | Dutch National Flag |
+| 13 | [Subarray Sum Equals K](src/questions/arrays/1darray/medium/subarray-sum-equals-K) | Medium | Prefix Sum + HashMap |
+
+#### 1D Array - Hard (3 problems)
+| # | Problem | Difficulty | Key Pattern |
+|---|---------|-----------|-------------|
+| 1 | [Binary](src/questions/arrays/1darray/hard/binary) | Hard | Binary Manipulation |
+| 2 | [Reverse Pairs](src/questions/arrays/1darray/hard/reverse-pairs) | Hard | Merge Sort |
+| 3 | [Trapping Rain Water](src/questions/arrays/1darray/hard/trapping-rain-water) | Hard | Two Pointer |
+
+#### 2D Array - Medium (4 problems)
+| # | Problem | Difficulty | Key Pattern |
+|---|---------|-----------|-------------|
+| 1 | [Pascal Triangle](src/questions/arrays/2darray/medium/pascal-triangle) | Medium | Combinatorics |
+| 2 | [Rotate Image](src/questions/arrays/2darray/medium/rotate-image) | Medium | Matrix Transpose |
+| 3 | [Set Matrix Zero](src/questions/arrays/2darray/medium/set-matrix-zero) | Medium | In-place Marking |
+| 4 | [Spiral](src/questions/arrays/2darray/medium/spiral) | Medium | Boundary Simulation |
+
+### String (11 problems)
+
+#### Easy (7 problems)
+| # | Problem | Difficulty | Key Pattern |
+|---|---------|-----------|-------------|
+| 1 | [Largest Odd Number in String](src/questions/string/easy/largest-odd-number-in-string) | Easy | Greedy |
+| 2 | [Longest Common Prefix](src/questions/string/easy/longest-common-prefix) | Easy | Vertical Scanning |
+| 3 | [Nesting Depth of Parentheses](src/questions/string/easy/nesting-depth-of-parentheses) | Easy | Counter |
+| 4 | [Remove Outermost Parenthesis](src/questions/string/easy/remove-outermost-paranthesis) | Easy | Balance Counter |
+| 5 | [Roman to Integer](src/questions/string/easy/roman-to-integer) | Easy | HashMap |
+| 6 | [Rotate String](src/questions/string/easy/rotate-string) | Easy | String Matching / KMP |
+| 7 | [Valid Anagram](src/questions/string/easy/valid-anagram) | Easy | Frequency Counter |
+
+#### Medium (4 problems)
+| # | Problem | Difficulty | Key Pattern |
+|---|---------|-----------|-------------|
+| 1 | [Longest Palindromic Substring](src/questions/string/medium/%20longest-palindromic-substring) | Medium | Expand Around Center |
+| 2 | [Reverse Words String](src/questions/string/medium/reverse-words-string) | Medium | Two Pointer |
+| 3 | [Sort Characters by Frequency](src/questions/string/medium/sort-characters-by-frequency) | Medium | Bucket Sort |
+| 4 | [String to Integer (atoi)](src/questions/string/medium/string-to-integer-(atoi)) | Medium | State Machine |
+
+### Linked List (15 problems)
+| # | Problem | Difficulty | Key Pattern |
+|---|---------|-----------|-------------|
+| 1 | [Middle of Linked List](src/questions/linked-list/easy/middle-of-linked-list) | Easy | Slow-Fast Pointer |
+| 2 | [Reverse Linked List](src/questions/linked-list/easy/reverse-linked-list) | Easy | Iterative/Recursive |
+| 3 | [Palindrome Linked List](src/questions/linked-list/easy/palindrome-linked-list) | Easy | Two Pointer, Reverse |
+| 4 | [Linked List Cycle II](src/questions/linked-list/medium/linked-list-cycle-II) | Medium | Floyd's Cycle Detection |
+| 5 | [Odd Even Linked List](src/questions/linked-list/medium/odd-even-linked-list) | Medium | In-place rearrangement |
+| 6 | [Remove Nth Node From End](src/questions/linked-list/medium/remove-nth-node-from-end) | Medium | Two Pointer |
+| 7 | [Delete Middle Node](src/questions/linked-list/medium/delete-middle-node) | Medium | Slow-Fast Pointer |
+| 8 | [Sort List](src/questions/linked-list/medium/sort-list) | Medium | Merge Sort |
+| 9 | [Sort 0-1-2 in LL](src/questions/linked-list/medium/sort-012) | Medium | Three Pointer |
+| 10 | [Intersection of Two Linked Lists](src/questions/linked-list/medium/intersection-of-two-linked-lists) | Medium | Two Pointer |
+| 11 | [Add Two Numbers](src/questions/linked-list/medium/add-two-numbers) | Medium | Simulation |
+| 12 | [Rotate List](src/questions/linked-list/medium/rotate-list) | Medium | Two Pass |
+| 13 | [Copy List with Random Pointer](src/questions/linked-list/medium/copy-list-with-random-pointer) | Medium | Interweaving |
+| 14 | [Flatten Linked List](src/questions/linked-list/medium/flatten-linked-list) | Medium | Merge K Lists |
+| 15 | [Reverse Nodes in K Group](src/questions/linked-list/hard/reverse-nodes-in-k-group) | Hard | Recursion + Iteration |
 
 ### Recursion & Backtracking (21 problems)
 | # | Problem | Difficulty | Key Pattern |
@@ -178,7 +245,7 @@ problem-name/
 | 20 | [Expression Add Operators](src/questions/recursion/hard/expression-add-operators) | Hard | Backtracking |
 | 21 | [Sudoku Solver](src/questions/recursion/hard/sudoku-solver) | Hard | Backtracking |
 
-### Stack & Queue (18 problems)
+### Stack & Queue (20 problems)
 | # | Problem | Difficulty | Key Pattern |
 |---|---------|-----------|-------------|
 | 1 | [Implement Stack Using Array](src/questions/stack/easy/implement-stack-using-array) | Easy | Array Implementation |
@@ -423,18 +490,19 @@ While this is primarily a personal learning repository, suggestions are welcome!
 ## 📊 Progress Stats
 
 ```
-Total Problems Solved: 69
-├── Easy:     3
-├── Medium:  53
+Total Problems Solved: 111
+├── Easy:    23
+├── Medium:  75
 └── Hard:    13
 
 By Topic:
-├── Sliding Window:      12 problems
+├── Arrays:              30 problems
 ├── Recursion:           21 problems
-├── Stack & Queue:       18 problems
-├── Linked List:         14 problems
-├── Design:               2 problems
-└── Arrays:               1 problem
+├── Stack & Queue:       20 problems
+├── Linked List:         15 problems
+├── Sliding Window:      12 problems
+├── String:              11 problems
+└── Design:               2 problems
 ```
 
 ---
