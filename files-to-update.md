@@ -99,7 +99,7 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 ## Binary Search - On Answer Medium (2 files)
 
 - [x] src/questions/binary_search/on-answer/medium/capacity-to-ship/optimal.ts
-- [ ] src/questions/binary_search/on-answer/medium/divisor/optimal.ts
+- [x] src/questions/binary_search/on-answer/medium/divisor/optimal.ts
 
 ---
 
