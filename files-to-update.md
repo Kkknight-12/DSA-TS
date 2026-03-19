@@ -1,6 +1,6 @@
 # Files Needing Explanation Format Update
 
-Total: 104 files
+Total: 106 files (includes 2 new find-x files)
 Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runTests()
 
 ---
@@ -14,7 +14,7 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ---
 
-## Arrays - Medium (18 files)
+## Arrays - Medium (22 files)
 
 - [ ] src/questions/arrays/1darray/medium/3-sum/better.ts
 - [ ] src/questions/arrays/1darray/medium/3-sum/brute-force.ts
@@ -63,10 +63,10 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ---
 
-## Binary Search - 1D Easy (6 files)
+## Binary Search - 1D Easy (7 files)
 
 - [x] src/questions/binary_search/1d/easy/find-x/brute-force.ts
-- [x] src/questions/binary_search/1d/easy/find-x/optimal.ts (new)
+- [x] src/questions/binary_search/1d/easy/find-x/optimal.ts
 - [ ] src/questions/binary_search/1d/easy/lower-bound/optimal.ts
 - [ ] src/questions/binary_search/1d/easy/upper-bound/optimal.ts
 - [ ] src/questions/binary_search/1d/easy/search-insert/optimal.ts
@@ -103,7 +103,7 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ---
 
-## Binary Search - On Answer Hard (14 files)
+## Binary Search - On Answer Hard (13 files)
 
 - [ ] src/questions/binary_search/on-answer/hard/aggressive-cows/optimal.ts
 - [ ] src/questions/binary_search/on-answer/hard/book-allocation/optimal.ts
