@@ -5,39 +5,21 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ---
 
-## Arrays - Easy (12 files)
+## Arrays - Easy (4 files)
 
 - [x] src/questions/arrays/1darray/easy/2-sum/optimal.ts
-- [x] src/questions/arrays/1darray/easy/binary-search/find-squre-root/optimal.ts
-- [ ] src/questions/arrays/1darray/easy/binary-search/find-x/brute-force.ts
-- [ ] src/questions/arrays/1darray/easy/binary-search/nth-root-of-number/optimal.ts
 - [ ] src/questions/arrays/1darray/easy/buy-sell-stock/optimal.ts
-- [ ] src/questions/arrays/1darray/easy/find-Kth-rotation/optimal.ts
 - [ ] src/questions/arrays/1darray/easy/find-leaders/optimal.ts
-- [ ] src/questions/arrays/1darray/easy/lower-bound/optimal.ts
 - [ ] src/questions/arrays/1darray/easy/majority-element/better.ts
-- [ ] src/questions/arrays/1darray/easy/number-of-occurence/optimal.ts
-- [ ] src/questions/arrays/1darray/easy/search-insert/optimal.ts
-- [ ] src/questions/arrays/1darray/easy/upper-bound/optimal.ts
 
 ---
 
-## Arrays - Medium (32 files)
+## Arrays - Medium (18 files)
 
 - [ ] src/questions/arrays/1darray/medium/3-sum/better.ts
 - [ ] src/questions/arrays/1darray/medium/3-sum/brute-force.ts
 - [ ] src/questions/arrays/1darray/medium/3-sum/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/4-sum/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/divisor/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/first-last-position/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/floor-ceiling/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/kth-missing-positive-number/alternate-optmial.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/kth-missing-positive-number/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/minimum-in-rotated-sorted-array/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/peak-element/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/search-rotated-sorted-1/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/search-rotated-sorted-2/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/binary-search/single-element/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/longest-consecutive/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/longest-equal-subarray/brute.ts
 - [ ] src/questions/arrays/1darray/medium/longest-equal-subarray/optimal.ts
@@ -59,27 +41,9 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ---
 
-## Arrays - Hard (14 files)
+## Arrays - Hard (4 files)
 
-- [ ] src/questions/arrays/1darray/hard/binary/aggressive-cows/optimal.ts
-- [ ] src/questions/arrays/1darray/hard/binary/book-allocation/optimal.ts
-- [ ] src/questions/arrays/1darray/hard/binary/median-two-sorted-arrays-different-sizes/brute-force.ts
-- [ ] src/questions/arrays/1darray/hard/binary/median-two-sorted-arrays-different-sizes/optimal.ts
-- [ ] src/questions/arrays/1darray/hard/binary/min-days-bouquets/brute-force.ts
-- [ ] src/questions/arrays/1darray/hard/binary/min-days-bouquets/optimal.ts
-- [ ] src/questions/arrays/1darray/hard/binary/min-eating-speed/brute-force.ts
-- [ ] src/questions/arrays/1darray/hard/binary/min-eating-speed/optimal.ts
-- [ ] src/questions/arrays/1darray/hard/binary/min-max-gas-station/brute-force.ts
-- [ ] src/questions/arrays/1darray/hard/binary/min-max-gas-station/optimal.ts
-- [ ] src/questions/arrays/1darray/hard/binary/painter-partition/brute-force.ts
-- [ ] src/questions/arrays/1darray/hard/binary/painter-partition/optimal.ts
-- [ ] src/questions/arrays/1darray/hard/binary/split-array-with-largest-sum/optimal.ts
 - [ ] src/questions/arrays/1darray/hard/reverse-pairs/optimal.ts
-
----
-
-## Arrays - Hard - Trapping Rain Water (only missing runTests)
-
 - [ ] src/questions/arrays/1darray/hard/trapping-rain-water/better.ts
 - [ ] src/questions/arrays/1darray/hard/trapping-rain-water/brute-force.ts
 - [ ] src/questions/arrays/1darray/hard/trapping-rain-water/optimal.ts
@@ -96,6 +60,64 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [ ] src/questions/arrays/2darray/medium/set-matrix-zero/optimal.ts
 - [ ] src/questions/arrays/2darray/medium/spiral/brute-force.ts
 - [ ] src/questions/arrays/2darray/medium/spiral/optimal.ts
+
+---
+
+## Binary Search - 1D Easy (6 files)
+
+- [x] src/questions/binary_search/1d/easy/find-x/brute-force.ts
+- [x] src/questions/binary_search/1d/easy/find-x/optimal.ts (new)
+- [ ] src/questions/binary_search/1d/easy/lower-bound/optimal.ts
+- [ ] src/questions/binary_search/1d/easy/upper-bound/optimal.ts
+- [ ] src/questions/binary_search/1d/easy/search-insert/optimal.ts
+- [ ] src/questions/binary_search/1d/easy/find-Kth-rotation/optimal.ts
+- [ ] src/questions/binary_search/1d/easy/number-of-occurence/optimal.ts
+
+---
+
+## Binary Search - 1D Medium (9 files)
+
+- [ ] src/questions/binary_search/1d/medium/floor-ceiling/optimal.ts
+- [ ] src/questions/binary_search/1d/medium/first-last-position/optimal.ts
+- [ ] src/questions/binary_search/1d/medium/search-rotated-sorted-1/optimal.ts
+- [ ] src/questions/binary_search/1d/medium/search-rotated-sorted-2/optimal.ts
+- [ ] src/questions/binary_search/1d/medium/minimum-in-rotated-sorted-array/optimal.ts
+- [ ] src/questions/binary_search/1d/medium/peak-element/optimal.ts
+- [ ] src/questions/binary_search/1d/medium/single-element/optimal.ts
+- [ ] src/questions/binary_search/1d/medium/kth-missing-positive-number/optimal.ts
+- [ ] src/questions/binary_search/1d/medium/kth-missing-positive-number/alternate-optmial.ts
+
+---
+
+## Binary Search - On Answer Easy (2 files)
+
+- [x] src/questions/binary_search/on-answer/easy/find-square-root/optimal.ts
+- [x] src/questions/binary_search/on-answer/easy/nth-root-of-number/optimal.ts
+
+---
+
+## Binary Search - On Answer Medium (2 files)
+
+- [x] src/questions/binary_search/on-answer/medium/capacity-to-ship/optimal.ts
+- [ ] src/questions/binary_search/on-answer/medium/divisor/optimal.ts
+
+---
+
+## Binary Search - On Answer Hard (14 files)
+
+- [ ] src/questions/binary_search/on-answer/hard/aggressive-cows/optimal.ts
+- [ ] src/questions/binary_search/on-answer/hard/book-allocation/optimal.ts
+- [ ] src/questions/binary_search/on-answer/hard/median-two-sorted-arrays/brute-force.ts
+- [ ] src/questions/binary_search/on-answer/hard/median-two-sorted-arrays/optimal.ts
+- [ ] src/questions/binary_search/on-answer/hard/min-days-bouquets/brute-force.ts
+- [ ] src/questions/binary_search/on-answer/hard/min-days-bouquets/optimal.ts
+- [ ] src/questions/binary_search/on-answer/hard/min-eating-speed/brute-force.ts
+- [ ] src/questions/binary_search/on-answer/hard/min-eating-speed/optimal.ts
+- [ ] src/questions/binary_search/on-answer/hard/min-max-gas-station/brute-force.ts
+- [ ] src/questions/binary_search/on-answer/hard/min-max-gas-station/optimal.ts
+- [ ] src/questions/binary_search/on-answer/hard/painter-partition/brute-force.ts
+- [ ] src/questions/binary_search/on-answer/hard/painter-partition/optimal.ts
+- [ ] src/questions/binary_search/on-answer/hard/split-array-with-largest-sum/optimal.ts
 
 ---
 
