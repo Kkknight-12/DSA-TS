@@ -109,8 +109,8 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [x] src/questions/binary_search/on-answer/hard/book-allocation/optimal.ts
 - [x] src/questions/binary_search/on-answer/hard/median-two-sorted-arrays/brute-force.ts
 - [x] src/questions/binary_search/on-answer/hard/median-two-sorted-arrays/optimal.ts
-- [ ] src/questions/binary_search/on-answer/hard/min-days-bouquets/brute-force.ts
-- [ ] src/questions/binary_search/on-answer/hard/min-days-bouquets/optimal.ts
+- [x] src/questions/binary_search/on-answer/hard/min-days-bouquets/brute-force.ts
+- [x] src/questions/binary_search/on-answer/hard/min-days-bouquets/optimal.ts
 - [ ] src/questions/binary_search/on-answer/hard/min-eating-speed/brute-force.ts
 - [ ] src/questions/binary_search/on-answer/hard/min-eating-speed/optimal.ts
 - [ ] src/questions/binary_search/on-answer/hard/min-max-gas-station/brute-force.ts
