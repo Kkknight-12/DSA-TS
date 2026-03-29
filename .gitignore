@@ -23,3 +23,10 @@ npm-debug.log*
 # Temporary files
 *.tmp
 *.temp
+
+# Image files in notes folders (handwritten notes photos)
+*.HEIC
+*.heic
+*.png
+*.jpg
+*.jpeg
