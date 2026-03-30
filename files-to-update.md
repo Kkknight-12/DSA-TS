@@ -111,13 +111,14 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [x] src/questions/binary_search/on-answer/hard/median-two-sorted-arrays/optimal.ts
 - [x] src/questions/binary_search/on-answer/hard/min-days-bouquets/brute-force.ts
 - [x] src/questions/binary_search/on-answer/hard/min-days-bouquets/optimal.ts
-- [ ] src/questions/binary_search/on-answer/hard/min-eating-speed/brute-force.ts
-- [ ] src/questions/binary_search/on-answer/hard/min-eating-speed/optimal.ts
-- [ ] src/questions/binary_search/on-answer/hard/min-max-gas-station/brute-force.ts
-- [ ] src/questions/binary_search/on-answer/hard/min-max-gas-station/optimal.ts
-- [ ] src/questions/binary_search/on-answer/hard/painter-partition/brute-force.ts
-- [ ] src/questions/binary_search/on-answer/hard/painter-partition/optimal.ts
-- [ ] src/questions/binary_search/on-answer/hard/split-array-with-largest-sum/optimal.ts
+- [x] src/questions/binary_search/on-answer/hard/min-eating-speed/brute-force.ts
+- [x] src/questions/binary_search/on-answer/hard/min-eating-speed/optimal.ts
+- [x] src/questions/binary_search/on-answer/hard/min-max-gas-station/brute-force.ts
+- [x] src/questions/binary_search/on-answer/hard/min-max-gas-station/optimal.ts
+- [x] src/questions/binary_search/on-answer/hard/painter-partition/brute-force.ts
+- [x] src/questions/binary_search/on-answer/hard/painter-partition/optimal.ts
+- [x] src/questions/binary_search/on-answer/hard/split-array-with-largest-sum/brute-force.ts
+- [x] src/questions/binary_search/on-answer/hard/split-array-with-largest-sum/optimal.ts
 
 ---
 
