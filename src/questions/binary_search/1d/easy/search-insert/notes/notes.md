@@ -28,7 +28,22 @@ Sab se bada → end mein:
 
 ---
 
-## STEP 2: Key Insight — YEH LOWER BOUND HI HAI!
+## STEP 2: Brute Force Kyun Slow Hai
+
+Linear scan: left to right, pehla element >= target dhundho ya insert position nikalo.
+
+```
+nums = [1, 3, 5, 6],  target = 2
+
+idx=0: 1 >= 2? NO
+idx=1: 3 >= 2? YES → insert here, return 1
+```
+
+**Problem:** n = 10^6 → TLE. Array sorted hai toh binary search se O(log n) mein ho sakta hai.
+
+---
+
+## STEP 3: Key Insight — YEH LOWER BOUND HI HAI!
 
 Ek second ruko aur socho:
 
@@ -63,7 +78,24 @@ Case 3: target = 7, nums = [1, 3, 5, 6]
 
 ---
 
-## STEP 3: Monotonic Property
+## STEP 4: Core Variables — left, right, mid kya hain?
+
+```
+left  = 0    → search space ka left boundary
+right = n    → n = insert at end case (valid return)
+mid   = (left+right)/2  → current candidate index
+```
+
+**WHY return left?**
+Loop khatam hone pe `left === right` us index pe hote hain jahan:
+- Target milta hai → `nums[left] == target` → woh index return hota hai
+- Target nahi milta → `nums[left]` pehla element > target → yahan insert karo
+
+Dono cases mein `left` hi correct answer hai.
+
+---
+
+## STEP 5: Monotonic Property
 
 ```
 nums = [1, 3, 5, 6],  target = 2

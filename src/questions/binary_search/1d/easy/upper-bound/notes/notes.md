@@ -69,6 +69,24 @@ Yeh trick bahut useful hai!
 
 ---
 
+## STEP 2.5: Brute Force Kyun Slow Hai
+
+Linear scan: left to right, pehla element > x dhundho.
+
+```
+arr = [1, 3, 5, 5, 7, 9],  x = 5
+
+Check idx=0: 1 > 5? NO
+Check idx=1: 3 > 5? NO
+Check idx=2: 5 > 5? NO  ← equal, skip
+Check idx=3: 5 > 5? NO
+Check idx=4: 7 > 5? YES → return 4
+```
+
+**Problem:** n = 10^6 → 10^6 iterations → TLE.
+
+---
+
 ## STEP 3: Monotonic Property
 
 Array sorted hai. Pattern banta hai:
@@ -87,7 +105,23 @@ val:    1    3    5    5    7    9
 
 ---
 
-## STEP 4: Algorithm — Lower Bound se Sirf Ek Line Alag
+## STEP 4: Core Variables — left, right, mid kya hain?
+
+```
+left  = 0    → search space ka left boundary
+right = n    → n = "not found" case (valid return value)
+mid   = (left+right)/2  → current candidate index
+```
+
+Loop khatam hone pe `left === right` — dono converge ho jaate hain.
+
+**WHY return left?**
+Convergence pe `left` us pehle index pe hota hai jahan `arr[i] > x`.
+Wahi upper bound ka answer hai.
+
+---
+
+## STEP 5: Algorithm — Lower Bound se Sirf Ek Line Alag
 
 ```
 Lower Bound:          Upper Bound:

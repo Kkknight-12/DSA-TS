@@ -20,7 +20,29 @@ val:   1   1   2   2   2   2   3
 
 ---
 
-## STEP 2: Key Insight — count = upperBound - lowerBound
+## STEP 2: Brute Force Kyun Slow Hai
+
+Linear scan: array traverse karo, target ke saare occurrences count karo.
+
+```
+arr = [1, 1, 2, 2, 2, 2, 3],  target = 2
+
+count = 0
+idx=0: 1 == 2? NO
+idx=1: 1 == 2? NO
+idx=2: 2 == 2? YES → count=1
+idx=3: 2 == 2? YES → count=2
+idx=4: 2 == 2? YES → count=3
+idx=5: 2 == 2? YES → count=4
+idx=6: 3 == 2? NO
+return 4 ✓
+```
+
+**Problem:** O(n) — n = 10^6 → TLE. Array sorted hai toh UB-LB trick se O(log n) ho sakta hai.
+
+---
+
+## STEP 3: Key Insight — count = upperBound - lowerBound
 
 Tune upper bound ke notes mein yeh trick padhI thi:
 
@@ -49,7 +71,21 @@ Visual:
 
 ---
 
-## STEP 3: Full Dry Run
+## STEP 4: Core Variables
+
+```
+lb  = lowerBound(target) → first index where arr[i] >= target
+ub  = upperBound(target) → first index where arr[i] >  target
+```
+
+**WHY ub - lb = count?**
+`lb` = target shuru hone ki jagah (inclusive)
+`ub` = target khatam hone ke baad ki jagah (exclusive)
+Unke beech ke indices sab target hain → count = ub - lb
+
+---
+
+## STEP 5: Full Dry Run
 
 ### lowerBound(2): first index where arr[i] >= 2
 

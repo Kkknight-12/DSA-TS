@@ -25,9 +25,27 @@ Answer = 4
 
 ---
 
-## STEP 2: Key Insight — k = Index of Minimum Element
+## STEP 2: Brute Force Kyun Slow Hai
 
-Yeh sabse zaroori baat hai. Simulate karo:
+Linear scan: array traverse karo, pehla element dhundho jo apne next se chota ho — wahi break point hai. Uska index + 1 = k.
+
+```
+arr = [4, 5, 6, 7, 0, 1, 2]
+
+idx=0: 4 < 5? no
+idx=1: 5 < 6? no
+idx=2: 6 < 7? no
+idx=3: 7 < 0? YES! → break point at idx=3 → k = 3+1 = 4 ✓
+```
+
+**Problem:** n = 10^6 → 10^6 iterations → slow.
+Array sorted hai toh binary search se O(log n) mein ho sakta hai.
+
+---
+
+## STEP 3: Key Insight — k = Index of Minimum Element
+
+Simulate karo:
 
 ```
 Original: [0, 1, 2, 4, 5, 6, 7]
@@ -51,7 +69,7 @@ k rotations ke baad minimum index k pe hoga.
 
 ---
 
-## STEP 3: Rotated Array ki Structure
+## STEP 4: Rotated Array ki Structure
 
 Rotated sorted array mein hamesha ek "break point" hota hai:
 
@@ -69,21 +87,50 @@ Minimum hamesha break point pe hota hai (small side ka pehla element).
 
 ---
 
-## STEP 4: Binary Search — arr[mid] vs arr[right]
+## STEP 5: Core Variables — left, right, mid kya hain?
+
+```
+left  = 0      → search space ka left boundary
+right = n-1    → search space ka right boundary
+                  (WHY n-1 not n? Hum actual index dhundh rahe hain, n valid index nahi)
+mid   = (left+right)/2  → current candidate index
+```
+
+Loop khatam hone pe `left === right` — dono same index pe converge ho jaate hain.
+Woh index minimum element ka index hai = answer (k).
+
+**WHY return left?**
+Jab loop khatam hota hai, `left` aur `right` dono minimum element ke index pe hote hain.
+`left` return karna = minimum ka index return karna = k return karna.
+
+---
+
+## STEP 6: Binary Search — arr[mid] vs arr[right]
 
 **Sawaal:** "Mid kis side pe hai?"
 
 ```
 arr[mid] > arr[right]?
   YES → mid LEFT (big) half mein hai → minimum RIGHT mein → left = mid + 1
-
-arr[mid] ≤ arr[right]?
   NO  → mid RIGHT (small) half mein hai → minimum LEFT mein ya MID pe → right = mid
 ```
 
 **WHY arr[right] use karte hain, arr[left] nahi?**
 `arr[right]` stable reference hai — woh har iteration mein reliable hota hai.
-`arr[left]` badal jaata hai jab `left = mid + 1` karte hain.
+`arr[left]` badal jaata hai jab `left = mid + 1` karte hain — toh stable nahi.
+
+---
+
+## STEP 7: Edge Case — Not Rotated
+
+```
+arr = [1, 2, 3, 4, 5]
+arr[0]=1 < arr[n-1]=5 → Array sorted hai → k = 0
+```
+
+**WHY yeh check zaroori hai?**
+Agar array sorted hai toh binary search usse rotated maanta hai aur galat answer deta hai.
+Pehle hi check kar lo aur 0 return karo.
 
 ---
 
@@ -98,9 +145,9 @@ val:  4   5   6   7   0   1   2
                  minimum = 0, index = 4
 ```
 
-| Iter | left | right | mid | arr[mid] | arr[right] | mid > right? | Action |
-|------|------|-------|-----|----------|------------|--------------|--------|
-| 1 | 0 | 6 | 3 | 7 | 2 | ✓ | left=4 |
+| Iter | left | right | mid | arr[mid] | arr[right] | mid > right? | Action  |
+|------|------|-------|-----|----------|------------|--------------|---------|
+| 1 | 0 | 6 | 3 | 7 | 2 | ✓ | left=4  |
 | 2 | 4 | 6 | 5 | 1 | 2 | ✗ | right=5 |
 | 3 | 4 | 5 | 4 | 0 | 1 | ✗ | right=4 |
 
@@ -116,29 +163,16 @@ left=4 === right=4 → return 4 ✅
 
 ---
 
-## STEP 5: Edge Case — Not Rotated
-
-```
-arr = [1, 2, 3, 4, 5]
-arr[0]=1 < arr[n-1]=5 → Array sorted hai → k = 0
-```
-
-**WHY yeh check zaroori hai?**
-Agar array sorted hai toh binary search usse rotated maanta hai aur galat answer deta hai.
-Pehle hi check kar lo aur return 0.
-
----
-
 ## Quick Reference (Jab Bhool Jao Toh Yahan Dekho)
 
 ```
 k = index of minimum element in rotated sorted array
 
-WHY: k rotations ke baad minimum index k pe hota hai
+WHY: k rotations ke baad minimum index 0 se k pe shift ho jaata hai
 
 1. arr[0] < arr[n-1]? → NOT rotated → return 0
 
-2. left=0, right=n-1
+2. left=0, right=n-1   ← n-1 (not n) — actual index chahiye
 
 3. while (left < right):
    mid = floor((left + right) / 2)
@@ -146,9 +180,10 @@ WHY: k rotations ke baad minimum index k pe hota hai
      YES → left = mid + 1   ← min in right half
      NO  → right = mid      ← min in left half or at mid
 
-4. return left
+4. return left   ← left == right == index of minimum == k
 
 REMEMBER:
   Break point pe minimum hota hai
   arr[mid] vs arr[right] compare karo (arr[left] nahi!)
+  right = n-1 (not n) — ek aur baar check karo before writing
 ```

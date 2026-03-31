@@ -93,7 +93,23 @@ Isliye ek baar ✓ mila → baaki sab ✓ hi honge.
 
 ---
 
-## STEP 5: Binary Search Pattern — "Find First Valid"
+## STEP 5: Core Variables — left, right, mid kya hain?
+
+```
+left  = 0    → search space ka left boundary (definitely invalid se shuru)
+right = n    → search space ka right boundary (n = "not found" case)
+mid   = (left+right)/2  → current candidate index
+```
+
+Loop khatam hone pe `left === right` — dono same index pe converge.
+
+**WHY return left?**
+Jab loop khatam hota hai, `left` aur `right` dono us pehle valid index pe hote hain jahan `arr[i] >= x`.
+`left` return karna = woh first valid index return karna = lower bound return karna.
+
+---
+
+## STEP 6: Binary Search Pattern — "Find First Valid"
 
 **Sawaal:** "arr[mid] >= x hai?"
 
