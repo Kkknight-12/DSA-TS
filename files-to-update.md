@@ -70,8 +70,8 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [x] src/questions/binary_search/1d/easy/lower-bound/optimal.ts
 - [x] src/questions/binary_search/1d/easy/upper-bound/optimal.ts
 - [x] src/questions/binary_search/1d/easy/search-insert/optimal.ts
-- [ ] src/questions/binary_search/1d/easy/find-Kth-rotation/optimal.ts
-- [ ] src/questions/binary_search/1d/easy/number-of-occurence/optimal.ts
+- [x] src/questions/binary_search/1d/easy/find-Kth-rotation/optimal.ts
+- [x] src/questions/binary_search/1d/easy/number-of-occurence/optimal.ts
 
 ---
 
