@@ -77,10 +77,10 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ## Binary Search - 1D Medium (9 files)
 
-- [ ] src/questions/binary_search/1d/medium/floor-ceiling/optimal.ts
-- [ ] src/questions/binary_search/1d/medium/first-last-position/optimal.ts
-- [ ] src/questions/binary_search/1d/medium/search-rotated-sorted-1/optimal.ts
-- [ ] src/questions/binary_search/1d/medium/search-rotated-sorted-2/optimal.ts
+- [x] src/questions/binary_search/1d/medium/floor-ceiling/optimal.ts
+- [x] src/questions/binary_search/1d/medium/first-last-position/optimal.ts
+- [x] src/questions/binary_search/1d/medium/search-rotated-sorted-1/optimal.ts
+- [x] src/questions/binary_search/1d/medium/search-rotated-sorted-2/optimal.ts
 - [ ] src/questions/binary_search/1d/medium/minimum-in-rotated-sorted-array/optimal.ts
 - [ ] src/questions/binary_search/1d/medium/peak-element/optimal.ts
 - [ ] src/questions/binary_search/1d/medium/single-element/optimal.ts

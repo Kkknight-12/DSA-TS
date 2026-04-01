@@ -203,8 +203,8 @@ namespace MinMaxGasStationBruteForce {
       },
       {
         stations: [1, 3, 5, 7], k: 4,
-        expected: 0.5,
-        description: "All gaps=2, k=4: 1 station each gap → sections of 1... wait: 2/2=1",
+        expected: 1.0,
+        description: "All gaps=2, k=4: 1 station each gap (3 used) + 1 extra → max=1.0",
       },
       {
         stations: [1, 6, 11], k: 2,
