@@ -8,8 +8,8 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 ## Arrays - Easy (4 files)
 
 - [x] src/questions/arrays/1darray/easy/2-sum/optimal.ts
-- [ ] src/questions/arrays/1darray/easy/buy-sell-stock/optimal.ts
-- [ ] src/questions/arrays/1darray/easy/find-leaders/optimal.ts
+- [x] src/questions/arrays/1darray/easy/buy-sell-stock/optimal.ts
+- [x] src/questions/arrays/1darray/easy/find-leaders/optimal.ts
 - [ ] src/questions/arrays/1darray/easy/majority-element/better.ts
 
 ---

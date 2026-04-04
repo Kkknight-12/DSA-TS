@@ -166,27 +166,34 @@
  *   mid=3:  3³=27   = 27 → return 3 ✅
  *
  * ═══════════════════════════════════════════════════════════════════
- * PROBLEMS IN THIS PROJECT (src/questions/binary_search/on-answer/)
+ * IMPORTANT CLASSIFICATION NOTE
  * ═══════════════════════════════════════════════════════════════════
  *
- * Easy:
- *   - nth-root-of-number    → x^n = m?
- *   - find-square-root      → x² ≤ n (floor)
+ * Har non-exact binary search ko "BS on Answer" mat bolo.
  *
- * Medium:
- *   - koko-eating-bananas   → minimize eating speed
- *   - capacity-to-ship      → minimize ship capacity
- *   - smallest-divisor      → minimize divisor
- *   - kth-missing-positive  → find kth missing number
+ * Strict BS on Answer:
+ *   - capacity to ship
+ *   - koko eating bananas
+ *   - smallest divisor
+ *   - book allocation
+ *   - painter partition
+ *   - aggressive cows
+ *   - split array largest sum
+ *   - minimum days for bouquets
+ *   - min max gas station distance
  *
- * Hard:
- *   - book-allocation       → minimize max pages per student
- *   - painter-partition     → minimize max time
- *   - aggressive-cows       → maximize min distance
- *   - split-array-largest   → minimize largest sum
- *   - min-days-bouquets     → find minimum days
- *   - min-max-gas-station   → minimize max distance
- *   - median-two-sorted-arrays → partition-based BS
+ * Usually NOT primary BS on Answer:
+ *   - kth missing positive number
+ *       -> index-boundary search on missingCount(i)
+ *   - median of two sorted arrays
+ *       -> partition search, not answer-value search
+ *
+ * Better question:
+ *   "Main kis search space par binary search kar raha hoon?"
+ *
+ *   - index space?
+ *   - answer-value space?
+ *   - partition space?
  */
 
 export {};

@@ -1,254 +1,302 @@
-# Binary Search Cheat Sheet - Quick Reference
+# Binary Search — Quick Reference
 
-## 🎯 Core Template
-```typescript
-let left = 0, right = arr.length - 1;
+Use this only after the concepts are clear.
+
+---
+
+## 1. Pehla sawal: search kis cheez par ho raha hai?
+
+| Search space | Typical problems | Core question |
+|---|---|---|
+| Index space | exact search, lower bound, rotated array, peak, kth missing | kis index pe condition flip hoti hai? |
+| Answer space | ship capacity, Koko, book allocation, aggressive cows | kaunsa answer value valid hai? |
+| Partition space | median of two sorted arrays | smaller array se kitne elements left partition me jayenge? |
+
+---
+
+## 2. Pattern choose kaise karo?
+
+| Goal | Loop | Mid bias | Valid update | Invalid update | Return |
+|---|---|---|---|---|---|
+| Exact target | `left <= right` | lower mid | return immediately | discard one half | `-1` if not found |
+| First true / minimum valid | `left < right` | lower mid | `right = mid` | `left = mid + 1` | `left` |
+| Last true / maximum valid | `left <= right` with `result`, or `left < right` | lower mid with `result`, upper mid for convergence | `result = mid; left = mid + 1` or `left = mid` | `right = mid - 1` | `result` or `left` |
+
+---
+
+## 3. Exact search template
+
+```ts
+let left = 0;
+let right = arr.length - 1;
+
 while (left <= right) {
-    const mid = Math.floor(left + (right - left) / 2);
-    if (condition) left = mid + 1;
-    else right = mid - 1;
+  const mid = Math.floor(left + (right - left) / 2);
+
+  if (arr[mid] === target) return mid;
+
+  if (arr[mid] < target) {
+    left = mid + 1;
+  } else {
+    right = mid - 1;
+  }
 }
+
+return -1;
 ```
 
-## 📊 Pattern Recognition Map
+Use when:
 
-| **Problem Type** | **Key Phrase** | **Pattern to Use** |
-|-----------------|---------------|-------------------|
-| Find exact element | "search for X" | Classic Binary Search |
-| Find boundary | "first/last occurrence" | Modified BS with continuation |
-| Rotated array | "rotated", "shifted" | Check sorted half |
-| Optimization | "minimize/maximize" | BS on answer space |
-| Local extrema | "peak", "valley" | Compare with neighbors |
-| Math calculation | "sqrt", "nth root" | BS with calculation |
-| Two arrays | "median of two" | Partition search |
-| Missing/Extra | "kth missing" | Index-value relationship |
+- exact target search
+- search in rotated sorted array
+- exact math root if not found can return `-1`
 
-## 🔍 Quick Decision Tree
+---
 
-```
-Is array sorted?
-├── YES → Classic Binary Search variants
-│   ├── Find exact? → Classic BS
-│   ├── Find range? → First/Last occurrence
-│   └── Find insert position? → Lower/Upper bound
-│
-├── PARTIALLY (Rotated) → Modified BS
-│   ├── Find element? → Check sorted half
-│   └── Find min/max? → Compare with boundaries
-│
-└── NO → Can we binary search on answer?
-    ├── YES → Binary Search on Answer Space
-    │   ├── Minimize? → right = mid when valid
-    │   └── Maximize? → left = mid + 1 when valid
-    └── NO → Not a BS problem
-```
+## 4. First true / minimum valid template
 
-## 🎭 Loop Conditions Quick Guide
-
-| **Use Case** | **Condition** | **Final State** |
-|-------------|--------------|----------------|
-| Find exact element | `while (left <= right)` | Not found if exits loop |
-| Convergence to answer | `while (left < right)` | `left == right` at answer |
-| Find boundary | `while (left <= right)` | `left` = first invalid, `right` = last valid |
-
-## 🚀 Common Patterns at a Glance
-
-### 1️⃣ **Classic Search**
-```typescript
-if (arr[mid] === target) return mid;
-else if (arr[mid] < target) left = mid + 1;
-else right = mid - 1;
-```
-
-### 2️⃣ **First Occurrence**
-```typescript
-if (arr[mid] === target) {
-    result = mid;
-    right = mid - 1; // Keep searching left
-}
-```
-
-### 3️⃣ **Last Occurrence**
-```typescript
-if (arr[mid] === target) {
-    result = mid;
-    left = mid + 1; // Keep searching right
-}
-```
-
-### 4️⃣ **Rotated Array**
-```typescript
-if (nums[left] <= nums[mid]) { // Left sorted
-    if (nums[left] <= target && target < nums[mid])
-        right = mid - 1;
-    else
-        left = mid + 1;
-}
-```
-
-### 5️⃣ **Answer Space (Minimize)**
-```typescript
+```ts
 while (left < right) {
-    mid = Math.floor((left + right) / 2);
-    if (isValid(mid)) right = mid;
-    else left = mid + 1;
+  const mid = Math.floor((left + right) / 2); // lower mid
+
+  if (isValid(mid)) {
+    right = mid;      // mid answer ho sakta hai
+  } else {
+    left = mid + 1;   // mid answer nahi ho sakta
+  }
 }
+
+return left;
 ```
 
-### 6️⃣ **Answer Space (Maximize)**
-```typescript
+Use when:
+
+- lower bound
+- upper bound
+- search insert position
+- minimum in rotated sorted array
+- minimum valid answer in answer-space problems
+
+---
+
+## 5. Last true / maximum valid templates
+
+### A. Result-saving style
+
+```ts
+let result = -1;
+
 while (left <= right) {
-    mid = Math.floor((left + right) / 2);
-    if (isValid(mid)) {
-        result = mid;
-        left = mid + 1;
-    } else right = mid - 1;
+  const mid = Math.floor((left + right) / 2);
+
+  if (isValid(mid)) {
+    result = mid;
+    left = mid + 1;
+  } else {
+    right = mid - 1;
+  }
+}
+
+return result;
+```
+
+### B. Convergence style
+
+```ts
+while (left < right) {
+  const mid = Math.floor((left + right + 1) / 2); // upper mid
+
+  if (isValid(mid)) {
+    left = mid;
+  } else {
+    right = mid - 1;
+  }
+}
+
+return left;
+```
+
+Use when:
+
+- aggressive cows
+- floor
+- last occurrence
+- maximum feasible answer
+
+---
+
+## 6. `right = n` vs `right = n - 1`
+
+| Situation | Right boundary |
+|---|---|
+| Answer can be `n` | `right = n` |
+| Answer must be real index | `right = n - 1` |
+
+Examples:
+
+- lower bound / insert position -> `n` possible
+- rotated minimum -> only real indices, so `n - 1`
+- partition search on smaller array -> `0 ... n1`
+
+---
+
+## 7. Mid include/exclude rule
+
+```txt
+Can mid still be the answer?
+```
+
+If yes:
+
+- keep mid in range
+- `right = mid` or `left = mid`
+
+If no:
+
+- discard mid
+- `left = mid + 1` or `right = mid - 1`
+
+---
+
+## 8. Lower mid vs upper mid
+
+| Update style | Mid |
+|---|---|
+| `right = mid` | lower mid |
+| `left = mid + 1` | lower mid |
+| `left = mid` | upper mid |
+| `right = mid - 1` | lower mid |
+
+Rule:
+
+```txt
+left = mid likh rahe ho?
+=> upper mid chahiye
+```
+
+---
+
+## 9. Rotated array: 2 different sub-patterns
+
+### Search target
+
+```ts
+if (nums[left] <= nums[mid]) {
+  // left half sorted
 }
 ```
 
-### 7️⃣ **Peak Element**
-```typescript
-if (nums[mid] < nums[mid + 1])
-    left = mid + 1; // Peak on right
-else
-    right = mid; // Peak at mid or left
-```
+### Find minimum
 
-### 8️⃣ **Missing Kth Number**
-```typescript
-missingCount = arr[mid] - (mid + 1);
-if (missingCount < k) left = mid + 1;
-else right = mid - 1;
-// Answer: k + right + 1
-```
-
-## ⚡ Speed Tips
-
-### When to Include/Exclude Mid
-| **Update** | **When to Use** |
-|-----------|----------------|
-| `left = mid + 1` | Mid definitely not answer |
-| `left = mid` | Mid could be answer |
-| `right = mid - 1` | Mid definitely not answer |
-| `right = mid` | Mid could be answer |
-
-### Common Helper Functions
-```typescript
-// For Answer Space problems
-function isPossible(value: number): boolean {
-    // Check if 'value' satisfies condition
-    // Usually O(n) validation
-}
-
-// For overflow prevention
-function multiply(a: number, b: number, limit: number): number {
-    const result = a * b;
-    return result > limit ? 1 : result === limit ? 0 : -1;
+```ts
+if (nums[mid] > nums[right]) {
+  left = mid + 1;
+} else {
+  right = mid;
 }
 ```
 
-## 🐛 Debug Checklist
+Important:
 
-- [ ] **Infinite loop?** Check boundary updates
-- [ ] **Wrong answer?** Check inclusive vs exclusive boundaries
-- [ ] **Off by one?** Check final return (left, right, or result?)
-- [ ] **Overflow?** Use `left + (right - left) / 2`
-- [ ] **Edge cases?** Test with 0, 1, 2 elements
-
-## 📝 Problem Solving Steps
-
-1. **Identify if BS applicable**
-   - Sorted/Monotonic property?
-   - Can eliminate half each time?
-
-2. **Choose pattern**
-   - Exact search vs optimization
-   - Single array vs multiple arrays
-
-3. **Define boundaries**
-   - What's minimum possible?
-   - What's maximum possible?
-
-4. **Write validation function** (if needed)
-   - Can achieve with value X?
-   - Is X valid?
-
-5. **Determine loop condition**
-   - Need exact position? Use `<=`
-   - Need convergence? Use `<`
-
-6. **Handle edge cases**
-   - Empty array
-   - Single element
-   - All same elements
-
-## 🎨 Visual Memory Aids
-
-### Binary Search on Answer
-```
-[-------|-------]
-   ❌      ✅
-   left    right
-
-Find boundary where ❌ becomes ✅
+```txt
+nums[right] cleaner anchor hai for this minimum-finding invariant.
+nums[left] universally wrong nahi hai.
 ```
 
-### Rotated Array
+---
+
+## 10. Peak element template
+
+```ts
+while (left < right) {
+  const mid = Math.floor((left + right) / 2);
+
+  if (nums[mid] < nums[mid + 1]) {
+    left = mid + 1;
+  } else {
+    right = mid;
+  }
+}
+
+return left;
 ```
-Original: [1,2,3,4,5,6,7]
-Rotated:  [4,5,6,7,1,2,3]
-          [  sorted ][sorted]
+
+Memory hook:
+
+```txt
+Slope up? peak right me.
+Slope down? peak mid ya left me.
 ```
 
-### Peak Element
-```
-    /\      Peak
-   /  \
-  /    \    If mid < mid+1: go right
- /      \   If mid > mid+1: go left/stay
-```
+---
 
-## 💡 Key Formulas
+## 11. K-th missing positive
 
-| **Concept** | **Formula** |
-|------------|------------|
-| Missing numbers till index i | `arr[i] - (i + 1)` |
-| Kth missing number | `k + right + 1` (after BS) |
-| Median position (odd total) | `(total + 1) / 2` |
-| Hours to eat at speed s | `Math.ceil(pile / speed)` |
-| Mid without overflow | `left + (right - left) / 2` |
+```ts
+const missingCount = arr[mid] - (mid + 1);
 
-## 🏃 Quick Start Code
-
-```typescript
-// Most common template
-function binarySearchTemplate(arr: number[], condition: Function): number {
-    let left = 0, right = arr.length - 1;
-    let result = -1;
-
-    while (left <= right) {
-        const mid = Math.floor(left + (right - left) / 2);
-
-        if (condition(mid)) {
-            result = mid;
-            // Adjust based on minimization/maximization
-            // left = mid + 1; OR right = mid - 1;
-        } else {
-            // Opposite adjustment
-        }
-    }
-
-    return result;
+if (missingCount < k) {
+  left = mid + 1;
+} else {
+  right = mid - 1;
 }
 ```
 
-## 🎯 Interview Tips
+After loop:
 
-1. **Always clarify**: Sorted? Duplicates allowed? Return index or value?
-2. **Start simple**: Write basic BS first, then optimize
-3. **Test mentally**: Walk through with small example
-4. **Common mistakes**:
-   - Infinite loops (check boundary updates)
-   - Wrong return value (left vs right vs result)
-   - Integer overflow in mid calculation
-5. **Time complexity**: Always O(log n) for search, O(n log n) if validation is O(n)
+```txt
+left = first index jahan missingCount >= k
+answer = left + k
+```
+
+Equivalent:
+
+```txt
+answer = k + right + 1
+```
+
+Preferred memory hook:
+
+```txt
+left + k
+```
+
+---
+
+## 12. Binary search on answer
+
+Recognition:
+
+- minimum X such that possible
+- maximum X such that possible
+- helper `isPossible(x)` ban sakti hai
+
+Minimize:
+
+```txt
+F F F T T T -> first true
+```
+
+Maximize:
+
+```txt
+T T T F F F -> last true
+```
+
+---
+
+## 13. What not to mix
+
+- `while (left <= right)` with `right = mid`
+- lower mid with `left = mid`
+- `right = n - 1` when answer can be `n`
+- rotated target-search logic with rotated minimum logic
+- answer-space search with partition search
+
+---
+
+## 14. One-line memory card
+
+```txt
+Binary search = monotonic search space + "mid answer ho sakta hai?" decision.
+```

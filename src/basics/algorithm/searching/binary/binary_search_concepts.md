@@ -1,585 +1,891 @@
-# Binary Search — Complete Concepts Guide
-(Kisi bhi Binary Search problem ke liye generic reference)
+# Binary Search — Foundations
 
-Bottom-up style: pehle simulate karo, concept khud emerge hoga.
-
----
-
-## Table of Contents
-1. [Binary Search Kya Hai?](#1-binary-search-kya-hai)
-2. [Monotonic Property — BS ka prerequisite](#2-monotonic-property)
-3. [Pattern 1 — Exact Match](#3-pattern-1--exact-match-while-left--right)
-4. [Pattern 2 — Boundary/Optimization](#4-pattern-2--boundaryoptimization-while-left--right)
-5. [WHY right = mid (not mid-1) in Pattern 2](#5-why-right--mid-not-mid-1-in-pattern-2)
-6. [WHY return left at convergence](#6-why-return-left-at-convergence)
-7. [mid Calculation — Lower vs Upper Mid](#7-mid-calculation--lower-vs-upper-mid)
-8. [Stable Reference — WHY arr[right] not arr[left]](#8-stable-reference--why-arrright-not-arrleft)
-9. [Pattern Selection — Kaunsa Pattern Use Karo?](#9-pattern-selection--kaunsa-pattern-use-karo)
-10. [Common Mistakes](#10-common-mistakes)
+Bottom-up guide. Pehle examples dekho, phir pattern khud emerge hoga.
 
 ---
 
-## 1. Binary Search Kya Hai?
+## 1. Binary Search ka real idea
 
-Pehle simulate karo — phir concept samjho.
+Binary search ka matlab sirf "sorted array me target dhundhna" nahi hai.
 
-**Problem:** `arr=[1,3,5,7,9,11,13,15]`, `target=11`, dhundho
+Real idea yeh hai:
 
-### Linear Search (naive)
-```
-Check 1 → 3 → 5 → 7 → 9 → 11 ← found! 6 steps
-n=10^6 hota? 10^6 steps → TLE
-```
+```txt
+Search space ko 2 hisson me baant sakte ho:
 
-### Binary Search (smart)
-
-> "Array sorted hai → har baar HALF eliminate kar sakte hain!"
-
-```
-Step 1:
-  [1, 3, 5, 7, 9, 11, 13, 15]
-   L              M           R
-  arr[M]=7 < 11 → left half useless! sab <= 7, target 11 > 7
-
-Step 2:
-  [_, _, _, _, 9, 11, 13, 15]
-               L   M       R
-  arr[M]=13 > 11 → right half useless!
-
-Step 3:
-  [_, _, _, _, 9, 11, _, _]
-               L  M
-               L  R
-  arr[M]=9 < 11 → left=M+1
-
-Step 4:
-  arr[L]=11 === target → found! 4 steps ✅
+left side  -> definitely answer nahi
+right side -> answer ho sakta hai
 ```
 
-`n=10^6` hota? `log2(10^6) ≈ 20` steps → fast!
+Har iteration me hum yeh decide karte hain:
 
-**Key Idea:**
-Har step mein search space **HALF** hoti hai → O(log n).
-Yeh sirf tab possible hai jab array sorted ho (ya monotonic property ho).
+```txt
+mid answer ho sakta hai ya definitely nahi?
+```
+
+Jo half impossible hai, usse hata do.
+
+### Example A — Exact search
+
+```txt
+arr = [1, 3, 5, 7, 9, 11], target = 9
+
+mid = 5
+5 < 9
+=> mid aur uske left sab impossible
+=> right half me jao
+```
+
+### Example B — Lower bound
+
+```txt
+arr = [1, 3, 5, 7, 9], x = 6
+
+Question:
+  first index jahan arr[i] >= 6
+
+idx:   0   1   2   3   4
+val:   1   3   5   7   9
+cond:  F   F   F   T   T
+
+Hume first T chahiye.
+```
+
+### Example C — Answer space
+
+```txt
+Question:
+  minimum ship capacity kya ho jo D days me kaam kar de?
+
+capacity: 10  11  12  13  14  15  16
+valid?     F   F   F   F   F   T   T
+
+Hume first T chahiye.
+```
+
+Dhyan do:
+
+- Exact search me hum value dhundh rahe hote hain
+- Lower bound me first true dhundh rahe hote hain
+- Answer-space me minimum valid answer dhundh rahe hote hain
+
+Core binary-search thinking in teeno me same hai.
 
 ---
 
-## 2. Monotonic Property
+## 2. Binary Search tab kaam kab karta hai?
 
-Binary search sirf tab kaam karta hai jab:
+Binary search tab kaam karta hai jab search space me monotonic behavior ho.
 
-> "Koi ek point hota hai jiske pehle sab ek type (✗) aur baad mein sab doosre type (✓) hote hain."
+Simple language:
 
-### Example 1: Sorted array mein lower bound
-
-```
-arr=[1,3,5,7,9], x=6
-
-Sawaal: "arr[i] >= 6 hai?"
-
-idx:  0    1    2    3    4
-val:  1    3    5    7    9
->=6?  ✗    ✗    ✗    ✓    ✓
-                     ↑
-              first ✓ = ANSWER
-
-Pattern: [✗,✗,✗,...,✓,✓,✓] ← monotonic!
+```txt
+Kisi point ke baad behavior change hota hai,
+aur phir wapas reverse nahi hota.
 ```
 
-### Example 2: Answer space mein (on-answer problems)
+Typical shapes:
 
-```
-Problem: "Min speed pe kya k hours mein kaam ho sakta hai?"
-
-speed:  1    2    3    4    5    6    ...
-valid:  ✗    ✗    ✗    ✓    ✓    ✓   ...
-                        ↑
-                 first ✓ = min valid speed
+```txt
+F F F T T T    -> first true dhundho
+T T T F F F    -> last true dhundho
+increasing     -> exact value search
+decreasing     -> same idea, bas conditions ulta socho
 ```
 
-Array sorted nahi hai, lekin **answer space** sorted hai! Same technique.
+### Important correction
 
-### When Binary Search Works
+Sorted array ek common case hai, lekin binary search ka prerequisite "sorted array" nahi hai.
 
-| ✅ Works | ❌ Doesn't Work |
-|---------|----------------|
-| Sorted array mein search | Unsorted array |
-| Boundary dhundna `[✗✗✓✓]` | Non-monotonic conditions |
-| Minimize/maximize with feasibility check | |
-| Any monotonic function pe search | |
+Better statement:
+
+```txt
+Binary search ko monotonic search space chahiye.
+```
+
+That search space can be:
+
+- array indices
+- possible answer values
+- partitions
+- slope direction
 
 ---
 
-## 3. Pattern 1 — Exact Match (while left <= right)
+## 3. Sabse pehle yeh decide karo: search kis cheez par ho raha hai?
 
-**Kab use karo:** Exact element dhundna hai, ya `-1` return karna hai.
+Binary search start karne se pehle yeh sawal pucho:
 
-### Simulation — target found
+### A. Index space
 
-```
-arr=[2,5,8,12,16,23], target=23
-
-Iter 1: left=0, right=5, mid=2 → arr[2]=8 < 23 → left=3
-Iter 2: left=3, right=5, mid=4 → arr[4]=16 < 23 → left=5
-Iter 3: left=5, right=5, mid=5 → arr[5]=23 === 23 → return 5 ✅
+```txt
+0 ... n-1
 ```
 
-### Simulation — target NOT found
+Use when:
 
+- exact element search
+- lower bound / upper bound
+- rotated array
+- peak element
+- kth missing ka index-boundary version
+
+### B. Answer space
+
+```txt
+minPossible ... maxPossible
 ```
-arr=[2,5,8,12,16,23], target=10
 
-Iter 1: left=0, right=5, mid=2 → arr[2]=8 < 10 → left=3
-Iter 2: left=3, right=5, mid=4 → arr[4]=16 > 10 → right=3
-Iter 3: left=3, right=3, mid=3 → arr[3]=12 > 10 → right=2
+Use when:
 
-left=3 > right=2 → LOOP EXITS
-return -1 ✅
+- capacity
+- speed
+- days
+- distance
+- pages
+
+### C. Partition space
+
+```txt
+smaller array se kitne elements left partition me lenge?
 ```
 
-**WHY `left <= right`?**
-Jab `left === right`, ek element baki hai — usse bhi check karna zaroori hai.
-`left > right` hone pe saari possibilities khatam → not found.
+Use when:
+
+- median of two sorted arrays
+
+Yeh answer-space search nahi hai.
+Yeh partition search hai.
+
+---
+
+## 4. Pattern 1 — Exact search
+
+Use when:
+
+```txt
+Mujhe exact element chahiye.
+Na mile toh -1 bhi ho sakta hai.
+```
+
+### Invariant
+
+```txt
+Agar target exist karta hai, toh woh current [left, right] ke andar hai.
+```
 
 ### Template
 
-```
-left = 0, right = n-1
+```txt
+left = 0
+right = n - 1
+
 while (left <= right):
   mid = floor((left + right) / 2)
-  if arr[mid] === target: return mid
-  if arr[mid] < target:   left  = mid + 1
-  else:                   right = mid - 1
+
+  if arr[mid] == target:
+    return mid
+
+  if arr[mid] < target:
+    left = mid + 1
+  else:
+    right = mid - 1
+
 return -1
 ```
 
-### Pattern 1 can also find boundaries — with result saving
+### WHY `left <= right`?
 
-Pattern 1 sirf exact match ke liye nahi hai. Boundary problems (lower bound, first occurrence)
-bhi Pattern 1 se solve ho sakti hain — bas `result` variable mein valid answer save karo.
+Jab `left === right`, tab bhi ek candidate baki hai.
+Usse check karna zaroori hai.
 
-```
-// Lower bound using Pattern 1 style
-left = 0, right = n-1, result = n   ← default "not found" = n
+Loop exit tab hota hai jab:
 
-while (left <= right):
-  mid = floor((left + right) / 2)
-  arr[mid] >= x?
-    result = mid        ← valid answer save karo
-    right = mid - 1     ← aur left mein aur chota dhundho
-  else:
-    left = mid + 1
-
-return result
+```txt
+left > right
 ```
 
-Simulation — arr=[1,3,5,7,9], x=6:
-```
-Iter 1: mid=2, arr[2]=5 >= 6? NO  → left=3
-Iter 2: mid=3, arr[3]=7 >= 6? YES → result=3, right=2
-left=3 > right=2 → EXIT
-return result=3 ✅
-```
+Yani koi candidate nahi bacha.
 
-**Yeh valid hai — galat nahi hai!**
+### Boundary problems bhi Pattern 1 se ho sakte hain
 
-Pattern 1 vs Pattern 2 for boundary problems:
-```
-Pattern 1 style           Pattern 2 style
-─────────────────         ─────────────────
-result = n                (no extra variable)
-while (left <= right)     while (left < right)
-  valid? →                  valid? →
-    result = mid              right = mid
-    right = mid - 1         invalid? →
-  invalid? →                  left = mid + 1
-    left = mid + 1        return left
-return result
+Example: lower bound with `result`.
+
+```txt
+valid mila?
+  result save karo
+  aur aur chhota valid dhundhne ke liye left side me jao
 ```
 
-Dono correct hain. Pattern 2 preferred hai kyunki:
-- Extra `result` variable nahi chahiye
-- `left` khud converge karke answer ban jaata hai
-- Cleaner aur less code
+Is style me:
 
-**Lekin agar Pattern 1 style se likha toh koi problem nahi — sirf verbose hai.**
+- `right = mid - 1` safe hai
+- kyunki valid answer pehle hi `result` me save kar diya
+
+Yeh verbose hai, galat nahi.
 
 ---
 
-## 4. Pattern 2 — Boundary/Optimization (while left < right)
+## 5. Pattern 2 — First true / first valid
 
-**Kab use karo:** First valid dhundna, minimize/maximize karna, answer guaranteed exist karta hai.
+Use when:
 
-### WHY `left < right` (not `<=`)
-
-Pattern 2 mein loop **tab exit karta hai jab `left === right`**.
-Us waqt dono same index pe = answer.
-
-Agar `left <= right` likhein:
-```
-left=5, right=5, mid=5
-Condition true → right = mid = 5
-left=5, right=5 → SAME STATE! Infinite loop ♾️
+```txt
+Mujhe first index ya first value chahiye jahan condition true ho.
 ```
 
-Isliye: `left < right` — jab dono same ho jaayein, stop karo.
+Typical examples:
 
-### Simulation — lower bound (first index where arr[i] >= 6)
+- lower bound
+- upper bound
+- search insert position
+- minimum in rotated sorted array
+- minimum valid answer in answer-space problems
 
+### Mental picture
+
+```txt
+F F F T T T
+      ^
+   answer
 ```
-arr=[1,3,5,7,9], x=6
-left=0, right=5 (n=5)
 
-Iter 1: left=0, right=5, mid=2 → arr[2]=5 >= 6? NO  → left=3
-Iter 2: left=3, right=5, mid=4 → arr[4]=9 >= 6? YES → right=4
-Iter 3: left=3, right=4, mid=3 → arr[3]=7 >= 6? YES → right=3
+### Invariant
 
-left=3 === right=3 → EXIT
-return 3 ✅  (arr[3]=7, first element >= 6)
+```txt
+Answer current [left, right] ke andar hai.
 ```
 
 ### Template
 
-```
-left = 0, right = n   ← (n for "not found" case, n-1 for index search)
+```txt
 while (left < right):
-  mid = floor((left + right) / 2)
-  isValid(mid)?
-    YES → right = mid      ← mid could be answer, keep it
-    NO  → left  = mid + 1  ← mid definitely wrong, skip it
+  mid = floor((left + right) / 2)   // lower mid
+
+  if mid answer ho sakta hai:
+    right = mid
+  else:
+    left = mid + 1
+
 return left
+```
+
+### WHY `right = mid`?
+
+Agar `mid` valid hai aur hume first valid chahiye, toh:
+
+```txt
+mid khud answer ho sakta hai
+```
+
+Isliye usse discard nahi kar sakte.
+
+### WHY `left = mid + 1`?
+
+Agar `mid` invalid hai, toh:
+
+```txt
+mid definitely answer nahi hai
+aur uske left wale bhi answer nahi ho sakte
+```
+
+Isliye `mid` ko skip karna safe hai.
+
+### WHY `return left`?
+
+Loop tab rukta hai jab:
+
+```txt
+left === right
+```
+
+Aur invariant ke hisaab se answer usi window me hai.
+Window size 1 bachi, toh wahi answer.
+
+Exit pe `left` aur `right` same hote hain.
+Convention se `left` return karte hain.
+
+---
+
+## 6. Pattern 3 — Last true / last valid
+
+Use when:
+
+```txt
+Mujhe last index ya largest value chahiye jahan condition true ho.
+```
+
+Typical examples:
+
+- aggressive cows
+- maximum valid distance
+- floor
+- last occurrence
+
+Mental picture:
+
+```txt
+T T T F F F
+    ^
+ answer
+```
+
+Iske do clean styles hain.
+
+### Style A — Result-saving
+
+```txt
+while (left <= right):
+  mid = floor((left + right) / 2)
+
+  if valid(mid):
+    result = mid
+    left = mid + 1
+  else:
+    right = mid - 1
+
+return result
+```
+
+Yeh simple aur practical hai.
+
+### Style B — Pure convergence
+
+```txt
+while (left < right):
+  mid = floor((left + right + 1) / 2)   // upper mid
+
+  if valid(mid):
+    left = mid
+  else:
+    right = mid - 1
+
+return left
+```
+
+### WHY upper mid?
+
+Suppose:
+
+```txt
+left = 2, right = 3
+```
+
+Agar lower mid loge:
+
+```txt
+mid = 2
+valid => left = mid = 2
+```
+
+State same reh gayi.
+Infinite loop.
+
+Upper mid:
+
+```txt
+mid = 3
+valid => left = 3
+```
+
+Ab progress hui.
+
+### Rule
+
+```txt
+left = mid   likh rahe ho?
+=> upper mid chahiye
 ```
 
 ---
 
-## 5. WHY right = mid (NOT mid-1) in Pattern 2
+## 7. `right = n` kab aur `right = n - 1` kab?
 
-Sabse common confusion. Simulate karte hain dono cases:
+Yeh bahut important hai.
 
-**Problem:** `arr=[1,3,5,7,9]`, find first index where `arr[i] >= 6`
-**Expected answer:** index 3 (arr[3]=7)
+Boundary choose karne se pehle yeh pucho:
 
-### Case A: right = mid-1, result save kiye bina (WRONG)
-
-```
-Iter 1: left=0, right=4, mid=2 → arr[2]=5 >= 6? NO  → left=3
-Iter 2: left=3, right=4, mid=3 → arr[3]=7 >= 6? YES → right = mid-1 = 2
-
-left=3, right=2 → left > right → LOOP EXITS
-return ??? → answer 3 GAYA! ❌
+```txt
+Kya answer n ho sakta hai?
 ```
 
-Jab `arr[mid]=7` valid tha, humne usse skip kar diya (`right=mid-1`) bina save kiye.
-Lekin 7 hi answer tha — miss ho gaya.
+### Case A — Answer `n` ho sakta hai
 
-### Case A Fixed: right = mid-1, WITH result saving (VALID — Pattern 1 style)
+Example: lower bound / search insert
 
-```
-result = 5 (n, default)
+```txt
+arr = [1, 3, 5], x = 10
 
-Iter 1: left=0, right=4, mid=2 → arr[2]=5 >= 6? NO  → left=3
-Iter 2: left=3, right=4, mid=3 → arr[3]=7 >= 6? YES → result=3, right=2
-
-left=3 > right=2 → EXIT
-return result=3 ✅
+Answer = 3
 ```
 
-**Yeh kaam karta hai!** `right = mid-1` tabhi safe hai jab valid answer `result` mein save kar lo.
-Yeh Pattern 1 style hai — verbose hai lekin galat nahi.
+Yeh valid insert position hai.
+Isliye search space me `n` ko include karna padega.
 
-### Case B: right = mid (CORRECT — Pattern 2 style)
+Use:
 
+```txt
+left = 0
+right = n
 ```
-Iter 1: left=0, right=5, mid=2 → arr[2]=5 >= 6? NO  → left=3
-Iter 2: left=3, right=5, mid=4 → arr[4]=9 >= 6? YES → right=4 ← 4 range mein hai
-Iter 3: left=3, right=4, mid=3 → arr[3]=7 >= 6? YES → right=3 ← 3 range mein hai
 
-left=3 === right=3 → EXIT
-return 3 ✅
+### Case B — Answer actual index hi hona chahiye
+
+Example: minimum in rotated sorted array
+
+Answer array ke kisi real index par hi hoga.
+
+Use:
+
+```txt
+left = 0
+right = n - 1
 ```
 
 ### Rule
 
-```
-"Kya mid ab bhi answer ban sakta hai?"
-  YES → mat chhodo → right = mid
-  NO  → chhod do  → left = mid + 1
-```
+| Problem | Right boundary |
+|---|---|
+| Lower bound / upper bound / insert position | `n` possible |
+| Exact index search | `n - 1` |
+| Rotated min | `n - 1` |
+| Peak element | `n - 1` |
+| Partition search on smaller array | `n1` |
 
 ---
 
-## 6. WHY return left at Convergence
+## 8. Mid ko include karna hai ya exclude?
 
-Pattern 2 loop `left === right` pe exit karta hai. Kyun woh index = answer?
+Yeh binary search ka sabse core decision hai.
 
-### Simulate window shrinking
+Question:
 
-```
-[✗, ✗, ✗, ✓, ✓, ✓]
- L              R
-
-Iter 1: mid is ✓ → right=mid
-[✗, ✗, ✗, ✓, ✓]
- L        R
-
-Iter 2: mid is ✗ → left=mid+1
-[_, _, _, ✓, ✓]
-          L  R
-
-Iter 3: mid is ✓ → right=mid
-[_, _, _, ✓]
-          L
-          R
-
-left === right → EXIT
+```txt
+Kya mid abhi bhi answer ban sakta hai?
 ```
 
-Notice:
-- `left` hamesha invalid side mein ya boundary pe tha
-- `right` hamesha valid side mein ya boundary pe tha
-- Jab dono milte hain → woh **first valid index** hota hai
+### If YES
 
-**WHY left return karo, right nahi?**
-Loop exit pe `left === right` — dono same hain. Koi bhi return karo, same answer.
-Convention: `return left`.
+mid ko range me rakho.
 
-### What `left` represents at exit
+Examples:
 
-| Problem | left at exit |
-|---------|-------------|
-| Lower bound | first index where `arr[i] >= x` |
-| Upper bound | first index where `arr[i] > x` |
-| Search insert | index where target fits |
-| Find min rotated | index of minimum element |
-| BS on answer | minimum valid answer value |
+```txt
+first true   -> right = mid
+last true    -> left = mid
+peak         -> right = mid
+rotated min  -> right = mid
+```
 
-**Sab cases mein:** `left` = "first index/value jahan condition true hoti hai"
+### If NO
+
+mid ko discard karo.
+
+Examples:
+
+```txt
+invalid mid in first true -> left = mid + 1
+invalid mid in last true  -> right = mid - 1
+exact search unequal case -> one side discard
+```
+
+Agar is question ka answer clear hai, update bhi clear hai.
 
 ---
 
-## 7. mid Calculation — Lower vs Upper Mid
+## 9. Rotated array me do alag patterns hote hain
 
-Galat choose karo → infinite loop.
+Rotated array problems ko ek rule se yaad mat karo.
+Do common sub-patterns hote hain.
 
-### Lower Mid (default)
-```
-mid = floor((left + right) / 2)
+### A. Target search in rotated array
 
-left=2, right=3 → mid = floor(5/2) = 2  ← left ki taraf jhukta hai
-```
+Question:
 
-### Upper Mid
-```
-mid = floor((left + right + 1) / 2)
-
-left=2, right=3 → mid = floor(6/2) = 3  ← right ki taraf jhukta hai
+```txt
+Kaunsi half sorted hai?
+Target us sorted half ke range me aata hai ya nahi?
 ```
 
-### Kab problem hoti hai — simulate karo
+Typical check:
 
-**Problem:** `left=2, right=3`. Condition true hone pe `left = mid` karo.
-
-```
-With LOWER mid:
-  mid = floor((2+3)/2) = 2
-  Condition true → left = mid = 2
-  left=2, right=3 → SAME STATE! Infinite loop ♾️
-
-With UPPER mid:
-  mid = floor((2+3+1)/2) = 3
-  Condition true → left = mid = 3
-  left=3, right=3 → EXIT ✅
+```txt
+if nums[left] <= nums[mid]:
+  left half sorted
+else:
+  right half sorted
 ```
 
-### Simple Rule
+Yahan `nums[left]` use karna bilkul normal hai.
+Koi problem nahi.
 
-| Update | Mid to use |
-|--------|-----------|
-| `left = mid + 1` | Lower mid (default) ✅ |
-| `right = mid` | Lower mid (default) ✅ |
-| `left = mid` | **UPPER MID ZAROORI!** ⚠️ |
-| `right = mid - 1` | Lower mid (Pattern 1 style) ✅ |
+### B. Minimum in rotated array
 
-**Jab bhi `left = mid` likhna pade → upper mid use karo.**
+Question:
 
-### WHY yeh asymmetry hai?
+```txt
+mid pivot ke kis side me hai?
+```
 
-Lower mid left ki taraf jhukta hai.
-`left = mid` (lower) → left kabhi nahi badh sakta → stuck → infinite loop.
+Is problem ke ek clean invariant me:
 
-Upper mid right ki taraf jhukta hai.
-`left = mid` (upper) → left right ki taraf badhta hai → eventually exits.
+```txt
+compare nums[mid] with nums[right]
+```
+
+Reason:
+
+- `right` moving anchor hote hue bhi current invariant me stable signal deta hai
+- `nums[mid] > nums[right]` means minimum right side me hai
+- warna minimum `mid` ya left side me hai
+
+### Important correction
+
+Yeh mat yaad karo:
+
+```txt
+arr[right] safe, arr[left] wrong
+```
+
+Sahi version:
+
+```txt
+Find minimum in rotated array ke is specific invariant me,
+nums[right] cleaner anchor hai.
+nums[left] bhi use ho sakta hai, but then logic alag hota hai.
+```
+
+Examples of valid alternatives:
+
+- sorted-window check: `if nums[left] < nums[right]`
+- fixed anchor compare with `nums[0]`
+
+So this is:
+
+```txt
+design choice + invariant choice
+```
+
+not universal truth.
 
 ---
 
-## 8. Stable Reference — WHY arr[right] (not arr[left])
+## 10. Peak element bhi binary search hai, but sorted-array search nahi
 
-Kuch problems mein `arr[mid]` ko kisi anchor se compare karte hain.
-`arr[right]` reliable hai. `arr[left]` nahi. Kyun?
+Peak problem me hum monotonic values nahi, monotonic direction use karte hain.
 
-### Concrete example: Find minimum in rotated sorted array
+Example:
 
-```
-arr = [4, 5, 6, 7, 0, 1, 2]
-       ←── big ──→ ← small →
-                   ↑
-              minimum yahan hai
-```
+```txt
+nums = [1, 3, 5, 4, 2]
 
-Hume pata karna hai: "mid kis side (big ya small) pe hai?"
-
-### arr[right] as anchor — WHY STABLE
-
-`arr[right]` sirf tab badlata hai jab `right = mid` karte hain.
-Aur tab bhi `arr[right] = arr[mid]` — ek value jo hum **already check kar chuke hain**.
-
-```
-left=0, right=6: arr[right]=arr[6]=2 ← pata hai yeh small half mein hai
-
-Iter 1: mid=3, arr[3]=7 > arr[right]=2 → mid big half mein → left=4
-left=4, right=6: arr[right]=arr[6]=2 ← SAME value, still reliable ✓
-
-Iter 2: mid=5, arr[5]=1 > arr[right]=2? NO → right=5
-left=4, right=5: arr[right]=arr[5]=1 ← changed to arr[mid], already checked ✓
-
-Iter 3: mid=4, arr[4]=0 > arr[right]=1? NO → right=4
-left=4 === right=4 → return 4 ✅
+mid = 5
+nums[mid] > nums[mid + 1]
+=> slope neeche ja rahi hai
+=> ek peak mid pe ya left side me hona hi hai
 ```
 
-### arr[left] as anchor — WHY UNSTABLE
+Agar:
 
-`arr[left]` tab badlata hai jab `left = mid + 1` karte hain.
-Naya `arr[left] = arr[mid+1]` — ek value jo hum **abhi tak CHECK NAHI ki!**
-
-```
-left=0, right=6: arr[left]=arr[0]=4 ← big half mein hai
-
-Iter 1: mid=3, arr[3]=7 < arr[left]=4? NO → left=4
-left=4, right=6: arr[left]=arr[4]=0 ← JUMPED to minimum itself!
-                                        Ab comparison galat ho jaayegi.
-
-Iter 2: mid=5, arr[5]=1 < arr[left]=0? NO → left=6
-left=6 === right=6 → return 6
-arr[6]=2 → WRONG! ❌  (answer index 4 tha)
+```txt
+nums[mid] < nums[mid + 1]
 ```
 
-### General Rule
+toh slope upar ja rahi hai, peak right side me zaroor milega.
 
-```
-arr[mid] vs arr[right] → ✅ Safe
-  right sirf checked values pe move karta hai.
+Isliye template:
 
-arr[mid] vs arr[left]  → ⚠️ Risky
-  left = mid+1 pe arr[left] unchecked value ban jaata hai.
+```txt
+while (left < right):
+  mid = floor((left + right) / 2)
 
-arr[mid] vs arr[0] or arr[n-1] → ✅ Safe (agar fixed rahein)
-  Fixed endpoints kabhi nahi badlate.
-```
+  if nums[mid] < nums[mid + 1]:
+    left = mid + 1
+  else:
+    right = mid
 
----
-
-## 9. Pattern Selection — Kaunsa Pattern Use Karo?
-
-### Question 1: Exact element dhundh rahe ho?
-
-> "Kya main ek specific value dhundh raha hun,
->  aur agar na mile toh -1 return karna hai?"
-
-**YES →** Pattern 1 (`while left <= right`, `right = mid-1`, return `-1` if not found)
-
-**NO →** Question 2 pe jao
-
-### Question 2: MINIMIZE ya MAXIMIZE?
-
-**MINIMIZE** (first valid, smallest valid value):
-```
-Pattern 2, right = mid (lower mid ok)
-[✗✗✗✓✓✓] → find first ✓
 return left
 ```
 
-**MAXIMIZE** (last valid, largest valid value):
-```
-Pattern 2, left = mid (UPPER MID ZAROORI!)
-[✓✓✓✗✗✗] → find last ✓
-return left
-```
+---
 
-### Summary
+## 11. K-th missing positive — isko kaise socho
 
-```
-Exact match + possible -1?
-└─► Pattern 1: while(left<=right), right=mid-1, return -1 if not found
+Natural model:
 
-Find FIRST valid (minimize)?
-└─► Pattern 2: while(left<right), right=mid, lower mid, return left
-
-Find LAST valid (maximize)?
-└─► Pattern 2: while(left<right), left=mid, UPPER MID!, return left
+```txt
+index boundary search
 ```
 
-### Problem Examples
+Define:
 
-| Pattern | Problems |
-|---------|---------|
-| Pattern 1 | Classic binary search, search in rotated array, find square root |
-| Pattern 2 (minimize) | Lower/upper bound, search insert, find min rotated, Koko bananas, book allocation, ship capacity |
-| Pattern 2 (maximize) | Aggressive cows, last occurrence |
+```txt
+missingCount(i) = arr[i] - (i + 1)
+```
+
+Yeh batata hai index `i` tak kitne positives missing ho chuke hain.
+
+Example:
+
+```txt
+arr = [2, 3, 4, 7, 11]
+
+idx 0 -> 2 - 1 = 1
+idx 1 -> 3 - 2 = 1
+idx 2 -> 4 - 3 = 1
+idx 3 -> 7 - 4 = 3
+idx 4 -> 11 - 5 = 6
+```
+
+If `k = 5`, hume first index chahiye jahan:
+
+```txt
+missingCount(i) >= 5
+```
+
+So this becomes first-true boundary search.
+
+### Loop end pe `left` kya hota hai?
+
+```txt
+left = first index jahan missingCount >= k
+```
+
+Matlab answer `arr[left]` se pehle aata hai.
+
+Aur `left` ka ek useful meaning hai:
+
+```txt
+answer se pehle left array elements present hain
+```
+
+Isliye:
+
+```txt
+answer = left + k
+```
+
+Equivalent form:
+
+```txt
+answer = k + right + 1
+```
+
+Dono same hain.
+`left + k` usually cleaner memory hook hota hai.
+
+### Important classification
+
+Yeh usually:
+
+```txt
+index-boundary binary search
+```
+
+ke roop me sochna best hota hai, not primary BS-on-answer.
 
 ---
 
-## 10. Common Mistakes
+## 12. Median of two sorted arrays — yeh answer-space search nahi hai
 
-### Mistake 1: Infinite loop — `left = mid` with lower mid
+Is problem me hum "answer value" search nahi kar rahe.
 
-```
-❌ mid = floor((left + right) / 2)    // lower mid
-   if (valid) left = mid              // left kabhi nahi badhega!
+Hum search kar rahe hain:
 
-✅ mid = floor((left + right + 1) / 2) // upper mid
-   if (valid) left = mid               // ab left badhega ✓
+```txt
+smaller array se kitne elements left partition me jayenge
 ```
 
-### Mistake 2: Answer chhoot gaya — `right = mid-1` in Pattern 2
+That is partition search.
 
-```
-❌ if (isValid(mid)) right = mid - 1  // valid answer skip ho gaya!
-✅ if (isValid(mid)) right = mid      // valid answer range mein rakho
-```
+Search space:
 
-### Mistake 3: Wrong right boundary
-
-```
-// Insertion/lower bound → answer n bhi ho sakta hai
-❌ right = arr.length - 1   // n pe insert nahi ho sakta
-✅ right = arr.length       // n valid answer hai
-
-// Actual INDEX dhundh rahe ho (min in rotated)?
-✅ right = arr.length - 1   // n-1 last valid index hai
+```txt
+0 ... n1
 ```
 
-### Mistake 4: Pattern 1 loop + Pattern 2 logic mix
+Condition:
 
-```
-❌ while (left <= right) {
-     if (valid) right = mid  // left===right pe: right=mid → infinite loop!
-   }
-
-Mix mat karo. Pattern pehle decide karo, phir consistent raho.
+```txt
+maxLeft1 <= minRight2
+maxLeft2 <= minRight1
 ```
 
-### Mistake 5: Unstable anchor comparison
+So binary search ka principle same hai:
 
+```txt
+partition left lo ya right?
 ```
-❌ arr[mid] vs arr[left]   // left = mid+1 pe arr[left] unchecked ho jaata hai
-✅ arr[mid] vs arr[right]  // right sirf checked values pe move karta hai
+
+But category answer-space nahi hai.
+
+---
+
+## 13. Pattern selection — quick mental map
+
+Question 1:
+
+```txt
+Exact target chahiye?
 ```
 
-### Mistake 6: Wrong return in Pattern 1
+YES:
 
+```txt
+Pattern 1
+while (left <= right)
 ```
-❌ return left    // Pattern 1 mein loop exit pe left = right+1 hota hai
-✅ return result  // jo tune loop ke andar save kiya tha
 
-// (Exception: agar answer guaranteed exist karta hai)
+NO:
+
+Question 2:
+
+```txt
+First true / minimum valid chahiye?
+```
+
+YES:
+
+```txt
+Pattern 2
+while (left < right)
+right = mid when mid can still be answer
+```
+
+NO:
+
+Question 3:
+
+```txt
+Last true / maximum valid chahiye?
+```
+
+YES:
+
+```txt
+Pattern 3
+either result-saving
+or convergence with upper mid
+```
+
+Specialized but same idea:
+
+- rotated target search
+- peak element
+- partition search
+
+---
+
+## 14. Common mistakes
+
+### Mistake 1
+
+```txt
+Pattern 1 ka loop
+Pattern 2 ka update
+```
+
+Example:
+
+```txt
+while (left <= right):
+  if valid(mid):
+    right = mid
+```
+
+Yeh infinite loop de sakta hai.
+
+### Mistake 2
+
+`left = mid` with lower mid.
+
+Fix:
+
+```txt
+upper mid use karo
+```
+
+### Mistake 3
+
+`right = n - 1` even when answer `n` ho sakta hai.
+
+Typical casualty:
+
+- lower bound
+- insert position
+
+### Mistake 4
+
+Mid ko discard kar diya jab woh answer ho sakta tha.
+
+Question yaad rakho:
+
+```txt
+Can mid still be the answer?
+```
+
+### Mistake 5
+
+Har non-exact binary search ko BS-on-answer bol dena.
+
+Wrong grouping creates weak memory.
+
+Better grouping:
+
+- exact search
+- boundary search
+- answer-space search
+- partition search
+- slope-based search
+
+### Mistake 6
+
+Ek implementation choice ko universal law samajh lena.
+
+Examples:
+
+- `nums[right]` vs `nums[left]`
+- result-saving vs convergence
+- `left + k` vs `k + right + 1`
+
+Question yeh hona chahiye:
+
+```txt
+Is this a constraint or just a cleaner design choice?
+```
+
+---
+
+## 15. Quick memory card
+
+```txt
+Binary search = monotonic search space + half elimination
+
+Exact search:
+  while (left <= right)
+
+First true / minimum valid:
+  while (left < right)
+  valid -> right = mid
+  invalid -> left = mid + 1
+
+Last true / maximum valid:
+  result-saving style
+  OR
+  while (left < right) with upper mid
+  valid -> left = mid
+  invalid -> right = mid - 1
+
+If mid can still be answer:
+  keep mid
+
+If mid definitely cannot be answer:
+  discard mid
+
+If answer can be n:
+  include n in search space
+
+Rotated target search != rotated minimum logic
+Kth missing = index-boundary search
+Median of two sorted arrays = partition search
 ```
