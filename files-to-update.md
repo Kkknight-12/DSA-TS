@@ -81,11 +81,11 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [x] src/questions/binary_search/1d/medium/first-last-position/optimal.ts
 - [x] src/questions/binary_search/1d/medium/search-rotated-sorted-1/optimal.ts
 - [x] src/questions/binary_search/1d/medium/search-rotated-sorted-2/optimal.ts
-- [ ] src/questions/binary_search/1d/medium/minimum-in-rotated-sorted-array/optimal.ts
-- [ ] src/questions/binary_search/1d/medium/peak-element/optimal.ts
-- [ ] src/questions/binary_search/1d/medium/single-element/optimal.ts
-- [ ] src/questions/binary_search/1d/medium/kth-missing-positive-number/optimal.ts
-- [ ] src/questions/binary_search/1d/medium/kth-missing-positive-number/alternate-optmial.ts
+- [x] src/questions/binary_search/1d/medium/minimum-in-rotated-sorted-array/optimal.ts
+- [x] src/questions/binary_search/1d/medium/peak-element/optimal.ts
+- [x] src/questions/binary_search/1d/medium/single-element/optimal.ts
+- [x] src/questions/binary_search/1d/medium/kth-missing-positive-number/optimal.ts
+- [x] src/questions/binary_search/1d/medium/kth-missing-positive-number/alternate-optmial.ts
 
 ---
 
