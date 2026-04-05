@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════
- * 4 SUM — OPTIMAL (Sort + Two Pointers)
+ * 4 SUM — BETTER (HashSet)
  * ═══════════════════════════════════════════════════════════
  *
  * PROBLEM:
@@ -14,106 +14,75 @@
  *   nums = [1, 0, -1, 0, -2, 2], target = 0
  *   → [[-2,-1,1,2], [-2,0,0,2], [-1,0,0,1]]
  *
- *   nums = [2, 2, 2, 2, 2], target = 8
- *   → [[2,2,2,2]]
- *
  * ─────────────────────────────────────────────────────────
  * INTUITION (Soch)
  * ─────────────────────────────────────────────────────────
  *
- * Brute force me 4 loops lagenge.
- * Lekin itna kaam karna zaroori nahi.
+ * Brute force me 4 loops the.
+ * Ek loop hata sakte hain.
  *
- * Equation dekho:
+ * Equation:
  *
  *   a + b + c + d = target
  *
- * Agar `a` aur `b` fix kar diye, toh bacha:
+ * Agar `a`, `b`, aur `c` fix hain, toh:
  *
- *   c + d = target - (a + b)
+ *   d = target - (a + b + c)
  *
- * Yani problem reduce ho gayi:
- *   "Do numbers fix karo, baaki sorted array me 2-sum chalao"
+ * Yani fourth value already decided hai.
  *
- * Sorted array me two pointers ka rule clear hota hai:
+ * Soch:
+ *   - `i` se first number fix karo
+ *   - `j` se second number fix karo
+ *   - inner loop me `k` chalao
+ *   - check karo required fourth value pehle dekhi hai ya nahi
  *
- *   currentSum < target  → left++
- *   currentSum > target  → right--
- *   currentSum = target  → quadruplet mila
+ * Iske liye inner HashSet use karte hain.
+ * Duplicates ko sorted array + uniqueSet se control karte hain.
  *
- * Duplicate handling:
- *   1. same `i` skip
- *   2. same `j` skip
- *   3. found hone ke baad same `left/right` values skip
- *
- * TIME:  O(n^3) — i loop, j loop, then linear two-pointer sweep
- * SPACE: O(1) — extra data structure nahi use ho raha
+ * TIME:  O(n^3) — i loop, j loop, then k loop with O(1) HashSet lookup
+ * SPACE: O(n) — inner seen set + unique result tracking
  */
 
-namespace FourSumOptimal {
+namespace FourSumBetter {
   function fourSum(nums: number[], target: number): number[][] {
     const n = nums.length;
     if (n < 4) return [];
 
     nums.sort((a, b) => a - b);
+
     const result: number[][] = [];
+    const uniqueSet = new Set<string>();
 
     // First number fix karo
     for (let i = 0; i < n - 3; i++) {
-      // Same first value se same quadruplet families dobara milengi
+      // Same first value se same quadruplet families dobara mil sakti hain
       if (i > 0 && nums[i] === nums[i - 1]) continue;
-
-      // Current i ke saath smallest possible 4-sum bhi target se bada hai
-      // toh aage aur bade values hi milenge, so break
-      const smallestWithI = nums[i] + nums[i + 1] + nums[i + 2] + nums[i + 3];
-      if (smallestWithI > target) break;
-
-      // Current i ke saath largest possible 4-sum bhi target se chhota hai
-      // toh is i ke saath kuch possible nahi
-      const largestWithI = nums[i] + nums[n - 3] + nums[n - 2] + nums[n - 1];
-      if (largestWithI < target) continue;
 
       // Second number fix karo
       for (let j = i + 1; j < n - 2; j++) {
-        // Same second value se same quadruplets repeat hongi
+        // Same second value se same sub-family repeat ho sakti hai
         if (j > i + 1 && nums[j] === nums[j - 1]) continue;
 
-        // i aur j fix hone ke baad smallest possible sum
-        const smallestWithIJ = nums[i] + nums[j] + nums[j + 1] + nums[j + 2];
-        if (smallestWithIJ > target) break;
+        // Seen set current (i, j) ke liye third/fourth pairing track karega
+        const seen = new Set<number>();
 
-        // i aur j fix hone ke baad largest possible sum
-        const largestWithIJ = nums[i] + nums[j] + nums[n - 2] + nums[n - 1];
-        if (largestWithIJ < target) continue;
+        for (let k = j + 1; k < n; k++) {
+          const fourth = target - (nums[i] + nums[j] + nums[k]);
 
-        // Remaining do numbers ke liye two pointers
-        let left = j + 1;
-        let right = n - 1;
+          // Agar required fourth pehle inner loop me dekha tha, quadruplet mil gaya
+          if (seen.has(fourth)) {
+            const quadruplet = [nums[i], nums[j], fourth, nums[k]];
+            const key = JSON.stringify(quadruplet);
 
-        while (left < right) {
-          const currentSum =
-            nums[i] + nums[j] + nums[left] + nums[right];
-
-          if (currentSum < target) {
-            // Sum chhota hai, bigger number chahiye
-            left++;
-          } else if (currentSum > target) {
-            // Sum bada hai, smaller number chahiye
-            right--;
-          } else {
-            // currentSum === target -> valid quadruplet
-            result.push([nums[i], nums[j], nums[left], nums[right]]);
-
-            // Same left value ke saath same quadruplet repeat hota
-            while (left < right && nums[left] === nums[left + 1]) left++;
-
-            // Same right value ke saath bhi same quadruplet repeat hota
-            while (left < right && nums[right] === nums[right - 1]) right--;
-
-            // Current pair exhaust ho chuka hai, next distinct pair try karo
-            left++;
-            right--;
+            if (!uniqueSet.has(key)) {
+              uniqueSet.add(key);
+              result.push(quadruplet);
+            }
           }
+
+          // Current nums[k] future iterations ke liye candidate fourth ban sakta hai
+          seen.add(nums[k]);
         }
       }
     }
@@ -139,40 +108,43 @@ namespace FourSumOptimal {
    *
    * ┌──────────────────────────────────────────────────────────┐
    * │ j = 1, nums[j] = -1                                     │
-   * │ left = 2, right = 5                                     │
+   * │ seen = {}                                               │
    * │                                                          │
-   * │ sum = -2 + (-1) + 0 + 2 = -1  → left++                 │
-   * │ sum = -2 + (-1) + 0 + 2 = -1  → left++                 │
-   * │ sum = -2 + (-1) + 1 + 2 = 0   → FOUND!                 │
-   * │ quadruplet = [-2, -1, 1, 2]                             │
-   * │ left=5, right=4 → stop for this j                       │
+   * │ k = 2, nums[k] = 0                                      │
+   * │ fourth = 0 - (-2 + -1 + 0) = 3                         │
+   * │ seen has 3? NO                                           │
+   * │ seen = {0}                                               │
+   * │                                                          │
+   * │ k = 3, nums[k] = 0                                      │
+   * │ fourth = 3                                              │
+   * │ seen has 3? NO                                           │
+   * │ seen = {0}                                               │
+   * │                                                          │
+   * │ k = 4, nums[k] = 1                                      │
+   * │ fourth = 2                                              │
+   * │ seen has 2? NO                                           │
+   * │ seen = {0, 1}                                            │
+   * │                                                          │
+   * │ k = 5, nums[k] = 2                                      │
+   * │ fourth = 1                                              │
+   * │ seen has 1? YES → FOUND [-2, -1, 1, 2]                 │
    * └──────────────────────────────────────────────────────────┘
    *
    * ┌──────────────────────────────────────────────────────────┐
    * │ j = 2, nums[j] = 0                                      │
-   * │ left = 3, right = 5                                     │
+   * │ seen = {}                                               │
    * │                                                          │
-   * │ sum = -2 + 0 + 0 + 2 = 0   → FOUND!                    │
+   * │ k = 3, nums[k] = 0 -> fourth = 2, not found            │
+   * │ seen = {0}                                               │
+   * │                                                          │
+   * │ k = 4, nums[k] = 1 -> fourth = 1, not found            │
+   * │ seen = {0, 1}                                            │
+   * │                                                          │
+   * │ k = 5, nums[k] = 2 -> fourth = 0, found                │
    * │ quadruplet = [-2, 0, 0, 2]                              │
-   * │ skip dup left/right if needed                           │
-   * │ left=4, right=4 → stop for this j                       │
    * └──────────────────────────────────────────────────────────┘
    *
-   * j = 3 -> nums[3] = 0, nums[2] = 0 -> duplicate j, SKIP
-   *
-   * ═══════════════════════════════════════════════════════════
-   * i = 1, nums[i] = -1
-   * ═══════════════════════════════════════════════════════════
-   *
-   * ┌──────────────────────────────────────────────────────────┐
-   * │ j = 2, nums[j] = 0                                      │
-   * │ left = 3, right = 5                                     │
-   * │                                                          │
-   * │ sum = -1 + 0 + 0 + 2 = 1   → right--                   │
-   * │ sum = -1 + 0 + 0 + 1 = 0   → FOUND!                    │
-   * │ quadruplet = [-1, 0, 0, 1]                              │
-   * │ left=4, right=3 → stop for this j                       │
-   * └──────────────────────────────────────────────────────────┘
+   * i = 1, j = 2 se finally [-1, 0, 0, 1] milta hai.
    *
    * Final result:
    * [[-2,-1,1,2], [-2,0,0,2], [-1,0,0,1]]
@@ -184,8 +156,7 @@ namespace FourSumOptimal {
    * 1. Less than 4 elements -> []
    * 2. All same values: [2,2,2,2,2], target=8 -> [[2,2,2,2]]
    * 3. All zeros: [0,0,0,0,0], target=0 -> [[0,0,0,0]]
-   * 4. No answer: [1,2,3,4], target=50 -> []
-   * 5. Multiple duplicates: [-2,-1,-1,1,1,2,2], target=0
+   * 4. No valid quadruplet -> []
    */
 
   function normalize(list: number[][]): string[] {
@@ -193,7 +164,7 @@ namespace FourSumOptimal {
   }
 
   export function runTests(): void {
-    console.log('🧪 Testing 4 Sum — OPTIMAL (Sort + Two Pointers)\n');
+    console.log('🧪 Testing 4 Sum — BETTER (HashSet)\n');
 
     const tests: Array<{
       nums: number[];
@@ -280,4 +251,4 @@ namespace FourSumOptimal {
   }
 }
 
-FourSumOptimal.runTests();
+FourSumBetter.runTests();

@@ -20,8 +20,8 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [x] src/questions/arrays/1darray/medium/3-sum/better.ts
 - [x] src/questions/arrays/1darray/medium/3-sum/brute-force.ts
 - [x] src/questions/arrays/1darray/medium/3-sum/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/4-sum/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/longest-consecutive/optimal.ts
+- [x] src/questions/arrays/1darray/medium/4-sum/optimal.ts
+- [x] src/questions/arrays/1darray/medium/longest-consecutive/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/longest-equal-subarray/brute.ts
 - [ ] src/questions/arrays/1darray/medium/longest-equal-subarray/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/longest-subarray-sum-zero/brute-force.ts
