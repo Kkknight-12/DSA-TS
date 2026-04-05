@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════
- * MAJORITY ELEMENT - BETTER
+ * MAJORITY ELEMENT - OPTIMAL
  * ═══════════════════════════════════════════════════════════
  *
  * PROBLEM:
@@ -20,61 +20,68 @@
  *
  * Pehle brute force socho:
  *
- *   har element lo
- *   uski poori frequency count karo
+ *   har value ka exact count nikaalo
  *
- * Problem:
- *   same values ko baar-baar recount karna padega
+ * Better approach:
  *
- * Better idea:
+ *   frequency map use karo
  *
- *   "Har value ka current count yaad rakh lo."
+ * Lekin optimal me ek aur deeper pattern hai.
  *
  * Example:
  *   nums = [2, 2, 1, 1, 1, 2, 2]
- *   threshold = floor(7 / 2) = 3
  *
- * Traverse karo:
- *   2 -> count 1
- *   2 -> count 2
- *   1 -> count 1
- *   1 -> count 2
- *   1 -> count 3
- *   2 -> count 3
- *   2 -> count 4  -> threshold cross -> answer mil gaya
+ * Isko pair-cancel karke socho:
  *
- * Soch:
- *   hume sirf ek frequency map maintain karna hai
- *   aur jaise hi kisi value ka count `n/2` se zyada ho,
- *   wahi majority element hai
+ *   2 with 1 -> cancel
+ *   2 with 1 -> cancel
+ *
+ * Phir bhi `2` bachta hai.
+ *
+ * Kyun?
+ * Kyunki majority element baaki sab elements milkar bhi completely
+ * usko cancel nahi kar sakte.
+ *
+ * Isi observation par Boyer-Moore based hai.
+ *
+ * Hume bas 2 cheezein maintain karni hain:
+ *   candidate -> abhi kis value ko majority contender maan rahe hain
+ *   count     -> current balance kitna hai
+ *
+ * Rule:
+ *   same value mile -> count badhao
+ *   different value mile -> count ghatao
+ *   count 0 ho jaye -> next value naya candidate ban sakti hai
  *
  * NOTE:
- * Yeh BETTER approach hai because it uses extra `Map`.
- * Optimal approach Boyer-Moore se `O(1)` extra space me hoti hai.
+ * Agar problem me majority guaranteed na hoti,
+ * toh end me candidate verify karne ke liye second pass chahiye hota.
+ *
+ * Current problem me guarantee hai,
+ * isliye end ka candidate hi final answer hai.
  *
  * TIME:  O(n)
- * SPACE: O(n)
+ * SPACE: O(1)
  */
 
-namespace MajorityElementBetter {
+namespace MajorityElementOptimal {
 
   function majorityElement(nums: number[]): number {
-    const frequencyMap = new Map<number, number>();
-    const majorityThreshold = Math.floor(nums.length / 2);
+    let candidate = 0;
+    let count = 0;
 
     for (const num of nums) {
-      // Current value ka count 1 se badhao.
-      const updatedCount = (frequencyMap.get(num) ?? 0) + 1;
-      frequencyMap.set(num, updatedCount);
-
-      // Jaise hi count threshold cross kare, answer mil gaya.
-      if (updatedCount > majorityThreshold) {
-        return num;
+      // Balance zero ka matlab pichhla candidate fully cancel ho chuka hai.
+      if (count === 0) {
+        candidate = num;
       }
+
+      // Same value current candidate ko support karti hai.
+      // Different value ek support cancel kar deti hai.
+      count += num === candidate ? 1 : -1;
     }
 
-    // Problem guarantee ke hisaab se yeh line logically hit nahi hogi.
-    return nums[0];
+    return candidate;
   }
 
   /**
@@ -85,95 +92,82 @@ namespace MajorityElementBetter {
    * ── Example 1: Standard majority case ────────────────────
    * nums = [2, 2, 1, 1, 1, 2, 2]
    *
-   * length = 7
-   * majorityThreshold = floor(7 / 2) = 3
-   *
    * Start:
-   *   frequencyMap = {}
+   *   candidate = 0
+   *   count = 0
    *
    * ┌──────────────────────────────────────────────────────────┐
    * │ num = 2                                                  │
-   * │ old count = 0                                            │
-   * │ new count = 1                                            │
-   * │ map = {2: 1}                                             │
-   * │ 1 > 3 ? NO                                               │
+   * │ count == 0 -> candidate = 2                              │
+   * │ num === candidate -> count = 1                           │
    * └──────────────────────────────────────────────────────────┘
    *
    * ┌──────────────────────────────────────────────────────────┐
    * │ num = 2                                                  │
-   * │ old count = 1                                            │
-   * │ new count = 2                                            │
-   * │ map = {2: 2}                                             │
-   * │ 2 > 3 ? NO                                               │
+   * │ num === candidate -> count = 2                           │
    * └──────────────────────────────────────────────────────────┘
    *
    * ┌──────────────────────────────────────────────────────────┐
    * │ num = 1                                                  │
-   * │ old count = 0                                            │
-   * │ new count = 1                                            │
-   * │ map = {2: 2, 1: 1}                                       │
-   * │ 1 > 3 ? NO                                               │
+   * │ num !== candidate -> count = 1                           │
+   * │ Ek `2` aur ek `1` cancel socho                           │
    * └──────────────────────────────────────────────────────────┘
    *
    * ┌──────────────────────────────────────────────────────────┐
    * │ num = 1                                                  │
-   * │ old count = 1                                            │
-   * │ new count = 2                                            │
-   * │ map = {2: 2, 1: 2}                                       │
-   * │ 2 > 3 ? NO                                               │
+   * │ num !== candidate -> count = 0                           │
+   * │ Ab current candidate ka balance khatam ho gaya           │
    * └──────────────────────────────────────────────────────────┘
    *
    * ┌──────────────────────────────────────────────────────────┐
    * │ num = 1                                                  │
-   * │ old count = 2                                            │
-   * │ new count = 3                                            │
-   * │ map = {2: 2, 1: 3}                                       │
-   * │ 3 > 3 ? NO                                               │
+   * │ count == 0 -> candidate = 1                              │
+   * │ num === candidate -> count = 1                           │
    * └──────────────────────────────────────────────────────────┘
    *
    * ┌──────────────────────────────────────────────────────────┐
    * │ num = 2                                                  │
-   * │ old count = 2                                            │
-   * │ new count = 3                                            │
-   * │ map = {2: 3, 1: 3}                                       │
-   * │ 3 > 3 ? NO                                               │
+   * │ num !== candidate -> count = 0                           │
+   * │ Ek `1` aur ek `2` cancel                                 │
    * └──────────────────────────────────────────────────────────┘
    *
    * ┌──────────────────────────────────────────────────────────┐
    * │ num = 2                                                  │
-   * │ old count = 3                                            │
-   * │ new count = 4                                            │
-   * │ map = {2: 4, 1: 3}                                       │
-   * │ 4 > 3 ? YES -> return 2                                  │
+   * │ count == 0 -> candidate = 2                              │
+   * │ num === candidate -> count = 1                           │
    * └──────────────────────────────────────────────────────────┘
+   *
+   * Final candidate = 2 -> answer
    *
    * ── Example 2: Single element ─────────────────────────────
    * nums = [9]
    *
-   * threshold = floor(1 / 2) = 0
+   * First element pe count 0 hota hai,
+   * isliye candidate = 9 banega
+   * aur count = 1 ho jayega.
    *
-   * First element count hi 1 ho jayega
-   * 1 > 0 -> return 9
+   * Final answer = 9
    *
    * ═══════════════════════════════════════════════════════════
    * EDGE CASES
    * ═══════════════════════════════════════════════════════════
    *
    * 1. Single element: [5]
-   *    Count 1 hoga, threshold 0 hoga -> answer 5
+   *    First element hi candidate banega -> answer 5
    *
    * 2. All same values: [7,7,7,7]
-   *    Same key ka count baar-baar badhega -> answer 7
+   *    Candidate kabhi change hi nahi hoga
    *
-   * 3. Negative values: [-1,-1,-1,2,3]
-   *    Map negative keys bhi safely handle karta hai
+   * 3. Majority appears late: [1,2,2,3,2,2,2]
+   *    Early candidates cancel ho sakte hain,
+   *    final majority phir bhi bachti hai
    *
-   * 4. Majority appears late: [1,2,2,3,2,2,2]
-   *    Early return tabhi hoga jab count actual threshold cross karega
+   * 4. Negative values: [-1,-1,-1,2,3]
+   *    Comparison normal tarah se kaam karega -> answer -1
    */
 
   export function runTests(): void {
-    console.log('Testing Majority Element - BETTER\n');
+    console.log('Testing Majority Element - OPTIMAL\n');
 
     const tests: Array<{ nums: number[]; expected: number }> = [
       { nums: [3, 2, 3], expected: 3 },
@@ -198,4 +192,4 @@ namespace MajorityElementBetter {
   }
 }
 
-MajorityElementBetter.runTests();
+MajorityElementOptimal.runTests();

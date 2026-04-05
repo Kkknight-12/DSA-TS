@@ -10,15 +10,16 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [x] src/questions/arrays/1darray/easy/2-sum/optimal.ts
 - [x] src/questions/arrays/1darray/easy/buy-sell-stock/optimal.ts
 - [x] src/questions/arrays/1darray/easy/find-leaders/optimal.ts
-- [ ] src/questions/arrays/1darray/easy/majority-element/better.ts
+- [x] src/questions/arrays/1darray/easy/majority-element/better.ts
+- [x] src/questions/arrays/1darray/easy/majority-element/optimal.ts
 
 ---
 
 ## Arrays - Medium (22 files)
 
-- [ ] src/questions/arrays/1darray/medium/3-sum/better.ts
-- [ ] src/questions/arrays/1darray/medium/3-sum/brute-force.ts
-- [ ] src/questions/arrays/1darray/medium/3-sum/optimal.ts
+- [x] src/questions/arrays/1darray/medium/3-sum/better.ts
+- [x] src/questions/arrays/1darray/medium/3-sum/brute-force.ts
+- [x] src/questions/arrays/1darray/medium/3-sum/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/4-sum/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/longest-consecutive/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/longest-equal-subarray/brute.ts
