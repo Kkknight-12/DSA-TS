@@ -24,14 +24,14 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [x] src/questions/arrays/1darray/medium/longest-consecutive/optimal.ts
 - [x] src/questions/arrays/1darray/medium/longest-equal-subarray/brute.ts
 - [x] src/questions/arrays/1darray/medium/longest-equal-subarray/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/longest-subarray-sum-zero/brute-force.ts
-- [ ] src/questions/arrays/1darray/medium/longest-subarray-sum-zero/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/majority-element-ii/better.ts
-- [ ] src/questions/arrays/1darray/medium/majority-element-ii/brute-force.ts
-- [ ] src/questions/arrays/1darray/medium/majority-element-ii/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/maximum-subarray/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/merge-intervals/brute-force.ts
-- [ ] src/questions/arrays/1darray/medium/merge-intervals/optimal.ts
+- [x] src/questions/arrays/1darray/medium/longest-subarray-sum-zero/brute-force.ts
+- [x] src/questions/arrays/1darray/medium/longest-subarray-sum-zero/optimal.ts
+- [x] src/questions/arrays/1darray/medium/majority-element-ii/better.ts
+- [x] src/questions/arrays/1darray/medium/majority-element-ii/brute-force.ts
+- [x] src/questions/arrays/1darray/medium/majority-element-ii/optimal.ts
+- [x] src/questions/arrays/1darray/medium/maximum-subarray/optimal.ts
+- [x] src/questions/arrays/1darray/medium/merge-intervals/brute-force.ts
+- [x] src/questions/arrays/1darray/medium/merge-intervals/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/next-permutation/brute-force.ts
 - [ ] src/questions/arrays/1darray/medium/next-permutation/optimal.ts
 - [ ] src/questions/arrays/1darray/medium/rearrange-array/brute-force.ts
