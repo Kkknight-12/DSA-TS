@@ -32,13 +32,13 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [x] src/questions/arrays/1darray/medium/maximum-subarray/optimal.ts
 - [x] src/questions/arrays/1darray/medium/merge-intervals/brute-force.ts
 - [x] src/questions/arrays/1darray/medium/merge-intervals/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/next-permutation/brute-force.ts
-- [ ] src/questions/arrays/1darray/medium/next-permutation/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/rearrange-array/brute-force.ts
-- [ ] src/questions/arrays/1darray/medium/rearrange-array/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/sort-colors/optimal.ts
-- [ ] src/questions/arrays/1darray/medium/subarray-sum-equals-K/brute-force.ts
-- [ ] src/questions/arrays/1darray/medium/subarray-sum-equals-K/optimal.ts
+- [x] src/questions/arrays/1darray/medium/next-permutation/brute-force.ts
+- [x] src/questions/arrays/1darray/medium/next-permutation/optimal.ts
+- [x] src/questions/arrays/1darray/medium/rearrange-array/brute-force.ts
+- [x] src/questions/arrays/1darray/medium/rearrange-array/optimal.ts
+- [x] src/questions/arrays/1darray/medium/sort-colors/optimal.ts
+- [x] src/questions/arrays/1darray/medium/subarray-sum-equals-K/brute-force.ts
+- [x] src/questions/arrays/1darray/medium/subarray-sum-equals-K/optimal.ts
 
 ---
 
