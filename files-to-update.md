@@ -45,9 +45,9 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 ## Arrays - Hard (4 files)
 
 - [ ] src/questions/arrays/1darray/hard/reverse-pairs/optimal.ts
-- [ ] src/questions/arrays/1darray/hard/trapping-rain-water/better.ts
-- [ ] src/questions/arrays/1darray/hard/trapping-rain-water/brute-force.ts
-- [ ] src/questions/arrays/1darray/hard/trapping-rain-water/optimal.ts
+- [x] src/questions/arrays/1darray/hard/trapping-rain-water/better.ts
+- [x] src/questions/arrays/1darray/hard/trapping-rain-water/brute-force.ts
+- [x] src/questions/arrays/1darray/hard/trapping-rain-water/optimal.ts
 
 ---
 
