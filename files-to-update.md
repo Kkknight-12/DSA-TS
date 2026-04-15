@@ -44,7 +44,7 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ## Arrays - Hard (4 files)
 
-- [ ] src/questions/arrays/1darray/hard/reverse-pairs/optimal.ts
+- [x] src/questions/arrays/1darray/hard/reverse-pairs/optimal.ts
 - [x] src/questions/arrays/1darray/hard/trapping-rain-water/better.ts
 - [x] src/questions/arrays/1darray/hard/trapping-rain-water/brute-force.ts
 - [x] src/questions/arrays/1darray/hard/trapping-rain-water/optimal.ts
@@ -163,8 +163,8 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ## Strings - Easy (17 files)
 
-- [ ] src/questions/string/easy/largest-odd-number-in-string/brute-force.ts
-- [ ] src/questions/string/easy/largest-odd-number-in-string/optimal.ts
+- [x] src/questions/string/easy/largest-odd-number-in-string/brute-force.ts
+- [x] src/questions/string/easy/largest-odd-number-in-string/optimal.ts
 - [ ] src/questions/string/easy/longest-common-prefix/brute-force.ts
 - [ ] src/questions/string/easy/longest-common-prefix/optimal.ts
 - [ ] src/questions/string/easy/nesting-depth-of-parentheses/optimal.ts

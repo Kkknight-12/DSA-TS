@@ -126,8 +126,8 @@ Merge Process:
 - Compare 9 vs 10 → Pick 9
 - Compare 27 vs 10 → Pick 10
 - Compare 27 vs 38 → Pick 27
-- Compare 38 vs 38 → Pick 38
-- Remaining: 43
+- List 1 is exhausted
+- Remaining from List 2: 38, 43
 
 Result: [3, 9, 10, 27, 38, 43] ✓
 ```
@@ -368,7 +368,7 @@ This is systematic and predictable!
 | **Style** | Recursive | Iterative |
 | **Approach** | Split from top | Build from bottom |
 | **Call Stack** | Uses recursion stack | No recursion |
-| **Space** | O(n log n) with recursion | O(n) with iteration |
+| **Space** | O(n) auxiliary + O(log n) stack | O(n) auxiliary, no recursion stack |
 | **Cache** | Less cache-friendly | More cache-friendly |
 | **Understanding** | More intuitive | More mechanical |
 | **Code** | Shorter, elegant | Longer, explicit |
@@ -450,6 +450,14 @@ n = 1,000,000
 When merging two halves, we need temporary space to store the result before copying back. This temporary array can be at most size n.
 
 **Optimization note**: We can optimize to reuse the same temporary array across all merges, keeping space at O(n) rather than O(n log n).
+
+Dhyan do:
+
+```txt
+Top-Down recursion itself is not O(n log n) space.
+Recursion stack depth is O(log n).
+Auxiliary merge array dominates, so total active space is O(n).
+```
 
 ---
 
@@ -563,8 +571,12 @@ function merge(left: number[], right: number[]): number[] {
 }
 
 /**
- * Alternative: In-place merge sort (modifies original array)
- * More space-efficient but slightly more complex
+ * Alternative: index-based merge sort (modifies original array)
+ *
+ * Note:
+ * This still uses temporary arrays during merge, so it is not true O(1)
+ * extra-space merge sort. It avoids returning many new sorted arrays,
+ * but standard merge still needs O(n) auxiliary space.
  */
 function mergeSortInPlace(arr: number[], left: number = 0, right: number = arr.length - 1): void {
   // Base case: subarray with 0 or 1 element
@@ -890,7 +902,9 @@ const right = arr.slice(mid);
 ```
 **Purpose**: Divide array into two halves
 **How it works**: `slice()` creates new subarrays without modifying original
-**Optimization**: We could use indices instead of creating new arrays (in-place version)
+**Optimization**: We could use indices instead of creating new arrays for every split.
+That version modifies the original array, but standard merge still needs O(n)
+temporary space.
 
 #### 2. The Base Case
 ```typescript
@@ -1171,7 +1185,7 @@ function mergeSort(arr) {
 
 ✅ **You need cache-friendly code**: Sequential access pattern is better for CPU cache
 
-✅ **Array is very large**: No risk of stack overflow
+✅ **Array is very large**: Avoids recursion completely, even though normal Merge Sort depth is only O(log n)
 
 ✅ **Predictable performance needed**: No recursion overhead, more consistent timing
 
@@ -1277,7 +1291,7 @@ Notice: 3a < 3b < 3c order is preserved! ✓
 
 **Why we need extra space:**
 
-During merge, we're combining two subarrays *in-place* in the original array:
+During merge, we're combining two subarrays back into the original index range:
 ```
 Original: [27, 38, _, _, 3, 43, _, _]
            ↑left↑    ↑right↑

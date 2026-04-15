@@ -212,6 +212,13 @@ The **Top-Down approach** starts from the top (full array) and works down using 
 
 **Base case**: When array length ≤ 1, it's already sorted (return as-is!)
 
+Dhyan do:
+
+```txt
+This section uses the slice-based model.
+So `mid` is based on current array length, not original-array indices.
+```
+
 ### The Divide Formula
 
 ```
@@ -269,7 +276,7 @@ Let's walk through a complete example to see the magic happen!
 ```
 Level 0 (Root):
 Array: [38, 27, 43, 3]
-mid = (0 + 3) / 2 = 1
+mid = floor(length / 2) = floor(4 / 2) = 2
 Split into: [38, 27] and [43, 3]
 ```
 
@@ -278,7 +285,7 @@ Split into: [38, 27] and [43, 3]
 ```
 Level 1 (Left):
 Array: [38, 27]
-mid = (0 + 1) / 2 = 0
+mid = floor(length / 2) = floor(2 / 2) = 1
 Split into: [38] and [27]
 ```
 
@@ -305,7 +312,7 @@ Return [27]
 ```
 Level 1 (Right):
 Array: [43, 3]
-mid = (2 + 3) / 2 = 2
+mid = floor(length / 2) = floor(2 / 2) = 1
 Split into: [43] and [3]
 ```
 
@@ -718,12 +725,17 @@ function merge(left: number[], right: number[]): number[] {
 }
 
 // ==================== ADVANCED VARIATION ====================
-// The following in-place version is more space-efficient but complex.
+// The following version modifies the original array by index.
+// It still uses temporary arrays during merge, so it is not O(1) space.
 // For learning, focus on the simpler version above first!
 
 /**
- * Alternative: In-place merge sort (modifies original array)
- * More space-efficient but slightly more complex
+ * Alternative: index-based merge sort (modifies original array)
+ *
+ * Note:
+ * This still uses temporary arrays during merge, so it is not true O(1)
+ * extra-space merge sort. It avoids returning many new sorted arrays,
+ * but standard merge still needs O(n) auxiliary space.
  *
  * @param arr - Array to be sorted (modified in place)
  * @param left - Start index (default 0)
@@ -741,10 +753,11 @@ function mergeSortInPlace(
     return;
   }
 
-  // Find middle point
-  // WHY: Avoid overflow with (left + right) / 2
-  // BETTER: left + (right - left) / 2 = (2*left + right - left) / 2 = (left + right) / 2
-  const mid = Math.floor((left + right) / 2);
+  // Find middle point.
+  // WHY: `left + (right - left) / 2` is the overflow-safe formula in
+  // fixed-width integer languages. JavaScript numbers usually do not hit
+  // normal integer overflow here, but this is the standard safe pattern.
+  const mid = Math.floor(left + (right - left) / 2);
 
   // Recursively sort left and right halves
   // LOGIC: Sort arr[left...mid] and arr[mid+1...right]
@@ -1190,13 +1203,13 @@ Step 2: Merge from temp to original
 
 1. **Extremely complex** (hundreds of lines)
 2. **Much slower in practice** (worse constant factors)
-3. **Sacrifices stability**
-4. **Used only in memory-critical embedded systems**
+3. **Often harder to keep stable**
+4. **Usually only worth it in memory-critical systems**
 
 **Example: Block Merge Sort**
 - Divides array into √n blocks
 - Complex block-swapping algorithm
-- O(1) extra space achieved
+- O(1) extra space can be achieved in specialized variants
 - But 3-5× slower than regular merge sort!
 
 **Practical advice**: **Accept the O(n) space**

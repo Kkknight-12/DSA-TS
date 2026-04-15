@@ -54,7 +54,7 @@ Output: [3, 9, 10, 27, 38, 43, 82]
 
 The Top-Down recursive approach is elegant, but has some drawbacks:
 - **Recursion overhead**: Function call stack costs time and memory
-- **Stack depth**: Deep recursion can cause stack overflow
+- **Stack depth**: Merge Sort depth is only O(log n), so stack overflow is less common than in linear-depth recursion, but Bottom-Up avoids this concern completely
 - **Cache-unfriendly**: Jumps around memory unpredictably
 
 Bottom-Up solves these issues!
@@ -121,15 +121,24 @@ Each recursive call requires:
 - Return value handling
 Total: ~10-20 CPU instructions per call
 For 1 million elements: log₂(1,000,000) ≈ 20 levels
-                       = potentially 1,000,000 function calls!
+                       = recursion depth around 20
+
+Important:
+Merge Sort still creates many recursive calls overall, but the call stack
+does not hold all of them at once. Active stack depth is only O(log n).
 ```
 
 2. **Stack Depth Limitations**
 ```
-Maximum recursion depth varies:
-- JavaScript: ~10,000 calls
-- Python: ~1,000 calls (default)
-- For very large arrays, might hit stack overflow!
+Maximum recursion depth varies by language/runtime.
+But Merge Sort depth grows as log₂(n), not n.
+
+For n = 1,000,000:
+  depth ≈ 20
+
+So stack overflow is not usually the main issue for normal Merge Sort.
+Bottom-Up still removes recursion completely, which is useful for strict
+runtime environments or production code that avoids recursion by policy.
 ```
 
 3. **Cache Inefficiency**
@@ -586,7 +595,7 @@ Bottom-Up: O(n) merge temp + O(1) loops = O(n)
 
 Both are O(n), but Bottom-Up:
 - Uses less memory in practice
-- No stack overflow risk
+- Removes recursion completely
 - More predictable memory usage
 ```
 
@@ -601,10 +610,10 @@ Both are O(n), but Bottom-Up:
 | **Readability** | More intuitive | More mechanical | Top-Down |
 | **Time Complexity** | O(n log n) | O(n log n) | Tie |
 | **Space Complexity** | O(n) + O(log n) stack | O(n) only | Bottom-Up |
-| **Function Call Overhead** | Yes (log n calls) | No | Bottom-Up |
+| **Function Call Overhead** | Yes, many recursive calls; active depth O(log n) | No recursive calls | Bottom-Up |
 | **Cache Efficiency** | Lower (jumps around) | Higher (sequential) | Bottom-Up |
-| **Stack Overflow Risk** | Possible (deep recursion) | None | Bottom-Up |
-| **Practical Speed** | Slower | 10-20% faster | Bottom-Up |
+| **Stack Overflow Risk** | Low for normal merge sort, but recursion still exists | Removed because no recursion | Bottom-Up |
+| **Practical Speed** | Often slightly slower | Often faster due to less overhead | Bottom-Up |
 | **Memory Predictability** | Less predictable | Very predictable | Bottom-Up |
 | **Parallelization** | Harder | Easier | Bottom-Up |
 | **Learning Curve** | Easier to understand | Requires more thought | Top-Down |
@@ -623,7 +632,7 @@ Both are O(n), but Bottom-Up:
 ✅ Very large arrays (millions of elements)
 ✅ Memory-constrained environments
 ✅ Need predictable, guaranteed performance
-✅ Risk of stack overflow
+✅ You want to avoid recursion entirely
 ✅ Want to parallelize merging
 
 **In practice**: Modern libraries often use Bottom-Up for production sorting!
@@ -675,7 +684,8 @@ function mergeSortBottomUp(arr: number[]): number[] {
 
   // Create a copy to avoid modifying original
   // WHY: We'll work on this copy throughout the algorithm
-  // ALTERNATIVE: Could modify in-place for O(1) extra space
+  // NOTE: Standard merge sort still needs O(n) auxiliary space for merging.
+  // True O(1) extra-space merging is a different, much more complex topic.
   const result = [...arr];
   const n = result.length;
 
@@ -1386,7 +1396,7 @@ Requires sophisticated task scheduling!
 ```
 Constraints:
   - Limited stack space (~4KB typical)
-  - Deep recursion causes stack overflow
+  - Recursion is often avoided by policy or certification rules
   - Memory is precious
 
 Solution: Bottom-Up
@@ -1446,7 +1456,7 @@ Example: Database index creation
 ```
 Requirements:
   - Must prove correctness
-  - No stack overflow risk
+  - No recursion to analyze
   - Formal verification needed
 
 Solution: Bottom-Up
@@ -1669,7 +1679,7 @@ Total possible speedup: Up to 10× on modern hardware! 🚀
 ✅ **More Efficient**: 15-20% faster in practice
 ✅ **Cache-Friendly**: Sequential memory access pattern
 ✅ **Parallelizable**: Easy to run merges in parallel
-✅ **Predictable**: No stack overflow risk
+✅ **Predictable**: No recursive call stack to manage
 ✅ **Production-Ready**: Used in real-world systems
 
 ### The Algorithm in a Nutshell
