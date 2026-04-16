@@ -1,19 +1,59 @@
 /**
- * Roman to Integer - Brute Force Approach
+ * ROMAN TO INTEGER - BRUTE FORCE
+ * ==============================
  *
- * Purpose: Convert a Roman numeral string to its integer equivalent
- * by checking two-character special cases first, then single characters
+ * PROBLEM:
+ * Roman numeral string `s` diya hai.
+ * Hume usko integer me convert karna hai.
  *
- * Approach: Linear traversal with look-ahead checking
- * - Check if current + next forms a special subtraction case
- * - If yes, add that special value and skip 2 positions
- * - If no, add current character value and skip 1 position
+ * Examples:
+ *   "III"     -> 3
+ *   "LVIII"   -> 58
+ *   "MCMXCIV" -> 1994
+ *
+ * Roman symbols:
+ *   I=1, V=5, X=10, L=50, C=100, D=500, M=1000
+ *
+ * Special subtraction pairs:
+ *   IV=4, IX=9, XL=40, XC=90, CD=400, CM=900
+ *
+ * INTUITION (Soch):
+ * ─────────────────
+ * Brute force soch:
+ * Roman numerals ke 6 subtraction pairs explicitly yaad rakho.
+ *
+ * Fir left se right traverse karke:
+ *
+ *   current + next ko pair ke roop me check karo
+ *   agar wo special pair hai, uski direct value add karo
+ *   warna single symbol ki value add karo
+ *
+ * Visual:
+ *
+ *   s = "MCMXCIV"
+ *
+ *   tokens as seen by brute force:
+ *   "M"  "CM"  "XC"  "IV"
+ *
+ *   values:
+ *   1000 + 900 + 90 + 4 = 1994
+ *
+ * TIME:  O(n)
+ *   - string ek baar traverse hoti hai
+ *   - har step par constant-time map lookup hota hai
+ *
+ * SPACE: O(1)
+ *   - maps fixed-size hain
+ *
+ * Why brute force?
+ *   Kyunki subtraction rule derive nahi kar rahe.
+ *   Hum special cases ko explicitly list karke solve kar rahe hain.
  */
 
-function romanToInt_brute(s: string): number {
-  // Step 1: Create a mapping for all Roman symbols to their integer values
-  // Ye hashmap har symbol ki value store karta hai
-  const romanMap: { [key: string]: number } = {
+namespace RomanToIntegerBruteForce {
+  // Fixed Roman symbol lookup.
+  // WHY: input valid Roman numeral hai, so every character must be one of these.
+  const ROMAN_VALUES: Record<string, number> = {
     I: 1,
     V: 5,
     X: 10,
@@ -23,62 +63,184 @@ function romanToInt_brute(s: string): number {
     M: 1000,
   };
 
-  // Step 2: Create a mapping for special two-character subtraction cases
-  // Ye 6 special cases hain jahan subtraction hota hai
-  const specialCases: { [key: string]: number } = {
-    IV: 4, // 5 - 1 = 4
-    IX: 9, // 10 - 1 = 9
-    XL: 40, // 50 - 10 = 40
-    XC: 90, // 100 - 10 = 90
-    CD: 400, // 500 - 100 = 400
-    CM: 900, // 1000 - 100 = 900
+  // Brute-force identity: subtraction cases ko explicitly list kar rahe hain.
+  // Better/optimal files ye same behavior comparison rule se derive karte hain.
+  const SPECIAL_PAIR_VALUES: Record<string, number> = {
+    IV: 4,
+    IX: 9,
+    XL: 40,
+    XC: 90,
+    CD: 400,
+    CM: 900,
   };
 
-  // Step 3: Initialize result variable to store final integer value
-  let result = 0;
+  function romanToInt(s: string): number {
+    let result = 0;
 
-  // Step 4: Initialize index pointer for string traversal
-  // Hum manual index control kar rahe hain kyunki kabhi 1, kabhi 2 positions jump karenge
-  let i = 0;
+    // Manual index isliye use kar rahe hain kyunki kabhi ek symbol consume hoga
+    // aur kabhi special pair milne par do symbols ek saath consume honge.
+    let index = 0;
 
-  // Step 5: Traverse the string till the end
-  while (i < s.length) {
-    // Step 6: Check if we can look ahead (i.e., not at the last character)
-    // Agar next character exist karta hai toh two-character check kar sakte hain
-    if (i + 1 < s.length) {
-      // Extract current two characters as a potential special case
-      const twoChar = s[i] + s[i + 1];
+    while (index < s.length) {
+      // Special pair banane ke liye current ke saath next character bhi chahiye.
+      // Last character par ye check skip hoga, warna out-of-bounds read hota.
+      if (index + 1 < s.length) {
+        const possiblePair = s[index] + s[index + 1];
 
-      // Step 7: Check if these two characters form a special subtraction case
-      // Agar special case hai (IV, IX, XL, XC, CD, CM mein se koi)
-      if (specialCases[twoChar]) {
-        // Add the special case value to result
-        // Special value add karo (like CM = 900)
-        result += specialCases[twoChar];
+        // Agar pair special map me mil gaya, toh current aur next alag-alag
+        // process nahi honge. Dono milkar ek numeric token banate hain.
+        // Example: "CM" ko C + M nahi, direct 900 treat karna hai.
+        if (SPECIAL_PAIR_VALUES[possiblePair] !== undefined) {
+          result += SPECIAL_PAIR_VALUES[possiblePair];
 
-        // Skip both characters since we processed them together
-        // 2 positions aage jump karo kyunki dono characters process ho gaye
-        i += 2;
-
-        // Continue to next iteration
-        continue;
+          // Pair ke dono symbols consume ho chuke hain, isliye 2-step jump.
+          // Agar sirf index++ karenge toh second symbol dobara count ho jayega.
+          index += 2;
+          continue;
+        }
       }
+
+      // Agar special pair nahi bana, current symbol standalone additive token hai.
+      // Example: "M" in "MC..." contributes 1000 by itself.
+      result += ROMAN_VALUES[s[index]];
+
+      // Single symbol consume hua, so one-step move.
+      index++;
     }
 
-    // Step 8: If no special case found, process single character
-    // Agar special case nahi mila ya last character hai, toh single character process karo
-    result += romanMap[s[i]];
-
-    // Move to next character
-    // Ek position aage badho
-    i += 1;
+    return result;
   }
 
-  // Step 9: Return the final computed integer value
-  return result;
+  /**
+   * ═══════════════════════════════════════════════════════════
+   * DRY RUN - TOKEN BY TOKEN
+   * ═══════════════════════════════════════════════════════════
+   *
+   * Example:
+   * s = "MCMXCIV"
+   *
+   * Start:
+   *   result = 0
+   *   index = 0
+   *
+   * ═══════════════════════════════════════════════════════════
+   * index = 0
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ possiblePair = "MC"                                      │
+   * │ "MC" special pair nahi hai                               │
+   * │ so single "M" lo -> 1000                                 │
+   * │ result = 1000                                            │
+   * │ index = 1                                                │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * index = 1
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ possiblePair = "CM"                                      │
+   * │ "CM" special pair hai -> 900                             │
+   * │ result = 1000 + 900 = 1900                               │
+   * │ index += 2 -> 3                                           │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * index = 3
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ possiblePair = "XC"                                      │
+   * │ "XC" special pair hai -> 90                              │
+   * │ result = 1900 + 90 = 1990                                │
+   * │ index += 2 -> 5                                           │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * index = 5
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ possiblePair = "IV"                                      │
+   * │ "IV" special pair hai -> 4                               │
+   * │ result = 1990 + 4 = 1994                                 │
+   * │ index += 2 -> 7                                           │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * index == s.length
+   * Final answer = 1994
+   *
+   * ───────────────────────────────────────────────────────────
+   * Small example:
+   * s = "III"
+   *
+   *   "II" special pair nahi
+   *   add I -> 1
+   *   next I -> 2
+   *   next I -> 3
+   *
+   * Final answer = 3
+   *
+   * ═══════════════════════════════════════════════════════════
+   * EDGE CASES
+   * ═══════════════════════════════════════════════════════════
+   *
+   * 1. Only normal additions:
+   *    "VIII" -> 8
+   *
+   * 2. Single subtraction pair:
+   *    "IV" -> 4
+   *
+   * 3. Mixed normal + subtraction:
+   *    "LVIII" -> 58
+   *
+   * 4. Multiple subtraction pairs:
+   *    "MCMXCIV" -> 1994
+   */
+
+  export function runTests(): void {
+    console.log('Testing Roman To Integer - BRUTE FORCE\n');
+
+    const tests: Array<{
+      s: string;
+      expected: number;
+      description: string;
+    }> = [
+      { s: 'III', expected: 3, description: 'Only repeated additions' },
+      { s: 'LVIII', expected: 58, description: 'Mixed additive symbols' },
+      {
+        s: 'MCMXCIV',
+        expected: 1994,
+        description: 'Classic mixed subtraction example',
+      },
+      { s: 'IV', expected: 4, description: 'Smallest subtraction pair' },
+      { s: 'IX', expected: 9, description: 'Subtraction with ten' },
+      { s: 'XL', expected: 40, description: 'Subtraction in tens place' },
+      { s: 'CDXLIV', expected: 444, description: 'Multiple special pairs' },
+      { s: 'MMXXIV', expected: 2024, description: 'Modern year style numeral' },
+      { s: 'XLIX', expected: 49, description: 'Two subtraction pairs in one numeral' },
+    ];
+
+    let passed = 0;
+
+    tests.forEach(({ s, expected, description }, index) => {
+      const result = romanToInt(s);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}"`);
+      console.log(
+        `  Expected: ${expected} | Got: ${result} -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 }
 
-// Test cases for verification
-console.log(romanToInt_brute('III')); // Output: 3
-console.log(romanToInt_brute('LVIII')); // Output: 58
-console.log(romanToInt_brute('MCMXCIV')); // Output: 1994
+RomanToIntegerBruteForce.runTests();

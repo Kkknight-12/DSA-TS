@@ -1,116 +1,222 @@
-// https://www.notion.so/Anagram-286a268089688093a75cf93229894742
-
 /**
- * BRUTE FORCE APPROACH: Check if two strings are anagrams using Sorting
+ * VALID ANAGRAM - BRUTE FORCE
+ * ===========================
  *
- * Approach: Sort both strings and compare them
- * If sorted strings are equal, then original strings are anagrams
+ * PROBLEM:
+ * Do strings `s` and `t` diye hain.
+ * Return `true` agar `t`, `s` ka anagram hai.
  *
- * Time Complexity: O(n log n) - due to sorting
- * Space Complexity: O(n) - for creating new sorted strings
+ * Anagram ka matlab:
+ *   same characters
+ *   same frequency
+ *   order different ho sakta hai
  *
- * @param s1 - First string
- * @param s2 - Second string
- * @returns boolean - true if anagrams, false otherwise
+ * Examples:
+ *   s = "anagram", t = "nagaram" -> true
+ *   s = "rat",     t = "car"     -> false
+ *
+ * NOTE:
+ * Is repo version me comparison case-insensitive rakha hai.
+ * So "CAT" and "ACT" ko anagram maana jayega.
+ *
+ * INTUITION (Soch):
+ * -----------------
+ * Anagram me order matter nahi karta, bas character counts matter karte hain.
+ *
+ * Agar dono strings ko sort kar do,
+ * toh same characters same frequency ke saath same order me aa jayenge.
+ *
+ * Example:
+ *
+ *   "anagram" -> sort -> "aaagmnr"
+ *   "nagaram" -> sort -> "aaagmnr"
+ *
+ * Sorted form same hai, so original strings anagram hain.
+ *
+ * TIME:  O(n log n)
+ *   - sorting dominates
+ *
+ * SPACE: O(n)
+ *   - split/sort/join ke liye extra character array/string banti hai
  */
-function areAnagramsBruteForce(s1: string, s2: string): boolean {
-  // STEP 1: Edge Case - Length Check
-  // Agar dono strings ki length different hai, toh anagram possible hi nahi
-  // Kyunki anagram mein same characters hone chahiye (count equal honi chahiye)
-  if (s1.length !== s2.length) {
-    console.log('❌ Lengths are different, not anagrams!');
-    return false;
+
+namespace ValidAnagramBruteForce {
+  function normalize(text: string): string {
+    // Case-insensitive comparison ke liye dono inputs ko same case me la rahe hain.
+    // Isse "CAT" aur "act" same character inventory represent karte hain.
+    return text.toLowerCase();
   }
 
-  // STEP 2: Case Insensitive Banao
-  // Dono strings ko lowercase mein convert karo
-  // Taaki "Cat" aur "act" ko same treat kiya ja sake
-  const str1Lower = s1.toLowerCase();
-  const str2Lower = s2.toLowerCase();
+  function sortedCharacters(text: string): string {
+    // Sorting order ko fixed bana deti hai.
+    // Agar frequency same hai, sorted signature bhi same banega.
+    return normalize(text).split('').sort().join('');
+  }
 
-  console.log(`Original strings: "${s1}" and "${s2}"`);
-  console.log(`After lowercase: "${str1Lower}" and "${str2Lower}"`);
+  function isAnagram(s: string, t: string): boolean {
+    // Anagram me characters add/remove nahi hote.
+    // Length mismatch means kisi na kisi character ki count definitely different hai.
+    if (s.length !== t.length) {
+      return false;
+    }
 
-  // STEP 3: Sort Both Strings
-  // JavaScript mein string directly sort nahi hoti, toh process ye hai:
-  // 1. String ko array mein convert karo (split)
-  // 2. Array ko sort karo
-  // 3. Array ko wapas string mein convert karo (join)
+    const sortedS = sortedCharacters(s);
+    const sortedT = sortedCharacters(t);
 
-  // String 1 ko sort karna:
-  const sortedStr1 = str1Lower
-    .split('') // String ko individual characters ke array mein convert karo
-    .sort() // Array ko alphabetically sort karo (lexicographical order)
-    .join(''); // Array ko wapas string mein convert karo
+    // Sorted strings same hain toh har character same count ke saath present hai.
+    // Sorted strings different hain toh at least one character/count mismatch hai.
+    return sortedS === sortedT;
+  }
 
-  // String 2 ko sort karna:
-  const sortedStr2 = str2Lower
-    .split('') // Same process dusri string ke liye
-    .sort() // Alphabetically sort
-    .join(''); // Array to string
+  /**
+   * ==========================================================
+   * DRY RUN - SORT AND COMPARE
+   * ==========================================================
+   *
+   * Example:
+   * s = "anagram", t = "nagaram"
+   *
+   * Start:
+   *   s.length = 7
+   *   t.length = 7
+   *   same length -> possible
+   *
+   * Step 1: normalize
+   *
+   * +--------------------------------------------------------+
+   * | s = "anagram"                                         |
+   * | t = "nagaram"                                         |
+   * +--------------------------------------------------------+
+   *
+   * Step 2: sort both strings
+   *
+   * +--------------------------------------------------------+
+   * | sortedS = "aaagmnr"                                   |
+   * | sortedT = "aaagmnr"                                   |
+   * +--------------------------------------------------------+
+   *
+   * Step 3: compare signatures
+   *
+   * +--------------------------------------------------------+
+   * | "aaagmnr" === "aaagmnr" -> true                       |
+   * +--------------------------------------------------------+
+   *
+   * Final answer = true
+   *
+   * ----------------------------------------------------------
+   * Negative example:
+   * s = "rat", t = "car"
+   *
+   * sortedS = "art"
+   * sortedT = "acr"
+   *
+   * "art" !== "acr"
+   * Final answer = false
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. Different lengths:
+   *    "a", "ab" -> false
+   *
+   * 2. Same characters, different order:
+   *    "listen", "silent" -> true
+   *
+   * 3. Case-insensitive repo behavior:
+   *    "CAT", "ACT" -> true
+   *
+   * 4. Empty strings:
+   *    "", "" -> true
+   *
+   * 5. Same length but wrong frequency:
+   *    "aacc", "ccac" -> false
+   */
 
-  console.log(`After sorting: "${sortedStr1}" and "${sortedStr2}"`);
+  export function runTests(): void {
+    console.log('Testing Valid Anagram - BRUTE FORCE\n');
 
-  // STEP 4: Compare Sorted Strings
-  // Agar dono sorted strings exactly equal hain, toh anagram hai
-  // Kyunki same characters hain (bas original mein order different tha)
-  const isAnagram = sortedStr1 === sortedStr2;
+    const tests: Array<{
+      s: string;
+      t: string;
+      expected: boolean;
+      description: string;
+    }> = [
+      {
+        s: 'anagram',
+        t: 'nagaram',
+        expected: true,
+        description: 'Classic valid anagram',
+      },
+      {
+        s: 'rat',
+        t: 'car',
+        expected: false,
+        description: 'Same length but different characters',
+      },
+      {
+        s: 'CAT',
+        t: 'ACT',
+        expected: true,
+        description: 'Case-insensitive repo behavior',
+      },
+      {
+        s: 'rules',
+        t: 'lesrt',
+        expected: false,
+        description: 'One character frequency mismatch',
+      },
+      {
+        s: 'listen',
+        t: 'silent',
+        expected: true,
+        description: 'Different order, same inventory',
+      },
+      {
+        s: 'a',
+        t: 'ab',
+        expected: false,
+        description: 'Length mismatch',
+      },
+      {
+        s: '',
+        t: '',
+        expected: true,
+        description: 'Both strings empty',
+      },
+      {
+        s: 'aabb',
+        t: 'bbaa',
+        expected: true,
+        description: 'Repeated characters balanced',
+      },
+      {
+        s: 'aacc',
+        t: 'ccac',
+        expected: false,
+        description: 'Same length but count mismatch',
+      },
+    ];
 
-  console.log(`Are they equal? ${isAnagram ? '✅ YES' : '❌ NO'}`);
+    let passed = 0;
 
-  return isAnagram;
+    tests.forEach(({ s, t, expected, description }, index) => {
+      const result = isAnagram(s, t);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}", t="${t}"`);
+      console.log(
+        `  Expected: ${expected} | Got: ${result} -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 }
 
-// ==================== HELPER FUNCTION (Optional) ====================
-
-/**
- * Alternative implementation with explicit steps
- * Ye wala version zyada readable hai beginners ke liye
- */
-function areAnagramsBruteForceVerbose(s1: string, s2: string): boolean {
-  // Edge case: empty strings
-  if (!s1 || !s2) {
-    return false;
-  }
-
-  // Edge case: length mismatch
-  if (s1.length !== s2.length) {
-    return false;
-  }
-
-  // Helper function: String ko sort karne ke liye
-  const sortString = (str: string): string => {
-    return str
-      .toLowerCase() // Case insensitive
-      .split('') // String → Array
-      .sort((a, b) => a.localeCompare(b)) // Alphabetically sort
-      .join(''); // Array → String
-  };
-
-  // Dono strings ko sort karo
-  const sorted1 = sortString(s1);
-  const sorted2 = sortString(s2);
-
-  // Compare karo
-  return sorted1 === sorted2;
-}
-
-// ==================== TESTING ====================
-
-// Test Case 1
-console.log('\n🧪 Test Case 1:');
-console.log("Input: 'CAT' and 'ACT'");
-console.log('Output:', areAnagramsBruteForce('CAT', 'ACT'));
-console.log('Expected: true\n');
-
-// Test Case 2
-console.log('🧪 Test Case 2:');
-console.log("Input: 'RULES' and 'LESRT'");
-console.log('Output:', areAnagramsBruteForce('RULES', 'LESRT'));
-console.log('Expected: false\n');
-
-// Test Case 3
-console.log('🧪 Test Case 3:');
-console.log("Input: 'listen' and 'silent'");
-console.log('Output:', areAnagramsBruteForce('listen', 'silent'));
-console.log('Expected: true\n');
+ValidAnagramBruteForce.runTests();

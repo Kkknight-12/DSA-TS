@@ -1,164 +1,252 @@
 /**
- * BETTER APPROACH: Check Anagrams using Frequency Count
+ * VALID ANAGRAM - BETTER APPROACH
+ * ===============================
  *
- * Approach: Use a HashMap to count character frequencies
- * - First pass: Increment count for string 1
- * - Second pass: Decrement count for string 2
- * - Final check: All counts should be 0
+ * PROBLEM:
+ * Do strings `s` and `t` diye hain.
+ * Return `true` agar `t`, `s` ka anagram hai.
  *
- * Time Complexity: O(n) where n = length of string
- * Space Complexity: O(k) where k = number of unique characters
+ * BETTER IDEA:
+ * Sorting avoid karo.
+ * Direct frequency count maintain karo.
  *
- * @param s1 - First string
- * @param s2 - Second string
- * @returns boolean - true if anagrams, false otherwise
+ * INTUITION (Soch):
+ * -----------------
+ * Anagram ka real condition ye hai:
+ *
+ *   har character ki count dono strings me same honi chahiye
+ *
+ * So:
+ *   1. `s` se inventory banao
+ *   2. `t` ke characters us inventory se consume karo
+ *   3. agar consume karte waqt count missing/zero ho gaya, answer false
+ *
+ * Example:
+ *
+ *   s = "aabb"
+ *   inventory = { a: 2, b: 2 }
+ *
+ *   t = "bbaa"
+ *   b consume -> { a: 2, b: 1 }
+ *   b consume -> { a: 2, b: 0 }
+ *   a consume -> { a: 1, b: 0 }
+ *   a consume -> { a: 0, b: 0 }
+ *
+ * All zero -> true
+ *
+ * TIME:  O(n)
+ *   - each string one pass, plus unique-character check
+ *
+ * SPACE: O(k)
+ *   - k = unique characters stored in the frequency map
  */
-function areAnagramsFrequencyBasic(s1: string, s2: string): boolean {
-  console.log(`\n🔍 Checking: "${s1}" and "${s2}"`);
 
-  // STEP 1: Edge Case - Length Check
-  // Agar lengths different hain toh anagram possible hi nahi
-  // Kyunki anagram mein same characters (same count) hone chahiye
-  if (s1.length !== s2.length) {
-    console.log("❌ Lengths don't match!");
-    console.log(`   "${s1}" has ${s1.length} chars`);
-    console.log(`   "${s2}" has ${s2.length} chars`);
-    return false;
+namespace ValidAnagramBetterApproach {
+  function normalize(text: string): string {
+    // Same-case conversion comparison ko fair banata hai.
+    // Warna "C" aur "c" different keys ban jate.
+    return text.toLowerCase();
   }
 
-  // STEP 2: Convert to Lowercase
-  // Case insensitive comparison ke liye
-  // "Cat" aur "act" ko same treat karna hai
-  const str1 = s1.toLowerCase();
-  const str2 = s2.toLowerCase();
-
-  console.log(`📝 After lowercase: "${str1}" and "${str2}"`);
-
-  // STEP 3: Create Frequency Map (Hash Table)
-  // Ye object har character ki count store karega
-  // Example: { 'a': 2, 'b': 1, 'c': 3 }
-  const frequencyMap: { [key: string]: number } = {};
-
-  console.log('\n📊 Building frequency map from first string...');
-
-  // STEP 4: Traverse First String and Build Frequency Map
-  // Har character ke liye count increment karo
-  for (let i = 0; i < str1.length; i++) {
-    const char = str1[i];
-
-    // Agar character pehle se map mein hai, toh count increment karo
-    // Agar nahi hai, toh 0 se start karo aur phir 1 kar do
-    if (frequencyMap[char]) {
-      frequencyMap[char]++; // Existing count ko badhao
-    } else {
-      frequencyMap[char] = 1; // Naya character, count = 1 se start
-    }
-
-    console.log(`   '${char}' → count: ${frequencyMap[char]}`);
-  }
-
-  console.log('\n🗺️ Frequency Map after first string:');
-  console.log(frequencyMap);
-
-  console.log('\n🔄 Processing second string...');
-
-  // STEP 5: Traverse Second String and Decrement Counts
-  // Har character ke liye count decrement karo
-  for (let i = 0; i < str2.length; i++) {
-    const char = str2[i];
-
-    // Agar character map mein exist hi nahi karta
-    // Matlab ye character first string mein nahi tha
-    // Directly false return karo
-    if (!frequencyMap[char]) {
-      console.log(`   ❌ '${char}' not found in map or count is 0!`);
+  function isAnagram(s: string, t: string): boolean {
+    // Different length ka matlab total available characters hi different hain.
+    // Aisi state me frequency map build karna waste hai.
+    if (s.length !== t.length) {
       return false;
     }
 
-    // Character exist karta hai, toh count decrement karo
-    frequencyMap[char]--;
-    console.log(`   '${char}' → count: ${frequencyMap[char]}`);
+    const source = normalize(s);
+    const target = normalize(t);
+    const frequency = new Map<string, number>();
 
-    // Agar count negative ho gaya
-    // Matlab second string mein ye character zyada baar aaya
-    // Directly false return karo
-    if (frequencyMap[char] < 0) {
-      console.log(`   ❌ '${char}' count became negative!`);
-      return false;
+    for (const char of source) {
+      const previousCount = frequency.get(char) ?? 0;
+
+      // `frequency` source string ka inventory map hai.
+      // Source me character mila, so uski available count badh rahi hai.
+      frequency.set(char, previousCount + 1);
     }
+
+    for (const char of target) {
+      const availableCount = frequency.get(char) ?? 0;
+
+      // Target ka character source inventory se consume hona chahiye.
+      // Count 0 ka matlab ya toh character source me tha hi nahi,
+      // ya target us character ko source se zyada baar use kar raha hai.
+      if (availableCount === 0) {
+        return false;
+      }
+
+      // Current target character ke liye ek matching source character use ho gaya.
+      // Isliye available inventory one count kam hoti hai.
+      frequency.set(char, availableCount - 1);
+    }
+
+    for (const remainingCount of frequency.values()) {
+      // Agar koi positive count bacha hai,
+      // source ka character target me enough baar consume nahi hua.
+      if (remainingCount !== 0) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
-  console.log('\n🗺️ Frequency Map after second string:');
-  console.log(frequencyMap);
+  /**
+   * ==========================================================
+   * DRY RUN - FREQUENCY MAP
+   * ==========================================================
+   *
+   * Example:
+   * s = "aabb", t = "bbaa"
+   *
+   * Build inventory from `s`:
+   *
+   * +------+-----------------------------+
+   * | char | frequency map               |
+   * +------+-----------------------------+
+   * | a    | { a: 1 }                    |
+   * | a    | { a: 2 }                    |
+   * | b    | { a: 2, b: 1 }              |
+   * | b    | { a: 2, b: 2 }              |
+   * +------+-----------------------------+
+   *
+   * Consume using `t`:
+   *
+   * +------+-----------------------------+
+   * | char | frequency map               |
+   * +------+-----------------------------+
+   * | b    | { a: 2, b: 1 }              |
+   * | b    | { a: 2, b: 0 }              |
+   * | a    | { a: 1, b: 0 }              |
+   * | a    | { a: 0, b: 0 }              |
+   * +------+-----------------------------+
+   *
+   * Final check:
+   *   all counts are 0
+   *
+   * Final answer = true
+   *
+   * ----------------------------------------------------------
+   * Negative example:
+   * s = "aacc", t = "ccac"
+   *
+   * Source inventory:
+   *   { a: 2, c: 2 }
+   *
+   * Target consumes:
+   *   c -> ok
+   *   c -> ok
+   *   a -> ok
+   *   c -> count already 0, so false
+   *
+   * Final answer = false
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. Different lengths:
+   *    "a", "ab" -> false
+   *
+   * 2. Repeated characters:
+   *    "aabb", "bbaa" -> true
+   *
+   * 3. Character overused by target:
+   *    "aacc", "ccac" -> false
+   *
+   * 4. Empty strings:
+   *    "", "" -> true
+   *
+   * 5. Case-insensitive repo behavior:
+   *    "CAT", "ACT" -> true
+   */
 
-  // STEP 6: Final Check - All Counts Should Be 0
-  // Agar sab characters ki count exactly 0 hai
-  // Matlab dono strings mein same characters, same frequency
-  console.log('\n✅ Checking if all counts are 0...');
+  export function runTests(): void {
+    console.log('Testing Valid Anagram - BETTER APPROACH\n');
 
-  for (const char in frequencyMap) {
-    if (frequencyMap[char] !== 0) {
-      console.log(`   ❌ '${char}' has count ${frequencyMap[char]}, not 0!`);
-      return false;
-    }
+    const tests: Array<{
+      s: string;
+      t: string;
+      expected: boolean;
+      description: string;
+    }> = [
+      {
+        s: 'anagram',
+        t: 'nagaram',
+        expected: true,
+        description: 'Classic valid anagram',
+      },
+      {
+        s: 'rat',
+        t: 'car',
+        expected: false,
+        description: 'Same length but different characters',
+      },
+      {
+        s: 'CAT',
+        t: 'ACT',
+        expected: true,
+        description: 'Case-insensitive repo behavior',
+      },
+      {
+        s: 'rules',
+        t: 'lesrt',
+        expected: false,
+        description: 'One character frequency mismatch',
+      },
+      {
+        s: 'listen',
+        t: 'silent',
+        expected: true,
+        description: 'Different order, same inventory',
+      },
+      {
+        s: 'a',
+        t: 'ab',
+        expected: false,
+        description: 'Length mismatch',
+      },
+      {
+        s: '',
+        t: '',
+        expected: true,
+        description: 'Both strings empty',
+      },
+      {
+        s: 'aabb',
+        t: 'bbaa',
+        expected: true,
+        description: 'Repeated characters balanced',
+      },
+      {
+        s: 'aacc',
+        t: 'ccac',
+        expected: false,
+        description: 'Same length but count mismatch',
+      },
+    ];
+
+    let passed = 0;
+
+    tests.forEach(({ s, t, expected, description }, index) => {
+      const result = isAnagram(s, t);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}", t="${t}"`);
+      console.log(
+        `  Expected: ${expected} | Got: ${result} -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
   }
-
-  console.log('   ✅ All counts are 0!');
-  return true;
 }
 
-// ----------------------------------------------------------------------
-
-// Advanced Optimization: Array Instead of HashMap
-
-/**
- * SPACE OPTIMIZED: Using Fixed Array for English Letters
- *
- * Instead of HashMap, use array of size 26
- * Only works for lowercase English letters (a-z)
- *
- * Time Complexity: O(n)
- * Space Complexity: O(1) - fixed array of 26
- */
-function areAnagramsArrayOptimized(s1: string, s2: string): boolean {
-  // Length check
-  if (s1.length !== s2.length) return false;
-
-  // Lowercase conversion
-  const str1 = s1.toLowerCase();
-  const str2 = s2.toLowerCase();
-
-  // Fixed size array for 26 letters (a-z)
-  // Index 0 = 'a', Index 1 = 'b', ..., Index 25 = 'z'
-  const charCount: number[] = new Array(26).fill(0);
-
-  // Helper: Convert character to array index
-  // 'a' → 0, 'b' → 1, ..., 'z' → 25
-  const getIndex = (char: string): number => {
-    return char.charCodeAt(0) - 'a'.charCodeAt(0);
-  };
-
-  // Build frequency
-  for (const char of str1) {
-    const index = getIndex(char);
-    charCount[index]++;
-  }
-
-  // Verify
-  for (const char of str2) {
-    const index = getIndex(char);
-
-    if (charCount[index] === 0) {
-      return false; // Character not found or count exhausted
-    }
-
-    charCount[index]--;
-  }
-
-  // All counts should be 0
-  return charCount.every((count) => count === 0);
-}
-
-// Example usage:
-console.log(areAnagramsArrayOptimized('cat', 'act')); // true
-console.log(areAnagramsArrayOptimized('rules', 'lesrt')); // false
+ValidAnagramBetterApproach.runTests();

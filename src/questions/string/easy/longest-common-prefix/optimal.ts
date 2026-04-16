@@ -1,167 +1,247 @@
-// https://www.notion.so/Longest-Common-Prefix-281a2680896880cc9114ff64aa3ecdbe
 /**
- * ═══════════════════════════════════════════════════════════════
- * APPROACH 1: SHORTEST STRING APPROACH (Simple Optimal)
- * ═══════════════════════════════════════════════════════════════
- * Purpose: Find longest common prefix by using shortest string as reference
- * Logic: Common prefix kabhi bhi shortest string se bada nahi ho sakta
- * Time Complexity: O(S) where S = sum of all characters
- * Space Complexity: O(1)
+ * LONGEST COMMON PREFIX - OPTIMAL
+ * ===============================
+ *
+ * PROBLEM:
+ * Array `strs` diya hai.
+ * Hume longest common prefix return karna hai.
+ *
+ * Agar koi common prefix nahi hai, toh `""` return karo.
+ *
+ * Examples:
+ *   ["flower", "flow", "flight"] -> "fl"
+ *   ["dog", "racecar", "car"]    -> ""
+ *
+ * INTUITION (Soch):
+ * ─────────────────
+ * Common prefix kabhi bhi shortest string se bada nahi ho sakta.
+ *
+ * So best idea:
+ *   1. shortest string dhundo
+ *   2. uske characters ko left se right check karo
+ *   3. har position par verify karo ki sab strings me same character hai ya nahi
+ *
+ * Jaise hi mismatch milta hai,
+ * us point ke pehle tak ka part hi common prefix hota hai.
+ *
+ * Important note:
+ * Horizontal scan bhi `O(S)` ho sakta hai.
+ * Yahan shortest-string vertical scan ko `optimal` isliye treat kar rahe hain
+ * kyunki logic direct hai aur natural upper bound deta hai.
+ *
+ * Visual:
+ *
+ *   ["flower", "flow", "flight"]
+ *
+ *   shortest string = "flow"
+ *
+ *   index 0 -> 'f' sab me same
+ *   index 1 -> 'l' sab me same
+ *   index 2 -> 'o' vs 'i' mismatch
+ *
+ *   answer = "fl"
+ *
+ * TIME:  O(S)
+ *   - har useful character comparison overall bounded hota hai by total input size
+ *
+ * SPACE: O(1)
+ *   - extra variables constant hain
+ *   - returned substring ko extra working space me count nahi kar rahe
  */
 
-function longestCommonPrefixOptimal1(strs: string[]): string {
-  // Edge Case: Empty array
-  if (strs.length === 0) {
-    return '';
-  }
+namespace LongestCommonPrefixOptimal {
+  function findShortestString(strs: string[]): string {
+    let shortestString = strs[0];
 
-  // Edge Case: Single string - wahi pura prefix hai
-  if (strs.length === 1) {
-    return strs[0];
-  }
-
-  // Step 1: Sabse chhoti string dhundho
-  // Kyunki common prefix isse bada ho hi nahi sakta
-  let shortestString: string = strs[0];
-  let minLength: number = strs[0].length;
-
-  for (let i = 1; i < strs.length; i++) {
-    if (strs[i].length < minLength) {
-      minLength = strs[i].length;
-      shortestString = strs[i];
-    }
-  }
-
-  // Step 2: Ab shortest string ko base bana ke check karte hain
-  // Uske har character ko sabhi strings mein verify karenge
-  for (let i = 0; i < shortestString.length; i++) {
-    // Current character shortest string ka
-    const currentChar: string = shortestString[i];
-
-    // Sabhi strings mein same position par same character hai ya nahi?
-    for (let j = 0; j < strs.length; j++) {
-      // Agar kisi bhi string mein current position par character match nahi karta
-      // Ya string ki length hi kam hai (though shortest ke baad ye nahi hona chahiye)
-      if (i >= strs[j].length || strs[j][i] !== currentChar) {
-        // Toh yahi tak ka prefix return karo (0 se i-1 tak)
-        return shortestString.substring(0, i);
+    for (let i = 1; i < strs.length; i++) {
+      // Shortest string natural upper bound deti hai.
+      // WHY: common prefix isse lamba ho hi nahi sakta.
+      if (strs[i].length < shortestString.length) {
+        shortestString = strs[i];
       }
     }
+
+    return shortestString;
   }
 
-  // Agar loop complete ho gaya matlab puri shortest string common hai
-  // Toh shortest string hi answer hai
-  return shortestString;
-}
-
-/**
- * ═══════════════════════════════════════════════════════════════
- * APPROACH 2: BINARY SEARCH APPROACH (TRUE OPTIMAL!)
- * ═══════════════════════════════════════════════════════════════
- * Purpose: Find longest common prefix using binary search on length
- * Logic: Agar length x ka prefix common hai, toh x-1, x-2... bhi common honge (monotonic)
- * Time Complexity: O(S * log m) where S = sum of chars, m = min string length
- * Space Complexity: O(1)
- *
- * Why Binary Search?
- * - Agar length k ka prefix common hai → sab chhote bhi common honge
- * - Agar length k ka prefix common nahi → sab bade bhi common nahi honge
- * - Ye monotonic property hai, perfect for binary search!
- */
-
-function longestCommonPrefixOptimal2(strs: string[]): string {
-  // Edge Cases
-  if (strs.length === 0) return '';
-  if (strs.length === 1) return strs[0];
-
-  // Step 1: Minimum length find karo (binary search ki upper bound)
-  // Kyunki common prefix maximum itna hi lamba ho sakta hai
-  let minLength: number = Number.MAX_SAFE_INTEGER;
-  for (let str of strs) {
-    minLength = Math.min(minLength, str.length);
-  }
-
-  // Edge case: Agar koi string empty hai
-  if (minLength === 0) {
-    return '';
-  }
-
-  // Step 2: Binary search setup
-  // Hum length par binary search kar rahe hain (0 se minLength tak)
-  let low: number = 0;
-  let high: number = minLength;
-
-  // Step 3: Binary search loop
-  // Dhundh rahe hain: Maximum length jiske liye prefix common hai
-  while (low <= high) {
-    // Mid point - current length jo check karni hai
-    const mid: number = Math.floor((low + high) / 2);
-
-    // Helper function call: Is length ka prefix common hai ya nahi?
-    if (isCommonPrefix(strs, mid)) {
-      // Agar mid length ka prefix common hai,
-      // Toh maybe aur lamba bhi common ho sakta hai
-      // Right half mein search karo (bada dhundho)
-      low = mid + 1;
-    } else {
-      // Agar mid length ka prefix common nahi hai,
-      // Toh isse bada toh bilkul nahi hoga
-      // Left half mein search karo (chhota dhundho)
-      high = mid - 1;
+  function longestCommonPrefix(strs: string[]): string {
+    if (strs.length === 0) {
+      return '';
     }
-  }
 
-  // Step 4: Binary search complete
-  // 'high' ab wo maximum length hai jiske liye prefix common hai
-  // Pehli string ke first 'high' characters return karo
-  // (Kyunki wo sabhi strings mein same hain - verified by isCommonPrefix)
-  return strs[0].substring(0, high + 1);
-}
-
-/**
- * Helper Function: Check karta hai ki given length ka prefix sabhi strings mein same hai ya nahi
- * @param strs - Array of strings
- * @param length - Kitni length tak check karna hai
- * @returns true agar sabhi strings ke first 'length' characters same hain
- */
-function isCommonPrefix(strs: string[], length: number): boolean {
-  // First string ke first 'length' characters ko reference bana lo
-  const prefix: string = strs[0].substring(0, length);
-
-  // Baki sabhi strings check karo
-  // Start from index 1 kyunki 0th toh reference hai
-  for (let i = 1; i < strs.length; i++) {
-    // Check: Kya current string bhi is prefix se start hoti hai?
-    // Ya phir: Kya first 'length' characters same hain?
-    if (!strs[i].startsWith(prefix)) {
-      // Agar ek bhi string match nahi karti, return false
-      return false;
+    if (strs.length === 1) {
+      return strs[0];
     }
+
+    const shortestString = findShortestString(strs);
+
+    if (shortestString === '') {
+      return '';
+    }
+
+    for (let charIndex = 0; charIndex < shortestString.length; charIndex++) {
+      const expectedChar = shortestString[charIndex];
+
+      for (let stringIndex = 0; stringIndex < strs.length; stringIndex++) {
+        // Agar current position par koi bhi string mismatch kar gayi,
+        // toh yahi break point hai. Isse pehle tak ka part common tha.
+        if (strs[stringIndex][charIndex] !== expectedChar) {
+          return shortestString.slice(0, charIndex);
+        }
+      }
+    }
+
+    return shortestString;
   }
 
-  // Agar sabhi strings match kar gayi, return true
-  return true;
+  /**
+   * ═══════════════════════════════════════════════════════════
+   * DRY RUN - FULL CODE FLOW
+   * ═══════════════════════════════════════════════════════════
+   *
+   * Example:
+   * strs = ["flower", "flow", "flight"]
+   *
+   * Step 1: shortestString find karo
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ Start shortestString = "flower"                         │
+   * │ Compare with "flow"   -> shorter hai -> update to "flow"│
+   * │ Compare with "flight" -> longer hai -> no update        │
+   * │ Final shortestString = "flow"                           │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * Step 2: shortestString ko left se right verify karo
+   *
+   * ═══════════════════════════════════════════════════════════
+   * charIndex = 0, expectedChar = 'f'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ "flower"[0] = 'f' -> match                              │
+   * │ "flow"[0]   = 'f' -> match                              │
+   * │ "flight"[0] = 'f' -> match                              │
+   * │ Sab same -> next index                                  │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * charIndex = 1, expectedChar = 'l'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ "flower"[1] = 'l' -> match                              │
+   * │ "flow"[1]   = 'l' -> match                              │
+   * │ "flight"[1] = 'l' -> match                              │
+   * │ Sab same -> next index                                  │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * charIndex = 2, expectedChar = 'o'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ "flower"[2] = 'o' -> match                              │
+   * │ "flow"[2]   = 'o' -> match                              │
+   * │ "flight"[2] = 'i' -> mismatch                           │
+   * │ Return shortestString.slice(0, 2) = "fl"                │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * Final answer = "fl"
+   *
+   * ═══════════════════════════════════════════════════════════
+   * EDGE CASES
+   * ═══════════════════════════════════════════════════════════
+   *
+   * 1. Empty array:
+   *    [] -> ""
+   *
+   * 2. Single string:
+   *    ["alone"] -> "alone"
+   *
+   * 3. No common prefix:
+   *    ["dog", "racecar", "car"] -> ""
+   *
+   * 4. Shortest string itself is answer:
+   *    ["inter", "internet", "internal"] -> "inter"
+   *
+   * 5. Empty string present:
+   *    ["", "abc"] -> ""
+   */
+
+  export function runTests(): void {
+    console.log('Testing Longest Common Prefix - OPTIMAL\n');
+
+    const tests: Array<{
+      strs: string[];
+      expected: string;
+      description: string;
+    }> = [
+      {
+        strs: ['flower', 'flow', 'flight'],
+        expected: 'fl',
+        description: 'Standard example with partial common prefix',
+      },
+      {
+        strs: ['dog', 'racecar', 'car'],
+        expected: '',
+        description: 'No common prefix exists',
+      },
+      {
+        strs: ['interview', 'internet', 'internal'],
+        expected: 'inter',
+        description: 'Common prefix spans multiple characters',
+      },
+      {
+        strs: ['same', 'same', 'same'],
+        expected: 'same',
+        description: 'All strings are identical',
+      },
+      {
+        strs: [''],
+        expected: '',
+        description: 'Single empty string',
+      },
+      {
+        strs: ['', 'abc'],
+        expected: '',
+        description: 'Empty string makes prefix empty',
+      },
+      {
+        strs: ['alone'],
+        expected: 'alone',
+        description: 'Single string returns itself',
+      },
+      {
+        strs: [],
+        expected: '',
+        description: 'Empty array',
+      },
+      {
+        strs: ['prefix', 'preach', 'prevent'],
+        expected: 'pre',
+        description: 'Mismatch happens after first three characters',
+      },
+    ];
+
+    let passed = 0;
+
+    tests.forEach(({ strs, expected, description }, index) => {
+      const result = longestCommonPrefix(strs);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  strs=${JSON.stringify(strs)}`);
+      console.log(
+        `  Expected: "${expected}" | Got: "${result}" -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 }
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * BONUS: One-liner using reduce() (Functional Approach)
- * ═══════════════════════════════════════════════════════════════
- * Advanced JavaScript/TypeScript developers ke liye
- * Brute force ka hi logic hai but functional style mein
- */
-// function longestCommonPrefixOneLiner(strs: string[]): string {
-//   if (strs.length === 0) return '';
-//
-//   // Reduce function: Sabhi strings ko ek-ek karke process karta hai
-//   // acc (accumulator) = current common prefix
-//   // str = current string being processed
-//   return strs.reduce((acc, str) => {
-//     // Jab tak current string accumulator se start nahi hoti,
-//     // accumulator ko chhota karte jao
-//     while (!str.startsWith(acc)) {
-//       acc = acc.slice(0, -1); // Last character remove karo
-//     }
-//     return acc; // Updated prefix return karo
-//   });
-// }
+LongestCommonPrefixOptimal.runTests();

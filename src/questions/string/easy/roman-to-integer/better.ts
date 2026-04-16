@@ -1,23 +1,51 @@
 /**
- * Roman to Integer - Better Approach (Look Ahead Comparison)
+ * ROMAN TO INTEGER - BETTER
+ * =========================
  *
- * Purpose: Convert Roman numeral to integer by comparing adjacent characters
+ * PROBLEM:
+ * Roman numeral string `s` diya hai.
+ * Hume usko integer me convert karna hai.
  *
- * Key Insight: In Roman numerals, if a smaller value appears before a larger value,
- * it means subtraction (like IV = 4, IX = 9). Otherwise, we add values.
+ * Examples:
+ *   "III"     -> 3
+ *   "LVIII"   -> 58
+ *   "MCMXCIV" -> 1994
  *
- * Approach: Single pass, left-to-right with value comparison
- * - Compare current symbol value with next symbol value
- * - If current < next → Subtract (subtraction rule)
- * - If current >= next → Add (normal addition)
+ * INTUITION (Soch):
+ * ─────────────────
+ * Roman numerals me subtraction ka real rule ye hai:
  *
- * Time: O(n), Space: O(1)
+ *   agar current symbol ki value next symbol se chhoti hai,
+ *   toh current subtract hoga
+ *
+ * Warna current add hoga.
+ *
+ * So explicit special pairs yaad rakhne ki need nahi.
+ * Bas current aur next value compare kar lo.
+ *
+ * Examples:
+ *
+ *   "IV"
+ *   I(1) < V(5)
+ *   so I subtract hoga, V add hoga
+ *   => -1 + 5 = 4
+ *
+ *   "VI"
+ *   V(5) > I(1)
+ *   so V add hoga, I add hoga
+ *   => 5 + 1 = 6
+ *
+ * TIME:  O(n)
+ *   - har character ko ek baar process karte hain
+ *
+ * SPACE: O(1)
+ *   - fixed-size Roman map use hota hai
  */
 
-function romanToInt(s: string): number {
-  // Step 1: Create value mapping for all Roman symbols
-  // Ye hashmap har Roman symbol ko uski integer value se map karta hai
-  const romanMap: { [key: string]: number } = {
+namespace RomanToIntegerBetter {
+  // Same fixed lookup as brute force.
+  // Difference: yahan separate special-pair map nahi chahiye.
+  const ROMAN_VALUES: Record<string, number> = {
     I: 1,
     V: 5,
     X: 10,
@@ -27,80 +55,186 @@ function romanToInt(s: string): number {
     M: 1000,
   };
 
-  // Step 2: Initialize result to accumulate the final integer value
-  let result = 0;
+  function romanToInt(s: string): number {
+    let result = 0;
 
-  // Step 3: Traverse string from left to right
-  // Har character ko process karenge aur next character se compare karenge
-  for (let i = 0; i < s.length; i++) {
-    // Get the integer value of current Roman symbol
-    // Current character ki value nikalo
-    const currentValue = romanMap[s[i]];
+    for (let i = 0; i < s.length; i++) {
+      // Current symbol ka contribution add hoga ya subtract,
+      // ye right wale next symbol se decide hoga.
+      const currentValue = ROMAN_VALUES[s[i]];
 
-    // Step 4: Check if there's a next character to compare with
-    // Agar next character exist karta hai toh comparison possible hai
-    if (i + 1 < s.length) {
-      // Get the integer value of next Roman symbol
-      // Next character ki value nikalo
-      const nextValue = romanMap[s[i + 1]];
+      // Last character ke right me kuch nahi hota, so nextValue = 0.
+      // Isse last character naturally add ho jata hai.
+      const nextValue = i + 1 < s.length ? ROMAN_VALUES[s[i + 1]] : 0;
 
-      // Step 5: Apply the comparison rule
-      // Roman numeral rule: smaller before larger means subtraction
-
+      // Core Roman rule:
+      // smaller-before-larger means subtraction.
+      // Example: IV me I(1) < V(5), so I result se minus hoga.
       if (currentValue < nextValue) {
-        // SUBTRACTION CASE
-        // Jab current value choti hai next value se, matlab subtraction hoga
-        // Example: I(1) before V(5) in "IV" means 5-1=4
-        // Toh current value ko SUBTRACT karo result se
         result -= currentValue;
       } else {
-        // ADDITION CASE
-        // Jab current value badi ya equal hai next value se
-        // Example: X(10) before I(1) in "XI" means 10+1=11
-        // Toh current value ko ADD karo result mein
+        // Normal Roman flow: value same ya bigger ho toh additive role.
+        // Example: VI me V(5) > I(1), so V add hoga.
         result += currentValue;
       }
-    } else {
-      // Step 6: Last character handling
-      // Agar last character hai (no next character to compare)
-      // Toh simply add kar do, kyunki compare karne ke liye koi nahi hai
-      result += currentValue;
     }
+
+    return result;
   }
 
-  // Step 7: Return the final computed integer
-  return result;
-}
+  /**
+   * ═══════════════════════════════════════════════════════════
+   * DRY RUN - LEFT TO RIGHT COMPARISON
+   * ═══════════════════════════════════════════════════════════
+   *
+   * Example:
+   * s = "MCMXCIV"
+   *
+   * Start:
+   *   result = 0
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 0, current = 'M'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 1000                                      │
+   * │ nextValue    = 100   (C)                                 │
+   * │ 1000 < 100 ? no                                          │
+   * │ so add 1000                                              │
+   * │ result = 1000                                            │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 1, current = 'C'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 100                                       │
+   * │ nextValue    = 1000  (M)                                 │
+   * │ 100 < 1000 ? yes                                         │
+   * │ so subtract 100                                          │
+   * │ result = 900                                             │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 2, current = 'M'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 1000                                      │
+   * │ nextValue    = 10   (X)                                  │
+   * │ add 1000                                                 │
+   * │ result = 1900                                            │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 3, current = 'X'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 10                                        │
+   * │ nextValue    = 100  (C)                                  │
+   * │ 10 < 100 ? yes                                           │
+   * │ subtract 10                                              │
+   * │ result = 1890                                            │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 4, current = 'C'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 100                                       │
+   * │ nextValue    = 1   (I)                                   │
+   * │ add 100                                                  │
+   * │ result = 1990                                            │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 5, current = 'I'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 1                                         │
+   * │ nextValue    = 5   (V)                                   │
+   * │ 1 < 5 ? yes                                              │
+   * │ subtract 1                                               │
+   * │ result = 1989                                            │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 6, current = 'V'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 5                                         │
+   * │ nextValue    = 0   (no next character)                   │
+   * │ add 5                                                    │
+   * │ result = 1994                                            │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * Final answer = 1994
+   *
+   * ═══════════════════════════════════════════════════════════
+   * EDGE CASES
+   * ═══════════════════════════════════════════════════════════
+   *
+   * 1. Pure additions:
+   *    "VIII" -> 8
+   *
+   * 2. One subtraction pair:
+   *    "IV" -> 4
+   *
+   * 3. Multiple subtraction spots:
+   *    "MCMXCIV" -> 1994
+   *
+   * 4. Last character always naturally add hota hai:
+   *    "VI" -> 6
+   */
 
-// Alternative cleaner version with ternary operator
-function romanToIntCleaner(s: string): number {
-  const romanMap: { [key: string]: number } = {
-    I: 1,
-    V: 5,
-    X: 10,
-    L: 50,
-    C: 100,
-    D: 500,
-    M: 1000,
-  };
+  export function runTests(): void {
+    console.log('Testing Roman To Integer - BETTER\n');
 
-  let result = 0;
+    const tests: Array<{
+      s: string;
+      expected: number;
+      description: string;
+    }> = [
+      { s: 'III', expected: 3, description: 'Only repeated additions' },
+      { s: 'LVIII', expected: 58, description: 'Mixed additive symbols' },
+      {
+        s: 'MCMXCIV',
+        expected: 1994,
+        description: 'Classic mixed subtraction example',
+      },
+      { s: 'IV', expected: 4, description: 'Smallest subtraction pair' },
+      { s: 'IX', expected: 9, description: 'Subtraction with ten' },
+      { s: 'XL', expected: 40, description: 'Subtraction in tens place' },
+      { s: 'CDXLIV', expected: 444, description: 'Multiple special-looking spots' },
+      { s: 'MMXXIV', expected: 2024, description: 'Modern year style numeral' },
+      { s: 'XLIX', expected: 49, description: 'Two subtraction pairs in one numeral' },
+    ];
 
-  for (let i = 0; i < s.length; i++) {
-    const current = romanMap[s[i]];
-    const next = romanMap[s[i + 1]];
+    let passed = 0;
 
-    // Agar next exist karta hai AUR current < next, toh subtract
-    // Otherwise add (includes last character case jahan next undefined hoga)
-    result += next && current < next ? -current : current;
+    tests.forEach(({ s, expected, description }, index) => {
+      const result = romanToInt(s);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}"`);
+      console.log(
+        `  Expected: ${expected} | Got: ${result} -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
   }
-
-  return result;
 }
 
-// Test cases
-console.log(romanToInt('III')); // Output: 3
-console.log(romanToInt('LVIII')); // Output: 58
-console.log(romanToInt('MCMXCIV')); // Output: 1994
-console.log(romanToInt('IV')); // Output: 4
-console.log(romanToInt('IX')); // Output: 9
+RomanToIntegerBetter.runTests();

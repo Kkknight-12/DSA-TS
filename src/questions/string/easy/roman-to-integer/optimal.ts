@@ -1,23 +1,60 @@
 /**
- * Roman to Integer - Optimal Approach (Right to Left Traversal)
+ * ROMAN TO INTEGER - OPTIMAL
+ * ==========================
  *
- * Purpose: Convert Roman numeral string to integer using the most elegant approach
+ * PROBLEM:
+ * Roman numeral string `s` diya hai.
+ * Hume usko integer me convert karna hai.
  *
- * Core Insight: Roman numerals follow a pattern where values generally decrease
- * from left to right. When traversing RIGHT to LEFT:
- * - If current value >= previous value → Normal case, ADD it
- * - If current value < previous value → Subtraction case, SUBTRACT it
+ * Examples:
+ *   "III"     -> 3
+ *   "LVIII"   -> 58
+ *   "MCMXCIV" -> 1994
  *
- * This automatically handles all special cases (IV, IX, XL, XC, CD, CM)
- * without needing explicit checks or special mappings!
+ * INTUITION (Soch):
+ * ─────────────────
+ * Left-to-right approach me hum next character ko dekh rahe the.
+ * Right-to-left approach me next dekhne ki bhi need nahi.
  *
- * Time: O(n), Space: O(1) - Most optimal solution
+ * Bas ek question:
+ *
+ *   current value right side wale previous value se chhoti hai ya nahi?
+ *
+ * Rule:
+ *
+ *   current >= previousRightValue -> add
+ *   current < previousRightValue  -> subtract
+ *
+ * Why this works:
+ * Agar current symbol right side ke symbol se chhota hai,
+ * matlab original numeral me wo kisi bade symbol se pehle tha,
+ * so subtraction role me hai.
+ *
+ * Example:
+ *
+ *   s = "MCMXCIV"
+ *
+ *   right to left:
+ *   V add
+ *   I subtract
+ *   C add
+ *   X subtract
+ *   M add
+ *   C subtract
+ *   M add
+ *
+ *   total = 1994
+ *
+ * TIME:  O(n)
+ *   - string ek baar traverse hoti hai
+ *
+ * SPACE: O(1)
+ *   - bas result aur previous value track hota hai
  */
 
-function romanToInt_optimal(s: string): number {
-  // Step 1: Create mapping for Roman symbols to their integer values
-  // Ye hashmap sirf ek baar define karna hai aur sab cases handle ho jayenge
-  const romanMap: { [key: string]: number } = {
+namespace RomanToIntegerOptimal {
+  // Roman symbol lookup fixed-size hai, so extra space constant maana jata hai.
+  const ROMAN_VALUES: Record<string, number> = {
     I: 1,
     V: 5,
     X: 10,
@@ -27,98 +64,197 @@ function romanToInt_optimal(s: string): number {
     M: 1000,
   };
 
-  // Step 2: Initialize result accumulator
-  // Ye variable final answer store karega
-  let result = 0;
+  function romanToInt(s: string): number {
+    let result = 0;
 
-  // Step 3: Initialize previous value tracker
-  // Ye variable track karega ki right side mein kya value thi
-  // Initially 0 set karte hain kyunki rightmost character ke right mein kuch nahi
-  let prevValue = 0;
+    // Right-to-left traversal me ye "current ke just right wale symbol ki value"
+    // represent karta hai. Starting 0 isliye, kyunki rightmost ke right me kuch nahi.
+    let previousRightValue = 0;
 
-  // Step 4: Traverse string from RIGHT to LEFT (reverse direction)
-  // Ye loop string ke end se start ki taraf chalega
-  // i = s.length - 1 se start karke i = 0 tak jayega
-  for (let i = s.length - 1; i >= 0; i--) {
-    // Step 5: Get current character's integer value from map
-    // Current position ki Roman symbol ki value nikalo
-    const currentValue = romanMap[s[i]];
+    for (let i = s.length - 1; i >= 0; i--) {
+      const currentValue = ROMAN_VALUES[s[i]];
 
-    // Step 6: Apply the comparison rule with previous value
-    // Ye hai core logic - yahi magic hai is approach ka!
+      // Right-to-left version of the same rule:
+      // agar current apne right wale symbol se chhota hai,
+      // toh original string me current bade symbol se pehle tha.
+      // That means current subtractive role me hai.
+      if (currentValue < previousRightValue) {
+        result -= currentValue;
+      } else {
+        // Current right wale symbol se bada/equal hai,
+        // so ye normal additive contribution deta hai.
+        result += currentValue;
+      }
 
-    if (currentValue >= prevValue) {
-      // CASE 1: Current value badi ya equal hai previous value se
-      // Matlab ye normal addition case hai
-      // Example:
-      //   - V(5) → I(1): 5 >= 1, so ADD
-      //   - X(10) → I(1): 10 >= 1, so ADD
-      //   - M(1000) → C(100): 1000 >= 100, so ADD
-
-      result += currentValue;
-
-      // Kyun add kar rahe hain?
-      // Roman numerals normally left se right bade se chote hote hain
-      // Right to left traverse karne pe, agar current >= previous
-      // Matlab normal pattern follow ho raha hai (bada → chota)
-    } else {
-      // CASE 2: Current value choti hai previous value se
-      // Matlab ye subtraction case hai!
-      // Example:
-      //   - I(1) → V(5): 1 < 5, so SUBTRACT
-      //   - X(10) → C(100): 10 < 100, so SUBTRACT
-      //   - C(100) → M(1000): 100 < 1000, so SUBTRACT
-
-      result -= currentValue;
-
-      // Kyun subtract kar rahe hain?
-      // Agar right to left traverse karte waqt chota value pehle aaye
-      // Matlab original string mein wo BADE value se PEHLE tha
-      // Aur Roman rule kehta hai: chota bade se pehle = subtraction!
-      // Example: IV mein I(1) V(5) se pehle hai, toh 5-1=4
+      // Next iteration left wale symbol par jayegi.
+      // Uske liye current symbol hi immediate-right reference banega.
+      previousRightValue = currentValue;
     }
 
-    // Step 7: Update previous value for next iteration
-    // Current value ko previous bana do, kyunki next iteration mein
-    // ye "previous" (right wala) ban jayega
-    prevValue = currentValue;
+    return result;
   }
 
-  // Step 8: Return the accumulated result
-  return result;
-}
+  /**
+   * ═══════════════════════════════════════════════════════════
+   * DRY RUN - RIGHT TO LEFT FLOW
+   * ═══════════════════════════════════════════════════════════
+   *
+   * Example:
+   * s = "MCMXCIV"
+   *
+   * Start:
+   *   result = 0
+   *   previousRightValue = 0
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 6, current = 'V'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 5                                         │
+   * │ previousRightValue = 0                                   │
+   * │ 5 < 0 ? no                                               │
+   * │ add 5                                                    │
+   * │ result = 5                                               │
+   * │ previousRightValue = 5                                   │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 5, current = 'I'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 1                                         │
+   * │ previousRightValue = 5                                   │
+   * │ 1 < 5 ? yes                                              │
+   * │ subtract 1                                               │
+   * │ result = 4                                               │
+   * │ previousRightValue = 1                                   │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 4, current = 'C'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 100                                       │
+   * │ previousRightValue = 1                                   │
+   * │ 100 < 1 ? no                                             │
+   * │ add 100                                                  │
+   * │ result = 104                                             │
+   * │ previousRightValue = 100                                 │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 3, current = 'X'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 10                                        │
+   * │ previousRightValue = 100                                 │
+   * │ 10 < 100 ? yes                                           │
+   * │ subtract 10                                              │
+   * │ result = 94                                              │
+   * │ previousRightValue = 10                                  │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 2, current = 'M'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 1000                                      │
+   * │ previousRightValue = 10                                  │
+   * │ add 1000                                                 │
+   * │ result = 1094                                            │
+   * │ previousRightValue = 1000                                │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 1, current = 'C'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 100                                       │
+   * │ previousRightValue = 1000                                │
+   * │ subtract 100                                             │
+   * │ result = 994                                             │
+   * │ previousRightValue = 100                                 │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * ═══════════════════════════════════════════════════════════
+   * i = 0, current = 'M'
+   * ═══════════════════════════════════════════════════════════
+   *
+   * ┌──────────────────────────────────────────────────────────┐
+   * │ currentValue = 1000                                      │
+   * │ previousRightValue = 100                                 │
+   * │ add 1000                                                 │
+   * │ result = 1994                                            │
+   * │ previousRightValue = 1000                                │
+   * └──────────────────────────────────────────────────────────┘
+   *
+   * Final answer = 1994
+   *
+   * ═══════════════════════════════════════════════════════════
+   * EDGE CASES
+   * ═══════════════════════════════════════════════════════════
+   *
+   * 1. Pure additions:
+   *    "III" -> 3
+   *
+   * 2. One subtraction pair:
+   *    "IV" -> 4
+   *
+   * 3. Many mixed cases:
+   *    "MCMXCIV" -> 1994
+   *
+   * 4. Rightmost character always add hota hai:
+   *    because previousRightValue initially 0 hota hai
+   */
 
-// Alternative: Ultra-compact version (Same logic, ek-liner comparison)
-function romanToIntCompact(s: string): number {
-  const map: { [key: string]: number } = {
-    I: 1,
-    V: 5,
-    X: 10,
-    L: 50,
-    C: 100,
-    D: 500,
-    M: 1000,
-  };
+  export function runTests(): void {
+    console.log('Testing Roman To Integer - OPTIMAL\n');
 
-  let result = 0;
-  let prev = 0;
+    const tests: Array<{
+      s: string;
+      expected: number;
+      description: string;
+    }> = [
+      { s: 'III', expected: 3, description: 'Only repeated additions' },
+      { s: 'LVIII', expected: 58, description: 'Mixed additive symbols' },
+      {
+        s: 'MCMXCIV',
+        expected: 1994,
+        description: 'Classic mixed subtraction example',
+      },
+      { s: 'IV', expected: 4, description: 'Smallest subtraction pair' },
+      { s: 'IX', expected: 9, description: 'Subtraction with ten' },
+      { s: 'XL', expected: 40, description: 'Subtraction in tens place' },
+      { s: 'CDXLIV', expected: 444, description: 'Multiple special-looking spots' },
+      { s: 'MMXXIV', expected: 2024, description: 'Modern year style numeral' },
+      { s: 'XLIX', expected: 49, description: 'Two subtraction pairs in one numeral' },
+    ];
 
-  // Right to left traverse with ternary operator
-  for (let i = s.length - 1; i >= 0; i--) {
-    const curr = map[s[i]];
-    // Agar current >= previous toh add, else subtract
-    result += curr >= prev ? curr : -curr;
-    prev = curr;
+    let passed = 0;
+
+    tests.forEach(({ s, expected, description }, index) => {
+      const result = romanToInt(s);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}"`);
+      console.log(
+        `  Expected: ${expected} | Got: ${result} -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
   }
-
-  return result;
 }
 
-// Test cases to verify correctness
-console.log(romanToInt_optimal('III')); // Output: 3
-console.log(romanToInt_optimal('LVIII')); // Output: 58
-console.log(romanToInt_optimal('MCMXCIV')); // Output: 1994
-console.log(romanToInt_optimal('IV')); // Output: 4
-console.log(romanToInt_optimal('IX')); // Output: 9
-console.log(romanToInt_optimal('XL')); // Output: 40
-console.log(romanToInt_optimal('CDXLIV')); // Output: 444
+RomanToIntegerOptimal.runTests();

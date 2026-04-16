@@ -165,21 +165,21 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 - [x] src/questions/string/easy/largest-odd-number-in-string/brute-force.ts
 - [x] src/questions/string/easy/largest-odd-number-in-string/optimal.ts
-- [ ] src/questions/string/easy/longest-common-prefix/brute-force.ts
-- [ ] src/questions/string/easy/longest-common-prefix/optimal.ts
-- [ ] src/questions/string/easy/nesting-depth-of-parentheses/optimal.ts
-- [ ] src/questions/string/easy/remove-outermost-paranthesis/better-solution.ts
-- [ ] src/questions/string/easy/remove-outermost-paranthesis/brute-force.ts
-- [ ] src/questions/string/easy/remove-outermost-paranthesis/optimal-solution.ts
-- [ ] src/questions/string/easy/roman-to-integer/better.ts
-- [ ] src/questions/string/easy/roman-to-integer/brute-force.ts
-- [ ] src/questions/string/easy/roman-to-integer/optimal.ts
-- [ ] src/questions/string/easy/rotate-string/brute-force.ts
-- [ ] src/questions/string/easy/rotate-string/optimal-KMP.ts
-- [ ] src/questions/string/easy/rotate-string/optimal.ts
-- [ ] src/questions/string/easy/valid-anagram/better-approach.ts
-- [ ] src/questions/string/easy/valid-anagram/brute-force.ts
-- [ ] src/questions/string/easy/valid-anagram/optimal.ts
+- [x] src/questions/string/easy/longest-common-prefix/brute-force.ts
+- [x] src/questions/string/easy/longest-common-prefix/optimal.ts
+- [x] src/questions/string/easy/nesting-depth-of-parentheses/optimal.ts
+- [x] src/questions/string/easy/remove-outermost-paranthesis/better-solution.ts
+- [x] src/questions/string/easy/remove-outermost-paranthesis/brute-force.ts
+- [x] src/questions/string/easy/remove-outermost-paranthesis/optimal-solution.ts
+- [x] src/questions/string/easy/roman-to-integer/better.ts
+- [x] src/questions/string/easy/roman-to-integer/brute-force.ts
+- [x] src/questions/string/easy/roman-to-integer/optimal.ts
+- [x] src/questions/string/easy/rotate-string/brute-force.ts
+- [x] src/questions/string/easy/rotate-string/optimal-KMP.ts
+- [x] src/questions/string/easy/rotate-string/optimal.ts
+- [x] src/questions/string/easy/valid-anagram/better-approach.ts
+- [x] src/questions/string/easy/valid-anagram/brute-force.ts
+- [x] src/questions/string/easy/valid-anagram/optimal.ts
 
 ---
 
