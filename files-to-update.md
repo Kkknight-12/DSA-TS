@@ -185,9 +185,9 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ## Strings - Medium (10 files)
 
-- [ ] src/questions/string/medium/longest-palindromic-substring/Optimal.ts
-- [ ] src/questions/string/medium/longest-palindromic-substring/better.ts
-- [ ] src/questions/string/medium/longest-palindromic-substring/brute-force.ts
+- [x] src/questions/string/medium/longest-palindromic-substring/Optimal.ts
+- [x] src/questions/string/medium/longest-palindromic-substring/better.ts
+- [x] src/questions/string/medium/longest-palindromic-substring/brute-force.ts
 - [ ] src/questions/string/medium/reverse-words-string/better-solution.ts
 - [ ] src/questions/string/medium/reverse-words-string/brute-force.ts
 - [ ] src/questions/string/medium/reverse-words-string/opitmal-solution.ts

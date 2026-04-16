@@ -205,7 +205,7 @@ We'll trace the most illustrative iterations here to understand the key concepts
 ```
 Modified:  # b # a # b # a # d #
 Index:     0 1 2 3 4 5 6 7 8 9 10
-P[]:       0 1 0 3 0 3 0 2 0 1 0
+P[]:       0 1 0 3 0 3 0 1 0 1 0
                ↑     ↑
               "bab" "aba"
 ```
@@ -372,7 +372,7 @@ if (i < R) {
 }
 ```
 
-- **Condition:** If `i` is within the current rightmost palindrome boundary `R`
+- **Condition:** If `i` is strictly inside the current rightmost palindrome boundary `R`
 - **Mirror:** Find the mirror position of `i` with respect to center `C`
 - **Optimization:** Use `P[mirror]` as a starting point, but cap it at `R - i` (the guaranteed symmetrical part)
 - This avoids redundant character comparisons!
@@ -443,27 +443,28 @@ Let's trace the algorithm with our example.
 |---|------|---|---|------|--------|--------|-----------|--------|------------|-------|-------|--------|--------|-------------|
 | 0 | # | 0 | 0 | NO | - | - | 0 | No | 0 | 0 | 0 | 0 | 0 | Boundary, can't expand left |
 | 1 | b | 0 | 0 | NO | - | - | 0 | '#'='#' ✓ | 1 | 1 | 2 | 1 | 1 | Found "#b#", radius 1 |
-| 2 | # | 1 | 2 | YES | 0 | 0 | 0 | 'b'≠'a' ✗ | 0 | 1 | 2 | 1 | 1 | Mirror helped, no expand |
+| 2 | # | 1 | 2 | NO | - | - | 0 | 'b'≠'a' ✗ | 0 | 1 | 2 | 1 | 1 | `i === R`, so no mirror reuse |
 | 3 | a | 1 | 2 | NO | - | - | 0 | '#'='#' ✓, 'b'='b' ✓, '#'='#' ✓ | 3 | 3 | 6 | 3 | 3 | Found "#b#a#b#", radius 3 |
 | 4 | # | 3 | 6 | YES | 2 | 0 | 0 | 'a'≠'b' ✗ | 0 | 3 | 6 | 3 | 3 | Mirror = 0, no expand |
-| 5 | b | 3 | 6 | YES | 1 | 1 | 1 | 'a'='a' ✓, '#'='#' ✓, 'b'≠'d' ✗ | 3 | 5 | 8 | 3 | 5 | Mirror gave us head start! |
-| 6 | # | 5 | 8 | YES | 4 | 0 | 0 | 'b'≠'a' ✗ | 0 | 5 | 8 | 3 | 5 | Mirror = 0, no expand |
-| 7 | a | 5 | 8 | YES | 3 | 3 | 1 | '#'='#' ✓, 'b'≠'d' ✗ | 2 | 5 | 8 | 3 | 5 | Capped at R-i=1, expanded by 1 |
-| 8 | # | 5 | 8 | YES | 2 | 0 | 0 | 'a'≠'d' ✗ | 0 | 5 | 8 | 3 | 5 | Mirror = 0, no expand |
-| 9 | d | 5 | 8 | NO | - | - | 0 | '#'='#' ✓ | 1 | 9 | 10 | 3 | 5 | Found "#d#", radius 1 |
-| 10 | # | 9 | 10 | YES | 8 | 0 | 0 | No | 0 | 9 | 10 | 3 | 5 | Boundary, can't expand right |
+| 5 | b | 3 | 6 | YES | 1 | 1 | 1 | 'a'='a' ✓, '#'='#' ✓, 'b'≠'d' ✗ | 3 | 5 | 8 | 3 | 3 | Mirror found another length-3 palindrome, but max tie does not update |
+| 6 | # | 5 | 8 | YES | 4 | 0 | 0 | 'b'≠'a' ✗ | 0 | 5 | 8 | 3 | 3 | Mirror = 0, no expand |
+| 7 | a | 5 | 8 | YES | 3 | 3 | 1 | 'b'≠'d' ✗ | 1 | 5 | 8 | 3 | 3 | Capped at R-i=1; expansion beyond boundary fails |
+| 8 | # | 5 | 8 | NO | - | - | 0 | 'a'≠'d' ✗ | 0 | 5 | 8 | 3 | 3 | `i === R`, so no mirror reuse |
+| 9 | d | 5 | 8 | NO | - | - | 0 | '#'='#' ✓ | 1 | 9 | 10 | 3 | 3 | Found "#d#", radius 1, not longer than best |
+| 10 | # | 9 | 10 | NO | - | - | 0 | No | 0 | 9 | 10 | 3 | 3 | `i === R`, boundary can't expand right |
 
 **Final Results:**
 
 ```
 Modified:  # b # a # b # a # d #
 Index:     0 1 2 3 4 5 6 7 8 9 10
-P[]:       0 1 0 3 0 3 0 2 0 1 0
+P[]:       0 1 0 3 0 3 0 1 0 1 0
 ```
 
 **Longest palindrome:**
-- `centerIndex = 5`, `maxLen = 3`
-- OR `centerIndex = 3`, `maxLen = 3` (both valid)
+- `centerIndex = 3`, `maxLen = 3` for this exact implementation
+- `centerIndex = 5`, `maxLen = 3` is also a valid palindrome center, but it is a tie
+- Code updates max only when `P[i] > maxLen`, so the earlier `"bab"` stays selected
 
 **For centerIndex = 5:**
 - `start = (5 - 3) / 2 = 1`
@@ -477,6 +478,8 @@ P[]:       0 1 0 3 0 3 0 2 0 1 0
 
 Both are correct answers!
 
+But with this exact code, `"bab"` is returned because ties do not replace the previous best.
+
 ---
 
 # Doubts
@@ -486,7 +489,7 @@ Q1: Why do we use Math.min(R - i, P[mirror])?
 
 A: Great question! This is the core optimization of Manacher's algorithm.
 
-When we're at position i and i < R (meaning i is inside a known palindrome),
+When we're at position i and i < R (meaning i is strictly inside a known palindrome),
 we know that the region from C to R is palindromic.
 
 The mirror position reflects the properties of i:

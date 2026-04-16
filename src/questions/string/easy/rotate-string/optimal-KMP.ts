@@ -6,6 +6,14 @@
  * Do strings `s` and `goal` diye hain.
  * Return `true` agar `goal`, `s` ki rotation ban sakta hai.
  *
+ * PREREQUISITE:
+ * Is solution ko samajhne se pehle KMP string searching clear honi chahiye.
+ * KMP ka main tool LPS array hota hai, jo mismatch ke baad matched prefix reuse
+ * karne me help karta hai.
+ *
+ * Concept notes:
+ * src/basics/algorithm/searching/string/KMP/notes.md
+ *
  * INTUITION (Soch):
  * ─────────────────
  * Double string trick same rahega:

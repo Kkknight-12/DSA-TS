@@ -22,7 +22,9 @@ You take the pattern and slide it over the text, one character at a time. At eac
 
 Let's try it:
 
-**Text:** `A B A B D A B A C D A B A B C A B A B`**Pattern:** `A B A B C`
+**Text:** `A B A B D A B A C D A B A B C A B A B`
+
+**Pattern:** `A B A B C`
 
 1. **Position 0:**
     - Text: `A B A B D...`
@@ -114,7 +116,8 @@ Now we use the LPS array to guide our search. We'll use two pointers:
 3. `i=2, j=2`: `TEXT[2]` ('A') == `PATTERN[2]` ('A'). **Match!** Increment both. `i=3, j=3`.
 4. `i=3, j=3`: `TEXT[3]` ('B') == `PATTERN[3]` ('B'). **Match!** Increment both. `i=4, j=4`.
 5. `i=4, j=4`: `TEXT[4]` ('D') != `PATTERN[4]` ('C'). **MISMATCH!**
-    - **This is the key step.** The naive algorithm would shift `j` to 0 and `i` to 1.
+    - **This is the key step.** The naive algorithm would move the candidate start from index `0` to index `1` and restart the pattern from `j = 0`.
+    - That does not mean KMP's current text pointer `i` goes backward. In KMP, `i` stays at the mismatch position and only `j` falls back.
     - KMP says: "We were at `j=4`. Let's look at `LPS[j-1]`, which is `LPS[3]`. The value is **2**."
     - This means the prefix of length 2 (`"AB"`) is also a suffix of the matched part (`"ABAB"`).
     - So, we don't need to go all the way back to the start of the pattern. We can just set `j = 2` and continue. We *do not* change `i`.
@@ -360,7 +363,7 @@ let i = 1;
 while (i < pattern.length) {
 if (pattern[i] === pattern[length]) {
 
-i want to know why we we start loop from index 1, why not from index 0.
+i want to know why we start loop from index 1, why not from index 0.
  why do we use pattern.length we should be using pattern.length - 1
 ```
 
@@ -419,7 +422,13 @@ Now let's analyze the two loop conditions:
 - When `i` becomes 4, the condition `4 < 4` is false, and the loop terminates.
 - **Result:** We calculated `lps[1]`, `lps[2]`, and `lps[3]`, but we **never calculated `lps[4]`**. Our LPS array would be incomplete.
 
-The value `lps[4]` is crucial. If the search algorithm matches the first 4 characters of the pattern (`"ABAB"`) and then mismatches at the 5th character (`C`), it will look up `lps[4-1]` (i.e., `lps[3]`). But what if it matched all 5 characters and needed to find the next occurrence? The full LPS array is essential for all possible scenarios in the search phase.
+For the mismatch-after-4-characters case, search uses `lps[3]`, because only `"ABAB"` was matched before the mismatch.
+
+Then why still calculate `lps[4]`?
+
+- The LPS builder's job is to calculate the value for every pattern index.
+- If you extend KMP to find all occurrences, including overlapping matches, then after a full match you commonly fall back using `lps[m - 1]`, which is `lps[4]` here.
+- Keeping the full LPS array also makes the helper reusable instead of only correct for one return-first-match flow.
 
 In programming, the standard way to iterate through all indices of an array of size `N` is `for (let i = 0; i < N; i++)`. Our `while` loop follows the exact same logic, just starting from `i = 1` instead of `0`.
 

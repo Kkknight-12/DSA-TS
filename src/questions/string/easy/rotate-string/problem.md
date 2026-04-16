@@ -115,6 +115,7 @@ but algorithmic guarantee explain karni ho toh KMP version zyada explicit hai.
 
 **Prerequisites (Agar Koi Chahiye):**
 - KMP prefix table / LPS array
+- Concept note: `src/basics/algorithm/searching/string/KMP/notes.md`
 
 **Intuition (Soch):**
 
