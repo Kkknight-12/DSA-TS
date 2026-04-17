@@ -1,183 +1,241 @@
-// Brute force ek rough draft tha, optimal solution ek polished final document hai jo professional aur maintainable hai!
-
 /**
- * OPTIMAL SOLUTION: String to Integer (atoi)
+ * STRING TO INTEGER (ATOI) - OPTIMAL
+ * ==================================
  *
- * PURPOSE: Convert string to 32-bit signed integer with robust error handling
+ * PROBLEM:
+ * String `s` ko 32-bit signed integer me convert karna hai.
  *
- * ALGORITHM:
- * 1. Trim leading whitespaces using built-in trim approach
- * 2. Extract and consume sign character (+ or -)
- * 3. Parse digits with overflow protection using mathematical bounds
- * 4. Return result with sign applied
+ * OPTIMAL IDEA:
+ * Single pass parser with pre-operation overflow guard.
  *
- * ADVANTAGES OVER BRUTE FORCE:
- * - Cleaner code structure with better readability
- * - Consistent overflow handling pattern
- * - More maintainable and easier to debug
- * - Professional coding standards
+ * INTUITION (Soch):
+ * -----------------
+ * Atoi ek controlled parser hai.
+ * Har character ko tabhi consume karte hain jab woh current phase ke rule se match kare.
  *
- * TIME COMPLEXITY: O(n) - single pass through string
- * SPACE COMPLEXITY: O(1) - constant extra space
+ * Phases:
  *
- * @param s - Input string to convert
- * @returns 32-bit signed integer
+ *   skip leading spaces
+ *   consume optional sign
+ *   consume digits
+ *   stop at first invalid character
+ *
+ * Overflow ka core idea:
+ *
+ *   result = result * 10 + digit
+ *
+ * Ye operation karne se pehle check karo:
+ *
+ *   result > 214748364
+ *   or result == 214748364 and digit too large
+ *
+ * Positive limit:
+ *   2147483647 -> last allowed digit 7
+ *
+ * Negative limit:
+ *   -2147483648 -> absolute last allowed digit 8
+ *
+ * TIME: O(n)
+ *   - parser string ko left-to-right read karta hai until stop
+ *
+ * SPACE: O(1)
+ *   - fixed variables only
  */
-function myAtoi(s: string): number {
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // CONSTANTS: 32-bit Signed Integer Boundaries
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // INT_MAX: Maximum positive value (2^31 - 1)
-  // INT_MIN: Minimum negative value (-2^31)
+
+namespace StringToIntegerAtoiOptimal {
   const INT_MAX = 2147483647;
   const INT_MIN = -2147483648;
+  const MAX_DIV_10 = Math.floor(INT_MAX / 10);
 
-  // Helper constant for overflow detection
-  // WHY: Hum result ko 10 se multiply karne se pehle check karenge
-  // ki result INT_MAX/10 se zyada toh nahi hai
-  const MAX_DIV_10 = Math.floor(INT_MAX / 10); // 214748364
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // PHASE 1: PREPROCESSING - Leading Whitespace Removal
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // String ke left side se saare spaces remove karo
-  // WHY: Problem statement says "ignore leading whitespace"
-  // OPTIMIZATION: Built-in trimStart() fast aur reliable hai
-  let i = 0; // Index pointer for traversal
-  const n = s.length;
-
-  // Manual trim implementation for better control
-  // Alternative: s = s.trimStart() bhi use kar sakte ho
-  while (i < n && s[i] === ' ') {
-    i++; // Skip all leading spaces
+  function isDigit(char: string): boolean {
+    return char >= '0' && char <= '9';
   }
 
-  // EDGE CASE: Agar string mein sirf spaces the
-  // Example: "    " → koi digit nahi mila
-  if (i >= n) {
-    return 0; // Early return for efficiency
+  function getDigit(char: string): number {
+    return char.charCodeAt(0) - '0'.charCodeAt(0);
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // PHASE 2: SIGN DETECTION AND EXTRACTION
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // Pehla non-space character check karo for sign
-  let sign = 1; // Default: positive number
-
-  if (s[i] === '-') {
-    // Negative sign detected
-    sign = -1;
-    i++; // Consume the sign character
-  } else if (s[i] === '+') {
-    // Positive sign detected (explicit)
-    sign = 1;
-    i++; // Consume the sign character
+  function clampValueForSign(sign: number): number {
+    return sign === 1 ? INT_MAX : INT_MIN;
   }
-  // ELSE: No sign character → default positive (sign = 1 already set)
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // PHASE 3: DIGIT PARSING WITH OVERFLOW PROTECTION
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  let result = 0; // Accumulator for building the final number
-
-  // Traverse string character by character
-  while (i < n) {
-    const char = s[i];
-
-    // ┌─────────────────────────────────────────────────┐
-    // │ VALIDATION: Check if current character is digit │
-    // └─────────────────────────────────────────────────┘
-    // Character must be in range '0' to '9'
-    // WHY: Non-digit character means reading should stop
-    // Example: "123abc" → stop at 'a'
-    if (char < '0' || char > '9') {
-      // Non-digit found → stop parsing immediately
-      break;
-    }
-
-    // ┌─────────────────────────────────────────────────┐
-    // │ CONVERSION: Character to Integer                │
-    // └─────────────────────────────────────────────────┘
-    // Convert character digit to numeric value
-    // METHOD 1: ASCII arithmetic (most efficient)
-    const digit = char.charCodeAt(0) - '0'.charCodeAt(0);
-    // Example: '5' (ASCII 53) - '0' (ASCII 48) = 5
-
-    // Alternative METHOD 2: Using parseInt
-    // const digit = parseInt(char, 10);
-
-    // ┌─────────────────────────────────────────────────┐
-    // │ CRITICAL: OVERFLOW DETECTION BEFORE OPERATION   │
-    // └─────────────────────────────────────────────────┘
-    // We check BEFORE doing: result = result * 10 + digit
-    // WHY: Agar pehle calculate karenge, toh overflow ho chuka hoga!
-
-    // ═══════════════════════════════════════════════════
-    // OVERFLOW CHECK 1: Result too large for multiplication
-    // ═══════════════════════════════════════════════════
-    // Agar result > MAX_DIV_10 (214748364)
-    // toh result * 10 zaroor overflow karega
-    // Example: result = 214748365, result * 10 = 2147483650 (> INT_MAX)
+  function crossesBoundary(result: number, digit: number, sign: number): boolean {
     if (result > MAX_DIV_10) {
-      // Overflow confirmed! Return boundary value based on sign
-      return sign === 1 ? INT_MAX : INT_MIN;
+      return true;
     }
 
-    // ═══════════════════════════════════════════════════
-    // OVERFLOW CHECK 2: Result at boundary, check last digit
-    // ═══════════════════════════════════════════════════
-    // Agar result exactly MAX_DIV_10 ke barabar hai (214748364)
-    // toh hume last digit check karni padegi
-    if (result === MAX_DIV_10) {
-      // For POSITIVE numbers: INT_MAX = 2147483647 (last digit = 7)
-      // Agar digit > 7, toh overflow hoga
-      if (sign === 1 && digit > 7) {
-        return INT_MAX;
-      }
-
-      // For NEGATIVE numbers: INT_MIN = -2147483648 (last digit = 8)
-      // Agar digit > 8, toh overflow hoga
-      // NOTE: -8 absolute value mein 8 hai, isliye digit > 8 check
-      if (sign === -1 && digit > 8) {
-        return INT_MIN;
-      }
+    if (result < MAX_DIV_10) {
+      return false;
     }
 
-    // ┌─────────────────────────────────────────────────┐
-    // │ SAFE OPERATION: Add digit to result             │
-    // └─────────────────────────────────────────────────┘
-    // Ab safely digit add kar sakte hain
-    // Formula: new_result = (old_result × 10) + current_digit
-    // Example: result = 12, digit = 3
-    //          new_result = 12 × 10 + 3 = 123
-    result = result * 10 + digit;
+    const lastAllowedDigit = sign === 1 ? 7 : 8;
 
-    // Move to next character
-    i++;
+    // result already boundary prefix 214748364 hai.
+    // Ab current digit decide karega final number valid rahega ya clamp hoga.
+    return digit > lastAllowedDigit;
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // PHASE 4: FINALIZATION - Apply Sign and Return
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // Result abhi unsigned form mein hai
-  // Sign apply karke final signed integer milega
-  // Example: result = 42, sign = -1 → final = -42
-  return result * sign;
+  function myAtoi(s: string): number {
+    let index = 0;
+    let sign = 1;
+    let result = 0;
+
+    while (index < s.length && s[index] === ' ') {
+      // Only leading spaces ignore hote hain.
+      // Digit parsing start hone ke baad space non-digit ki tarah stop karega.
+      index++;
+    }
+
+    if (index < s.length) {
+      const possibleSign = s[index];
+
+      if (possibleSign === '+' || possibleSign === '-') {
+        // Sign token consume karne ke baad next character digit hona chahiye,
+        // warna digit loop run nahi karega and result 0 rahega.
+        sign = possibleSign === '-' ? -1 : 1;
+        index++;
+      }
+    }
+
+    while (index < s.length && isDigit(s[index])) {
+      const digit = getDigit(s[index]);
+
+      if (crossesBoundary(result, digit, sign)) {
+        return clampValueForSign(sign);
+      }
+
+      // Safe append:
+      // old digits left shift by one decimal place, current digit rightmost place par add hota hai.
+      result = result * 10 + digit;
+      index++;
+    }
+
+    return result * sign;
+  }
+
+  /**
+   * ==========================================================
+   * DRY RUN - SINGLE PASS WITH OVERFLOW GUARD
+   * ==========================================================
+   *
+   * Example:
+   * s = "-91283472332"
+   *
+   * Start:
+   *   index = 0
+   *   sign = 1
+   *   result = 0
+   *
+   * ==========================================================
+   * Phase 1: Sign
+   * ==========================================================
+   *
+   * +--------------------------------------------------------+
+   * | s[0] = '-'                                            |
+   * | sign = -1                                             |
+   * | index = 1                                             |
+   * +--------------------------------------------------------+
+   *
+   * ==========================================================
+   * Phase 2: Build number
+   * ==========================================================
+   *
+   * +--------------------------------------------------------+
+   * | read '9' -> result = 9                                |
+   * | read '1' -> result = 91                               |
+   * | read '2' -> result = 912                              |
+   * | read '8' -> result = 9128                             |
+   * | ...                                                   |
+   * | result grows digit by digit                           |
+   * +--------------------------------------------------------+
+   *
+   * Critical boundary moment:
+   *
+   * +--------------------------------------------------------+
+   * | result = 912834723                                    |
+   * | MAX_DIV_10 = 214748364                                |
+   * | result > MAX_DIV_10                                   |
+   * | next multiplication by 10 will definitely overflow     |
+   * | sign = -1, so return INT_MIN                          |
+   * +--------------------------------------------------------+
+   *
+   * Final answer = -2147483648
+   *
+   * ----------------------------------------------------------
+   * Boundary exact example:
+   * s = "-2147483648"
+   *
+   * +--------------------------------------------------------+
+   * | before last digit: result = 214748364                  |
+   * | digit = 8                                              |
+   * | sign = -1                                              |
+   * | lastAllowedDigit = 8                                   |
+   * | digit > 8 ? false                                      |
+   * | safe, result becomes 2147483648                        |
+   * | final = -2147483648                                    |
+   * +--------------------------------------------------------+
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. Empty / only spaces:
+   *    "" or "   " -> 0
+   *
+   * 2. Sign only:
+   *    "-" -> 0
+   *
+   * 3. Sign then space:
+   *    "+ 1" -> 0
+   *
+   * 4. Digits then letters:
+   *    "4193 with words" -> 4193
+   *
+   * 5. Overflow:
+   *    "2147483648" -> 2147483647
+   */
+
+  export function runTests(): void {
+    console.log('Testing String To Integer (atoi) - OPTIMAL\n');
+
+    const tests: Array<{
+      s: string;
+      expected: number;
+      description: string;
+    }> = [
+      { s: '42', expected: 42, description: 'Simple positive number' },
+      { s: '   -42', expected: -42, description: 'Leading spaces and negative sign' },
+      { s: '4193 with words', expected: 4193, description: 'Stop at first non-digit' },
+      { s: 'words and 987', expected: 0, description: 'Starts with non-digit' },
+      { s: '-91283472332', expected: INT_MIN, description: 'Negative underflow clamp' },
+      { s: '91283472332', expected: INT_MAX, description: 'Positive overflow clamp' },
+      { s: '+1', expected: 1, description: 'Explicit positive sign' },
+      { s: '+-12', expected: 0, description: 'Invalid sign sequence' },
+      { s: '00000-42a1234', expected: 0, description: 'Zeros then stop at minus' },
+      { s: '2147483648', expected: INT_MAX, description: 'Just above INT_MAX' },
+      { s: '-2147483648', expected: INT_MIN, description: 'Exact INT_MIN allowed' },
+      { s: '   +0 123', expected: 0, description: 'Stop after zero before space' },
+    ];
+
+    let passed = 0;
+
+    tests.forEach(({ s, expected, description }, index) => {
+      const result = myAtoi(s);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}"`);
+      console.log(
+        `  Expected: ${expected} | Got: ${result} -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// HELPER FUNCTION (Optional Enhancement)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-/**
- * Check if a character is a digit
- * @param char - Character to check
- * @returns true if digit, false otherwise
- */
-function isDigit(char: string): boolean {
-  return char >= '0' && char <= '9';
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// EXPORT
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-export { myAtoi, isDigit };
+StringToIntegerAtoiOptimal.runTests();

@@ -1,138 +1,243 @@
 /**
- * PURPOSE: Convert string to 32-bit signed integer using Brute Force approach
+ * STRING TO INTEGER (ATOI) - BRUTE FORCE
+ * ======================================
  *
- * APPROACH: Manually traverse string with explicit condition checking
- * - Skip leading whitespaces using loop
- * - Detect sign explicitly (+ or -)
- * - Build number digit by digit with overflow checks
- * - Handle all edge cases with multiple if-else conditions
+ * PROBLEM:
+ * String `s` ko 32-bit signed integer me convert karna hai.
  *
- * TIME: O(n) where n is string length
- * SPACE: O(1) only using variables
+ * Parsing rules:
+ *   1. leading spaces skip karo
+ *   2. optional sign read karo
+ *   3. digits read karo
+ *   4. first non-digit par stop karo
+ *   5. overflow/underflow ko clamp karo
+ *
+ * Examples:
+ *   "42"             -> 42
+ *   "   -42"         -> -42
+ *   "4193 with words" -> 4193
+ *   "words and 987" -> 0
+ *
+ * INTUITION (Soch):
+ * -----------------
+ * Ye direct `parseInt` problem nahi hai.
+ * Hume parser ke rules manually follow karne hain.
+ *
+ * So hum phases me sochenge:
+ *
+ *   spaces -> sign -> digits -> stop
+ *
+ * Number build karte waqt:
+ *
+ *   result = result * 10 + digit
+ *
+ * Example:
+ *
+ *   "123"
+ *   result = 0
+ *   read 1 -> 0 * 10 + 1 = 1
+ *   read 2 -> 1 * 10 + 2 = 12
+ *   read 3 -> 12 * 10 + 3 = 123
+ *
+ * TIME: O(n)
+ *   - each character at most once read hota hai
+ *
+ * SPACE: O(1)
+ *   - sirf variables use hote hain
  */
-function myAtoi(s: string): number {
-  // STEP 1: Define constants aur initial variables
-  // INT_MAX aur INT_MIN 32-bit signed integer ki boundaries hain
-  const INT_MAX = 2147483647; // 2^31 - 1
-  const INT_MIN = -2147483648; // -2^31
 
-  // index: current position in string (traverse karne ke liye)
-  let index = 0;
+namespace StringToIntegerAtoiBruteForce {
+  const INT_MAX = 2147483647;
+  const INT_MIN = -2147483648;
+  const MAX_DIV_10 = Math.floor(INT_MAX / 10);
 
-  // sign: number positive hai ya negative (default = positive)
-  let sign = 1;
-
-  // result: final answer yahan build hoga
-  let result = 0;
-
-  // n: string ki total length (boundary check ke liye)
-  const n = s.length;
-
-  // EDGE CASE: Agar string hi empty hai, toh 0 return karo
-  if (n === 0) {
-    return 0;
+  function isDigit(char: string): boolean {
+    return char >= '0' && char <= '9';
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // STEP 2: Leading Whitespaces Skip Karo
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // Jab tak space milta rahe aur string khatam na ho, tab tak skip karo
-  // WHY: Problem statement kehti hai leading spaces ignore karo
-  while (index < n && s[index] === ' ') {
-    index++; // Agle character pe move karo
+  function charToDigit(char: string): number {
+    return char.charCodeAt(0) - '0'.charCodeAt(0);
   }
 
-  // EDGE CASE: Agar saari string me sirf spaces the
-  // Example: "    " → index = n ho jaega
-  if (index === n) {
-    return 0; // Koi digit nahi mila, 0 return karo
-  }
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // STEP 3: Sign Detection (+ ya - check karo)
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // Pehla non-space character check karo
-  if (s[index] === '+') {
-    // Positive sign mila
-    sign = 1;
-    index++; // Sign consume karke aage badho
-  } else if (s[index] === '-') {
-    // Negative sign mila
-    sign = -1;
-    index++; // Sign consume karke aage badho
-  }
-  // ELSE case: Agar + ya - nahi hai, toh sign = 1 already hai (default positive)
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // STEP 4: Digit by Digit Number Build Karo
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // Jab tak valid digits milte rahe, tab tak process karo
-  while (index < n) {
-    const currentChar = s[index];
-
-    // Character check: Kya ye digit hai? (0-9)
-    // WHY: Non-digit character pe reading stop karni hai
-    if (currentChar < '0' || currentChar > '9') {
-      // Non-digit mila (letter, space, dot, etc.)
-      // Example: "123abc" me 'a' pe stop
-      break; // Loop se bahar niklo
+  function wouldOverflow(result: number, digit: number, sign: number): boolean {
+    if (result > MAX_DIV_10) {
+      return true;
     }
 
-    // Character ko actual digit value me convert karo
-    // HOW: ASCII difference use karke
-    // '0' ka ASCII = 48, '5' ka ASCII = 53
-    // '5' - '0' = 53 - 48 = 5 (actual digit value)
-    const digit = currentChar.charCodeAt(0) - '0'.charCodeAt(0);
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // CRITICAL: OVERFLOW CHECK (result * 10 + digit se pehle)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-    // CHECK 1: Agar result already INT_MAX/10 se bada hai
-    // Example: result = 214748365, INT_MAX/10 = 214748364
-    // Agar ye multiply by 10 hoga, toh overflow pakka hai
-    if (result > Math.floor(INT_MAX / 10)) {
-      // Overflow detect hua!
-      // Positive number overflow → return INT_MAX
-      // Negative number overflow → return INT_MIN
-      return sign === 1 ? INT_MAX : INT_MIN;
+    if (result === MAX_DIV_10) {
+      // Positive upper boundary: 2147483647, last allowed digit = 7.
+      // Negative lower boundary: -2147483648, absolute last allowed digit = 8.
+      return sign === 1 ? digit > 7 : digit > 8;
     }
 
-    // CHECK 2: Agar result exactly INT_MAX/10 ke barabar hai
-    // Example: result = 214748364 (INT_MAX/10)
-    // Tab last digit pe dhyan dena padega
-    if (result === Math.floor(INT_MAX / 10)) {
-      // Positive number ka last digit 7 se bada nahi ho sakta
-      // MAX = 2147483647 (last digit = 7)
-      if (sign === 1 && digit > 7) {
-        return INT_MAX; // Overflow! MAX return karo
+    return false;
+  }
+
+  function myAtoi(s: string): number {
+    let index = 0;
+    let sign = 1;
+    let result = 0;
+
+    while (index < s.length && s[index] === ' ') {
+      // Leading spaces number ka part nahi hote.
+      // Atoi rules ke according unhe ignore karke first meaningful char tak jaana hai.
+      index++;
+    }
+
+    if (index < s.length && (s[index] === '+' || s[index] === '-')) {
+      // Sign sirf spaces ke baad first meaningful position par valid hai.
+      // Is sign ko consume karte hi digit parsing next character se start hogi.
+      sign = s[index] === '-' ? -1 : 1;
+      index++;
+    }
+
+    while (index < s.length) {
+      const char = s[index];
+
+      if (!isDigit(char)) {
+        // First non-digit parsing ko stop karta hai.
+        // Uske baad ke characters answer ko affect nahi karte.
+        break;
       }
 
-      // Negative number ka last digit 8 se bada nahi ho sakta
-      // MIN = -2147483648 (last digit = 8)
-      if (sign === -1 && digit > 8) {
-        return INT_MIN; // Overflow! MIN return karo
+      const digit = charToDigit(char);
+
+      if (wouldOverflow(result, digit, sign)) {
+        return sign === 1 ? INT_MAX : INT_MIN;
       }
+
+      // Current digit ko number ke right side append kar rahe hain.
+      // Previous result one decimal place left shift hota hai via * 10.
+      result = result * 10 + digit;
+      index++;
     }
 
-    // Ab safely digit add kar sakte hain
-    // Formula: new_result = old_result * 10 + current_digit
-    // Example: result=12, digit=3 → result = 12*10 + 3 = 123
-    result = result * 10 + digit;
-
-    // Agle character pe move karo
-    index++;
+    return result * sign;
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // STEP 5: Sign Apply Karke Final Answer Return Karo
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // result abhi unsigned hai, sign multiply karke actual value milega
-  // Example: result=42, sign=-1 → final = -42
-  return result * sign;
+  /**
+   * ==========================================================
+   * DRY RUN - MANUAL PARSER
+   * ==========================================================
+   *
+   * Example:
+   * s = "   -42 with words"
+   *
+   * Start:
+   *   index = 0
+   *   sign = 1
+   *   result = 0
+   *
+   * ==========================================================
+   * Phase 1: Skip spaces
+   * ==========================================================
+   *
+   * +--------------------------------------------------------+
+   * | index 0 = space -> skip                               |
+   * | index 1 = space -> skip                               |
+   * | index 2 = space -> skip                               |
+   * | index 3 = '-'                                         |
+   * | first meaningful char found                           |
+   * +--------------------------------------------------------+
+   *
+   * ==========================================================
+   * Phase 2: Read sign
+   * ==========================================================
+   *
+   * +--------------------------------------------------------+
+   * | s[3] = '-'                                            |
+   * | sign = -1                                             |
+   * | index moves to 4                                      |
+   * +--------------------------------------------------------+
+   *
+   * ==========================================================
+   * Phase 3: Parse digits
+   * ==========================================================
+   *
+   * +--------------------------------------------------------+
+   * | index = 4, char = '4'                                 |
+   * | digit = 4                                             |
+   * | result = 0 * 10 + 4 = 4                               |
+   * +--------------------------------------------------------+
+   *
+   * +--------------------------------------------------------+
+   * | index = 5, char = '2'                                 |
+   * | digit = 2                                             |
+   * | result = 4 * 10 + 2 = 42                              |
+   * +--------------------------------------------------------+
+   *
+   * +--------------------------------------------------------+
+   * | index = 6, char = space                               |
+   * | non-digit found -> stop parsing                       |
+   * +--------------------------------------------------------+
+   *
+   * Final:
+   *   result * sign = 42 * -1 = -42
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. No digits:
+   *    "words and 987" -> 0
+   *
+   * 2. Sign without digits:
+   *    "+" -> 0
+   *
+   * 3. Invalid sign pattern:
+   *    "+-12" -> 0
+   *
+   * 4. Stop after digits:
+   *    "4193 with words" -> 4193
+   *
+   * 5. Overflow:
+   *    "91283472332" -> 2147483647
+   *
+   * 6. Underflow:
+   *    "-91283472332" -> -2147483648
+   */
+
+  export function runTests(): void {
+    console.log('Testing String To Integer (atoi) - BRUTE FORCE\n');
+
+    const tests: Array<{
+      s: string;
+      expected: number;
+      description: string;
+    }> = [
+      { s: '42', expected: 42, description: 'Simple positive number' },
+      { s: '   -42', expected: -42, description: 'Leading spaces and negative sign' },
+      { s: '4193 with words', expected: 4193, description: 'Stop at first non-digit' },
+      { s: 'words and 987', expected: 0, description: 'Starts with non-digit' },
+      { s: '-91283472332', expected: INT_MIN, description: 'Negative underflow clamp' },
+      { s: '91283472332', expected: INT_MAX, description: 'Positive overflow clamp' },
+      { s: '+1', expected: 1, description: 'Explicit positive sign' },
+      { s: '+-12', expected: 0, description: 'Invalid sign sequence' },
+      { s: '00000-42a1234', expected: 0, description: 'Zeros then stop at minus' },
+      { s: '2147483648', expected: INT_MAX, description: 'Just above INT_MAX' },
+      { s: '-2147483648', expected: INT_MIN, description: 'Exact INT_MIN allowed' },
+      { s: '   +0 123', expected: 0, description: 'Stop after zero before space' },
+    ];
+
+    let passed = 0;
+
+    tests.forEach(({ s, expected, description }, index) => {
+      const result = myAtoi(s);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}"`);
+      console.log(
+        `  Expected: ${expected} | Got: ${result} -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// EXPORT
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-export { myAtoi };
+StringToIntegerAtoiBruteForce.runTests();

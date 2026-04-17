@@ -1,84 +1,222 @@
 /**
- * PROBLEM: Sort Characters By Frequency (Brute Force Approach)
+ * SORT CHARACTERS BY FREQUENCY - BRUTE FORCE
+ * ==========================================
  *
- * PURPOSE: Given a string, sort it in decreasing order based on
- * the frequency of characters. Characters with higher frequency
- * should appear first, and same characters must be grouped together.
+ * PROBLEM:
+ * String `s` diya hai.
+ * Characters ko unki frequency ke decreasing order me arrange karna hai.
  *
- * APPROACH: Brute Force with Sorting
- * 1. Count frequency of each character using Hash Map
- * 2. Convert frequency map to array of [char, freq] pairs
- * 3. Sort array by frequency in descending order
- * 4. Build result string by repeating each character
+ * Examples:
+ *   s = "tree"   -> "eetr" or "eert"
+ *   s = "cccaaa" -> "cccaaa" or "aaaccc"
  *
- * TIME COMPLEXITY: O(n + k log k) where n = string length, k = unique chars
- * SPACE COMPLEXITY: O(n) for frequency map and result
+ * IMPORTANT:
+ * Same frequency wale characters ka order flexible hota hai.
+ * Isliye "cccaaa" and "aaaccc" dono valid ho sakte hain.
+ *
+ * INTUITION (Soch):
+ * -----------------
+ * Pehle count karo:
+ *
+ *   "tree"
+ *   t -> 1
+ *   r -> 1
+ *   e -> 2
+ *
+ * Phir characters ko count ke basis par sort karo:
+ *
+ *   e(2), t(1), r(1)
+ *
+ * Final output:
+ *
+ *   "eetr"
+ *
+ * TIME: O(n + k log k)
+ *   - n characters count hote hain
+ *   - k unique characters sort hote hain
+ *
+ * SPACE: O(n + k)
+ *   - frequency map + result string
  */
 
-function frequencySort(s: string): string {
-  // STEP 1: Frequency count karo using Hash Map
-  // Map<character, count> structure use kar rahe hain
-  const freqMap = new Map<string, number>();
+namespace SortCharactersByFrequencyBruteForce {
+  function buildFrequencyMap(s: string): Map<string, number> {
+    const frequency = new Map<string, number>();
 
-  // String ko iterate karo aur har character ka count increment karo
-  // Time: O(n) - har character ko ek baar dekh rahe hain
-  for (const char of s) {
-    // Agar character pehle se map mein hai, to count++ karo
-    // Warna 0 se start karo aur 1 add karo
-    freqMap.set(char, (freqMap.get(char) || 0) + 1);
+    for (const char of s) {
+      const previousCount = frequency.get(char) ?? 0;
+
+      // frequency map character inventory hai.
+      // Current char ek aur baar mila, so uska count one increase hota hai.
+      frequency.set(char, previousCount + 1);
+    }
+
+    return frequency;
   }
 
-  // STEP 2: Map ko array mein convert karo taaki sort kar sakein
-  // Array.from() ya spread operator se Map ko array bana rahe hain
-  // Format: [['e', 2], ['t', 1], ['r', 1]]
-  const freqArray: [string, number][] = Array.from(freqMap.entries());
+  function frequencySort(s: string): string {
+    const frequency = buildFrequencyMap(s);
+    const entries = Array.from(frequency.entries());
 
-  // STEP 3: Array ko frequency ke basis pe sort karo (descending order)
-  // Custom comparator use kar rahe hain
-  // b[1] - a[1] matlab higher frequency pehle aayegi
-  // Time: O(k log k) where k = unique characters
-  freqArray.sort((a, b) => {
-    // a[1] = first pair ki frequency
-    // b[1] = second pair ki frequency
-    // Descending order ke liye: b - a
-    return b[1] - a[1];
-  });
+    // Higher frequency groups answer me pehle aane chahiye.
+    // Equal frequency me order problem ke hisaab se flexible hai.
+    entries.sort((first, second) => second[1] - first[1]);
 
-  // STEP 4: Final result string build karo
-  // Har character ko uski frequency times repeat karke add karo
-  let result = '';
+    const resultParts: string[] = [];
 
-  // Sorted array ko traverse karo
-  // Time: O(n) - total n characters add ho rahe hain
-  for (const [char, freq] of freqArray) {
-    // repeat() method: character ko freq times repeat kar deta hai
-    // Example: 'e'.repeat(2) = "ee"
-    result += char.repeat(freq);
+    for (const [char, count] of entries) {
+      // Same character ko grouped form me output karna hai.
+      // count times repeat karne se group directly ban jata hai.
+      resultParts.push(char.repeat(count));
+    }
+
+    return resultParts.join('');
   }
 
-  // Final sorted string return karo
-  return result;
+  function isValidFrequencySorted(input: string, output: string): boolean {
+    if (input.length !== output.length) {
+      return false;
+    }
+
+    const inputFrequency = buildFrequencyMap(input);
+    const outputFrequency = buildFrequencyMap(output);
+
+    for (const [char, count] of inputFrequency.entries()) {
+      if (outputFrequency.get(char) !== count) {
+        return false;
+      }
+    }
+
+    let previousGroupFrequency = Number.POSITIVE_INFINITY;
+    let index = 0;
+
+    while (index < output.length) {
+      const char = output[index];
+      let groupLength = 0;
+
+      while (index < output.length && output[index] === char) {
+        groupLength++;
+        index++;
+      }
+
+      // Output group length original frequency ke barabar honi chahiye.
+      // Agar char split ho gaya ya extra/missing hai, validity break ho jayegi.
+      if (groupLength !== inputFrequency.get(char)) {
+        return false;
+      }
+
+      // Frequencies non-increasing order me honi chahiye.
+      // Current group previous group se zyada frequent hua, toh sorting wrong hai.
+      if (groupLength > previousGroupFrequency) {
+        return false;
+      }
+
+      previousGroupFrequency = groupLength;
+    }
+
+    return true;
+  }
+
+  /**
+   * ==========================================================
+   * DRY RUN - FREQUENCY MAP + SORT
+   * ==========================================================
+   *
+   * Example:
+   * s = "tree"
+   *
+   * Step 1: build frequency map
+   *
+   * +--------------------------------------------------------+
+   * | char 't' -> { t: 1 }                                  |
+   * | char 'r' -> { t: 1, r: 1 }                             |
+   * | char 'e' -> { t: 1, r: 1, e: 1 }                       |
+   * | char 'e' -> { t: 1, r: 1, e: 2 }                       |
+   * +--------------------------------------------------------+
+   *
+   * Step 2: convert to entries
+   *
+   * +--------------------------------------------------------+
+   * | entries = [["t",1], ["r",1], ["e",2]]                 |
+   * +--------------------------------------------------------+
+   *
+   * Step 3: sort by frequency descending
+   *
+   * +--------------------------------------------------------+
+   * | sorted = [["e",2], ["t",1], ["r",1]]                  |
+   * +--------------------------------------------------------+
+   *
+   * Step 4: build output
+   *
+   * +--------------------------------------------------------+
+   * | "e".repeat(2) = "ee"                                  |
+   * | "t".repeat(1) = "t"                                   |
+   * | "r".repeat(1) = "r"                                   |
+   * | result = "eetr"                                       |
+   * +--------------------------------------------------------+
+   *
+   * Final answer = "eetr"
+   *
+   * Note:
+   *   "eert" bhi valid hai because t/r same frequency ke hain.
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. Empty string:
+   *    "" -> ""
+   *
+   * 2. Single character:
+   *    "a" -> "a"
+   *
+   * 3. Equal highest frequencies:
+   *    "cccaaa" -> "cccaaa" or "aaaccc"
+   *
+   * 4. Case-sensitive characters:
+   *    "Aabb" -> "bbAa" or "bbA a style variants depending ties"
+   *
+   * 5. Digits/symbols:
+   *    "2a554442f544asfasssffffasss"
+   */
+
+  export function runTests(): void {
+    console.log('Testing Sort Characters By Frequency - BRUTE FORCE\n');
+
+    const tests: Array<{
+      s: string;
+      description: string;
+    }> = [
+      { s: 'tree', description: 'One character has highest frequency' },
+      { s: 'cccaaa', description: 'Two characters tied for highest frequency' },
+      { s: 'Aabb', description: 'Case-sensitive characters' },
+      { s: '', description: 'Empty string' },
+      { s: 'a', description: 'Single character' },
+      { s: 'raaeaedere', description: 'Multiple frequency groups' },
+      { s: 'bbbaaac', description: 'Two top groups and one small group' },
+      {
+        s: '2a554442f544asfasssffffasss',
+        description: 'Digits and letters with repeated groups',
+      },
+    ];
+
+    let passed = 0;
+
+    tests.forEach(({ s, description }, index) => {
+      const result = frequencySort(s);
+      const pass = isValidFrequencySorted(s, result);
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}"`);
+      console.log(`  Got: "${result}" -> ${pass ? 'PASS' : 'FAIL'}`);
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 }
 
-// Alternative Implementation (More Readable but Same Logic)
-function frequencySortAlternative(s: string): string {
-  // Frequency map banao
-  const freqMap: { [key: string]: number } = {};
-
-  // Count karo
-  for (let i = 0; i < s.length; i++) {
-    const char = s[i];
-    freqMap[char] = (freqMap[char] || 0) + 1;
-  }
-
-  // Object ko array mein convert karo
-  const entries = Object.entries(freqMap);
-
-  // Sort karo descending order mein
-  entries.sort((a, b) => b[1] - a[1]);
-
-  // Result build karo using reduce (functional approach)
-  return entries.reduce((result, [char, freq]) => {
-    return result + char.repeat(freq);
-  }, '');
-}
+SortCharactersByFrequencyBruteForce.runTests();

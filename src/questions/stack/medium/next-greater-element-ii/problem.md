@@ -1,76 +1,121 @@
-# Next Greater Element II (Circular Array)
+# Next Greater Element II
 
-[explanation](https://gemini.google.com/gem/9013c4cd97d5/aa6ae9ce46b57899)
+## Problem
 
-[visualise](https://gemini.google.com/gem/9013c4cd97d5/15a038c858a98c43)
+Circular integer array `nums` diya hai.
+Har index ke liye uska next greater element return karo.
 
-## Problem Statement
-Given a circular integer array `arr`, return the next greater element for every element in `arr`.
-The next greater element for an element `x` is the first element greater than `x` that we come across while traversing the array in a clockwise manner. If it doesn't exist, return -1.
+Next greater element ka matlab:
 
-**Example 1:**
-```
-Input: arr = [3, 10, 4, 2, 1, 2, 6, 1, 7, 2, 9]
-Output: [10, -1, 6, 6, 2, 6, 7, 7, 9, 9, 10]
+```txt
+current index ke baad clockwise direction me
+pehla element jo current value se strictly greater ho
 ```
 
-**Example 2:**
+Agar aisa element nahi milta, answer `-1`.
+
+Circular array ka matlab:
+
+```txt
+last index ke baad search wapas index 0 se continue ho sakti hai
 ```
-Input: arr = [5, 7, 1, 7, 6, 0]
-Output: [7, -1, 7, -1, 7, 5]
+
+Example:
+
+```txt
+nums = [1, 2, 1]
+answer = [2, -1, 2]
 ```
 
----
+Why:
 
-## Approaches
+```txt
+index 0 value 1 -> next greater 2
+index 1 value 2 -> no greater element
+index 2 value 1 -> circularly next greater 2 at index 1
+```
 
-### 1. Brute Force (Nested Loops with Modulo)
-**Concept:**
-Simple logic hai. Har element ke liye, uske aage wale elements ko check karo. Kyunki array circular hai, agar hum end tak pahunch gaye aur bada element nahi mila, toh hum wapas start se check karenge (up to current index).
+## Important Details
 
-**Steps:**
-1. Ek result array banao, initially sab `-1`.
-2. Outer loop `i` chalega `0` se `n-1` tak.
-3. Inner loop `j` chalega `1` se `n-1` tak (ye represent karta hai distance from `i`).
-4. Actual index check karne ke liye modulus operator use karenge: `index = (i + j) % n`.
-5. Agar `arr[index] > arr[i]`, toh mil gaya Next Greater Element. Store karo aur inner loop break kardo.
+Greater means strictly greater:
 
-**Time Complexity:** O(N^2) - Worst case mein har element ke liye pura array traverse karna padega.
-**Space Complexity:** O(1) - Sirf result array use ho raha hai.
+```txt
+2 is not greater than 2
+```
 
-### 2. Optimal Approach (Monotonic Stack - Forward Iteration)
-**Concept:**
-Hum Stack ka use karke isko O(N) mein solve kar sakte hain using **Forward Iteration**.
-Is approach mein hum Stack mein **indices** store karte hain, values nahi.
-Iska main idea hai: "Waiting List".
+Circular does not mean infinite loop.
+Each element only needs to look at at most `n - 1` next elements.
 
-**Logic (Hinglish):**
-- Stack un elements ke indices ko hold karta hai jinka "Next Greater Element" abhi tak nahi mila.
-- Jab hum naye element `arr[i]` par aate hain, hum check karte hain: "Kya ye naya element stack ke top wale elements se bada hai?"
-- Agar bada hai, toh iska matlab `arr[i]` hi un stack wale elements ka NGE hai. Hum unhe pop karke answer update kar dete hain.
-- Agar chota hai, toh iska matlab abhi `arr[i]` bhi "waiting list" (stack) mein jayega taaki future mein koi isse bada mile.
+## Approach 1: Brute Force
 
-**Circular Property:**
-- Array circular hai, isliye ho sakta hai last element ka NGE first element ho.
-- Isliye hum loop ko `2 * n` baar chalate hain (array ko imaginary double karke).
-- Lekin stack mein `push` hum sirf `i < n` (first pass) mein karte hain, kyunki humein sirf original elements ke liye answer chahiye. Second pass (`n` to `2n-1`) sirf stack mein bache hue elements ka answer resolve karne ke liye hota hai.
+For every index `i`, scan next `n - 1` positions using modulo.
 
-**Steps:**
-1. Result array `ans` ko `-1` se initialize karo.
-2. Ek empty Stack banao jo indices store karega.
-3. Loop `i` from `0` to `2*n - 1`.
-4. Current index `idx = i % n`.
-5. While `stack` is not empty AND `arr[idx] > arr[stack.top()]`:
-   - `prevIndex = stack.pop()`
-   - `ans[prevIndex] = arr[idx]` (Current element hi pichle element ka NGE hai).
-6. Agar `i < n` hai, toh `stack.push(i)`.
+```txt
+nextIndex = (i + distance) % n
+```
 
-**Time Complexity:** O(N) - Har element max 1 baar push aur 1 baar pop hoga.
-**Space Complexity:** O(N) - Stack ke liye.
+If `nums[nextIndex] > nums[i]`, answer found.
 
----
+Prerequisite:
 
-## Select Approach
-Kaunsa approach implement karna hai?
-1. **Brute Force** (Simple but slow)
-2. **Optimal** (Stack based, efficient)
+```txt
+modulo for circular indexing
+nested loops
+```
+
+## Approach 2: Optimal - Monotonic Stack
+
+Use stack as a waiting list.
+
+Stack stores indices whose next greater element is not found yet.
+
+When current value is greater than stack top value:
+
+```txt
+current value is the answer for stack top index
+```
+
+Then pop and keep resolving while current value is greater.
+
+Circular handling:
+
+```txt
+loop from 0 to 2*n - 1
+actual index = i % n
+```
+
+Push only during first pass:
+
+```txt
+if i < n, push index
+```
+
+Second pass exists only to give unresolved first-pass elements a circular chance.
+
+Prerequisite:
+
+```txt
+monotonic stack
+circular indexing with modulo
+next greater element pattern
+```
+
+## Complexity Comparison
+
+| Approach | Idea | Time | Space | Notes |
+|---|---|---:|---:|---|
+| Brute Force | For each index scan circularly | O(n^2) | O(1) extra | Simple but slow |
+| Optimal | Waiting-list stack + 2 passes | O(n) | O(n) | Each index pushed/popped at most once |
+
+Result array space is required for the answer.
+
+## Core Insight
+
+Stack holds unresolved indices.
+
+Short memory:
+
+```txt
+current greater value resolves smaller waiting values
+second pass resolves circular leftovers
+```

@@ -1,175 +1,251 @@
 /**
- * ═══════════════════════════════════════════════════════════════════
- * THEORETICAL IN-PLACE SOLUTION
- * ═══════════════════════════════════════════════════════════════════
+ * REVERSE WORDS IN A STRING - OPTIMAL CONCEPT
+ * ===========================================
  *
- * PURPOSE: Reverse words using O(1) extra space
+ * PROBLEM:
+ * String `s` diya hai.
+ * Words ka order reverse karna hai and spaces normalize karne hain.
  *
- * IMPORTANT NOTE:
- * JavaScript/TypeScript mein strings IMMUTABLE hain, matlab:
- * - String characters ko directly change nahi kar sakte
- * - Har operation nayi string banata hai
+ * IMPORTANT JS NOTE:
+ * JavaScript/TypeScript strings immutable hoti hain.
+ * True in-place O(1) string mutation possible nahi hoti.
  *
- * Ye solution theoretical hai - languages like C++, Java (char array)
- * mein kaam karta hai jaha strings mutable hote hain.
+ * Ye file optimal mutable-array concept explain karti hai:
+ *   1. spaces normalize
+ *   2. whole string reverse
+ *   3. each word reverse
  *
- * APPROACH:
- * 1. Clean extra spaces → single space between words
- * 2. Reverse entire string → words ulte order mein but ulte text
- * 3. Reverse each word individually → text readable but order reversed
+ * Mutable languages like C++ me ye O(1) extra space concept hota hai.
+ * TypeScript me char array banegi, so practical space O(n) hai.
+ *
+ * INTUITION (Soch):
+ * -----------------
+ * Agar whole string reverse kar do:
+ *
+ *   "hello world" -> "dlrow olleh"
+ *
+ * Word order correct ho gaya:
+ *
+ *   world before hello
+ *
+ * But characters ulte ho gaye.
+ * So har word ko individually reverse karo:
+ *
+ *   "dlrow olleh" -> "world hello"
  *
  * TIME: O(n)
- * SPACE: O(1) in mutable languages, O(n) in JavaScript
+ *   - normalize, full reverse, word reverse all linear passes
+ *
+ * SPACE:
+ *   - O(1) in mutable string/char-array languages if input mutable
+ *   - O(n) in TypeScript because string -> array conversion needed
  */
 
-function reverseWordsInPlace(s: string): string {
-  /**
-   * STEP 0: Pre-processing - Clean spaces
-   *
-   * WHY? Extra spaces remove karni hain
-   * Trim() leading/trailing spaces remove karta hai
-   * Split by space and filter empty strings
-   * Join with single space
-   *
-   * NOTE: Ye step O(n) space use karta hai JS mein
-   * Lekin concept samajhne ke liye zaroori hai
-   */
-  let cleaned: string = s.trim().split(/\s+/).join(' ');
+namespace ReverseWordsStringOptimalConcept {
+  function normalizeSpaces(s: string): string[] {
+    const chars: string[] = [];
+    let index = 0;
 
-  // Convert to array (kyunki JS mein strings immutable hain)
-  // Mutable languages mein ye step nahi chahiye
-  let chars: string[] = cleaned.split('');
-  let n: number = chars.length;
+    while (index < s.length) {
+      while (index < s.length && s[index] === ' ') {
+        // Multiple/leading spaces final normalized string ka part nahi hain.
+        // Skip karke next real word tak ja rahe hain.
+        index++;
+      }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * PHASE 1: REVERSE ENTIRE STRING
-   * ═══════════════════════════════════════════════════════════════
-   *
-   * LOGIC: Two-pointer technique
-   * - Left pointer: 0 (start)
-   * - Right pointer: n-1 (end)
-   * - Swap characters at both pointers
-   * - Move pointers toward center
-   * - Stop jab pointers cross kar jaye
-   *
-   * EXAMPLE:
-   * "hello world" → "dlrow olleh"
-   *  ↑         ↑     ↑         ↑
-   * left     right  left     right
-   */
-  reverseRange(chars, 0, n - 1);
+      if (index >= s.length) {
+        break;
+      }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * PHASE 2: REVERSE EACH WORD INDIVIDUALLY
-   * ═══════════════════════════════════════════════════════════════
-   *
-   * LOGIC:
-   * - String ko traverse karo left to right
-   * - Har word ka start aur end find karo
-   * - Us word ke characters ko reverse karo
-   *
-   * EXAMPLE:
-   * "dlrow olleh" → "world hello"
-   *  └───┘ └───┘     └───┘ └───┘
-   *  reverse each    readable!
-   */
-  let start: number = 0;
+      if (chars.length > 0) {
+        // Pehle se ek word output me hai.
+        // Next word se pehle exactly one space chahiye.
+        chars.push(' ');
+      }
 
-  for (let end = 0; end <= n; end++) {
-    /**
-     * Word ka end detect karo:
-     * - Space mil gaya, ya
-     * - String khatam ho gayi
-     *
-     * WHY end <= n? Kyunki last word ke baad space nahi hota
-     */
-    if (end === n || chars[end] === ' ') {
-      /**
-       * Word boundaries mil gaye:
-       * - start: word ka pehla character
-       * - end - 1: word ka last character (space se pehle)
-       *
-       * Ab is word ko reverse karo
-       */
-      reverseRange(chars, start, end - 1);
+      while (index < s.length && s[index] !== ' ') {
+        // Current word ke characters order preserve karte hue normalized array me copy ho rahe hain.
+        chars.push(s[index]);
+        index++;
+      }
+    }
 
-      /**
-       * Next word ke liye prepare karo
-       * - start ko space ke baad wale character pe set karo
-       */
-      start = end + 1;
+    return chars;
+  }
+
+  function reverseRange(chars: string[], left: number, right: number): void {
+    while (left < right) {
+      [chars[left], chars[right]] = [chars[right], chars[left]];
+
+      // Current outer pair swap ho chuka.
+      // Ab remaining inner range reverse karne ke liye pointers center ki taraf move karte hain.
+      left++;
+      right--;
     }
   }
 
-  /**
-   * FINAL STEP: Array ko wapas string mein convert karo
-   * Join with empty string (no separator)
-   */
-  return chars.join('');
-}
+  function reverseEachWord(chars: string[]): void {
+    let wordStart = 0;
 
-/**
- * ═══════════════════════════════════════════════════════════════════
- * HELPER FUNCTION: Reverse characters in a range
- * ═══════════════════════════════════════════════════════════════════
- *
- * PURPOSE: Given start aur end indices, un ke beech ke characters
- *          ko reverse kar do
- *
- * TECHNIQUE: Two-pointer swap
- *
- * @param chars - Character array (mutable)
- * @param left - Start index (inclusive)
- * @param right - End index (inclusive)
- *
- * EXAMPLE:
- * Input:  ['h','e','l','l','o'], left=0, right=4
- * Output: ['o','l','l','e','h']
- *
- * PROCESS:
- * Step 1: Swap chars[0] ↔ chars[4] → ['o','e','l','l','h']
- * Step 2: Swap chars[1] ↔ chars[3] → ['o','l','l','e','h']
- * Step 3: left >= right, stop
- */
-function reverseRange(chars: string[], left: number, right: number): void {
-  /**
-   * Two-pointer approach:
-   * - Left se start karo
-   * - Right se start karo
-   * - Jab tak left < right:
-   *   1. Swap karo
-   *   2. Pointers ko center ki taraf move karo
-   */
-  while (left < right) {
-    /**
-     * Swap characters using destructuring
-     * JavaScript ka elegant way
-     *
-     * Traditional way:
-     * let temp = chars[left];
-     * chars[left] = chars[right];
-     * chars[right] = temp;
-     */
-    [chars[left], chars[right]] = [chars[right], chars[left]];
+    for (let index = 0; index <= chars.length; index++) {
+      if (index === chars.length || chars[index] === ' ') {
+        // index current word ke baad wali boundary par hai.
+        // Word ka inclusive end index - 1 hota hai.
+        reverseRange(chars, wordStart, index - 1);
 
-    /**
-     * Move pointers toward center
-     * Left aage badho, Right peeche aao
-     */
-    left++;
-    right--;
+        // Next word space ke baad start hoga.
+        wordStart = index + 1;
+      }
+    }
+  }
+
+  function reverseWords(s: string): string {
+    const chars = normalizeSpaces(s);
+
+    if (chars.length < 2) {
+      return chars.join('');
+    }
+
+    // Whole reverse se word order correct ho jata hai,
+    // but har word ke characters ulte ho jate hain.
+    reverseRange(chars, 0, chars.length - 1);
+
+    // Har word reverse karne se characters readable order me wapas aa jate hain.
+    reverseEachWord(chars);
+
+    return chars.join('');
   }
 
   /**
-   * Loop khatam:
-   * - left >= right (pointers cross kar gaye)
-   * - Range reverse ho gayi
+   * ==========================================================
+   * DRY RUN - REVERSE WHOLE, THEN EACH WORD
+   * ==========================================================
+   *
+   * Example:
+   * s = "  hello   world  "
+   *
+   * Step 1: normalize spaces
+   *
+   * +--------------------------------------------------------+
+   * | chars = ['h','e','l','l','o',' ','w','o','r','l','d'] |
+   * | string = "hello world"                                |
+   * +--------------------------------------------------------+
+   *
+   * Step 2: reverse whole array
+   *
+   * +--------------------------------------------------------+
+   * | "hello world" -> "dlrow olleh"                        |
+   * +--------------------------------------------------------+
+   *
+   * Word order is now correct:
+   *
+   * +--------------------------------------------------------+
+   * | "world" side is before "hello" side                    |
+   * | but characters inside words are reversed               |
+   * +--------------------------------------------------------+
+   *
+   * Step 3: reverse each word
+   *
+   * +--------------------------------------------------------+
+   * | first word:  "dlrow" -> "world"                       |
+   * | second word: "olleh" -> "hello"                       |
+   * +--------------------------------------------------------+
+   *
+   * Final answer:
+   *
+   * +--------------------------------------------------------+
+   * | "world hello"                                         |
+   * +--------------------------------------------------------+
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. Leading/trailing spaces:
+   *    "  hello world  " -> "world hello"
+   *
+   * 2. Multiple spaces:
+   *    "a good   example" -> "example good a"
+   *
+   * 3. Only spaces:
+   *    "   " -> ""
+   *
+   * 4. Single word:
+   *    "single" -> "single"
+   *
+   * 5. Empty string:
+   *    "" -> ""
    */
+
+  export function runTests(): void {
+    console.log('Testing Reverse Words In A String - OPTIMAL CONCEPT\n');
+
+    const tests: Array<{
+      s: string;
+      expected: string;
+      description: string;
+    }> = [
+      {
+        s: 'the sky is blue',
+        expected: 'blue is sky the',
+        description: 'Normal sentence',
+      },
+      {
+        s: '  hello world  ',
+        expected: 'world hello',
+        description: 'Leading and trailing spaces',
+      },
+      {
+        s: 'a good   example',
+        expected: 'example good a',
+        description: 'Multiple spaces between words',
+      },
+      {
+        s: 'single',
+        expected: 'single',
+        description: 'Single word',
+      },
+      {
+        s: '   ',
+        expected: '',
+        description: 'Only spaces',
+      },
+      {
+        s: '  Bob    Loves  Alice   ',
+        expected: 'Alice Loves Bob',
+        description: 'Mixed spacing with capitalized words',
+      },
+      {
+        s: 'a',
+        expected: 'a',
+        description: 'Single character word',
+      },
+      {
+        s: 'example      good a',
+        expected: 'a good example',
+        description: 'Large gap between words',
+      },
+    ];
+
+    let passed = 0;
+
+    tests.forEach(({ s, expected, description }, index) => {
+      const result = reverseWords(s);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}"`);
+      console.log(
+        `  Expected: "${expected}" | Got: "${result}" -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 }
 
-const __a = ' example      good a . ';
-let cleaned = __a.trim().split(/\s+/);
-
-console.log('cleaned ', cleaned);
+ReverseWordsStringOptimalConcept.runTests();

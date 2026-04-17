@@ -1,116 +1,184 @@
 /**
- * BRUTE FORCE SOLUTION: Reverse Words in a String
- * Purpose: String ke words ko reverse order mein arrange karna using built-in methods
- * Approach: Split → Filter → Reverse → Join
+ * REVERSE WORDS IN A STRING - BRUTE FORCE
+ * =======================================
+ *
+ * PROBLEM:
+ * String `s` diya hai.
+ * Hume words ka order reverse karna hai.
+ *
+ * Rules:
+ *   leading spaces remove
+ *   trailing spaces remove
+ *   multiple spaces between words -> single space
+ *   word ke characters same order me rehne chahiye
+ *
+ * Example:
+ *   s = "  hello   world  "
+ *   answer = "world hello"
+ *
+ * INTUITION (Soch):
+ * -----------------
+ * JavaScript built-ins se problem directly express ho sakti hai:
+ *
+ *   split words
+ *   empty strings remove
+ *   words reverse
+ *   single space se join
+ *
+ * Example:
+ *
+ *   "  hello   world  "
+ *   split(' ') -> ["", "", "hello", "", "", "world", "", ""]
+ *   filter     -> ["hello", "world"]
+ *   reverse    -> ["world", "hello"]
+ *   join       -> "world hello"
+ *
+ * TIME: O(n)
+ *   - string/word array multiple passes se process hota hai
+ *
+ * SPACE: O(n)
+ *   - words array and result string store hote hain
  */
 
-function reverseWords(s: string): string {
-  /**
-   * Step 1: String ko spaces pe split karo
-   * split(' ') - har space pe string ko todega
-   * Example: "  hello   world  " → ["", "", "hello", "", "", "world", "", ""]
-   *
-   * Why this works: Split har space pe break karega,
-   * multiple spaces ke case mein empty strings create honge
-   */
-  const wordsArray = s.split(' ');
+namespace ReverseWordsStringBruteForce {
+  function reverseWords(s: string): string {
+    const parts = s.split(' ');
+
+    // split(' ') multiple spaces ko empty strings me convert karta hai.
+    // Empty strings real words nahi hain, so final answer me nahi aani chahiye.
+    const words = parts.filter((word) => word.length > 0);
+
+    // Words ke characters untouched rehte hain.
+    // Sirf word array ka order reverse hota hai.
+    const reversedWords = words.reverse();
+
+    // Problem final output me words ke beech exactly single space chahta hai.
+    return reversedWords.join(' ');
+  }
 
   /**
-   * Step 2: Empty strings ko filter out karo
-   * filter(word => word) - truthy values ko rakhega, empty strings remove ho jayenge
-   * Example: ["", "hello", "", "world", ""] → ["hello", "world"]
+   * ==========================================================
+   * DRY RUN - SPLIT, FILTER, REVERSE, JOIN
+   * ==========================================================
    *
-   * Why this works: Empty string "" falsy value hai JavaScript mein,
-   * toh filter automatically inhe remove kar dega
-   */
-  const filteredWords = wordsArray.filter((word) => word);
-  // Alternative: wordsArray.filter(word => word.length > 0)
-
-  /**
-   * Step 3: Array ko reverse karo
-   * reverse() - array ke elements ka order ulta kar deta hai
-   * Example: ["hello", "world"] → ["world", "hello"]
+   * Example:
+   * s = "  hello   world  "
    *
-   * Note: reverse() mutates the original array,
-   * lekin yahan new array pe kaam kar rahe hain toh safe hai
-   */
-  const reversedWords = filteredWords.reverse();
-
-  /**
-   * Step 4: Words ko single space se join karo
-   * join(' ') - array elements ko single space delimiter se jodega
-   * Example: ["world", "hello"] → "world hello"
+   * Step 1: split by single space
    *
-   * Why single space: Problem requirement ke according
-   * words ke beech sirf ek space hona chahiye
+   * +--------------------------------------------------------+
+   * | parts = ["", "", "hello", "", "", "world", "", ""]  |
+   * +--------------------------------------------------------+
+   *
+   * Step 2: remove empty strings
+   *
+   * +--------------------------------------------------------+
+   * | words = ["hello", "world"]                            |
+   * +--------------------------------------------------------+
+   *
+   * Step 3: reverse word order
+   *
+   * +--------------------------------------------------------+
+   * | reversedWords = ["world", "hello"]                    |
+   * +--------------------------------------------------------+
+   *
+   * Step 4: join with single space
+   *
+   * +--------------------------------------------------------+
+   * | result = "world hello"                                |
+   * +--------------------------------------------------------+
+   *
+   * Final answer = "world hello"
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. Normal sentence:
+   *    "the sky is blue" -> "blue is sky the"
+   *
+   * 2. Leading/trailing spaces:
+   *    "  hello world  " -> "world hello"
+   *
+   * 3. Multiple spaces:
+   *    "a good   example" -> "example good a"
+   *
+   * 4. Single word:
+   *    "single" -> "single"
+   *
+   * 5. Only spaces:
+   *    "   " -> ""
    */
-  const result = reversedWords.join(' ');
 
-  return result;
+  export function runTests(): void {
+    console.log('Testing Reverse Words In A String - BRUTE FORCE\n');
+
+    const tests: Array<{
+      s: string;
+      expected: string;
+      description: string;
+    }> = [
+      {
+        s: 'the sky is blue',
+        expected: 'blue is sky the',
+        description: 'Normal sentence',
+      },
+      {
+        s: '  hello world  ',
+        expected: 'world hello',
+        description: 'Leading and trailing spaces',
+      },
+      {
+        s: 'a good   example',
+        expected: 'example good a',
+        description: 'Multiple spaces between words',
+      },
+      {
+        s: 'single',
+        expected: 'single',
+        description: 'Single word',
+      },
+      {
+        s: '   ',
+        expected: '',
+        description: 'Only spaces',
+      },
+      {
+        s: '  Bob    Loves  Alice   ',
+        expected: 'Alice Loves Bob',
+        description: 'Mixed spacing with capitalized words',
+      },
+      {
+        s: 'a',
+        expected: 'a',
+        description: 'Single character word',
+      },
+      {
+        s: 'example      good a',
+        expected: 'a good example',
+        description: 'Large gap between words',
+      },
+    ];
+
+    let passed = 0;
+
+    tests.forEach(({ s, expected, description }, index) => {
+      const result = reverseWords(s);
+      const pass = result === expected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}"`);
+      console.log(
+        `  Expected: "${expected}" | Got: "${result}" -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 }
 
-/**
- * CLEANER ONE-LINER VERSION
- * Same logic, but chained methods for production code
- * Benefits: Concise, readable, no intermediate variables
- */
-function reverseWordsOneLiner(s: string): string {
-  // Chain all operations: split → filter → reverse → join
-  return s
-    .split(' ') // Space pe split karo
-    .filter((word) => word) // Empty strings remove karo
-    .reverse() // Order reverse karo
-    .join(' '); // Single space se join karo
-}
-
-/**
- * ALTERNATIVE APPROACH using trim() and regex
- * More robust for different types of whitespace
- */
-function reverseWordsRegex(s: string): string {
-  /**
-   * trim() - leading/trailing spaces remove karta hai
-   * split(/\s+/) - one ya multiple whitespace pe split karta hai
-   * \s+ regex pattern any whitespace character ko match karta hai
-   */
-  return s
-    .trim() // Start/end spaces remove karo
-    .split(/\s+/) // Multiple spaces pe split karo
-    .reverse() // Reverse the order
-    .join(' '); // Join with single space
-}
-
-// Test Cases for verification
-const testCases = [
-  { input: 'the sky is blue', expected: 'blue is sky the' },
-  { input: '  hello world  ', expected: 'world hello' },
-  { input: 'a good   example', expected: 'example good a' },
-  { input: '   single   ', expected: 'single' },
-  {
-    input: 'multiple    spaces    between',
-    expected: 'between spaces multiple',
-  },
-];
-
-// Test runner function
-function runTests_reverse_word(): void {
-  console.log('🧪 Running Test Cases:');
-  console.log('─'.repeat(50));
-
-  testCases.forEach((testCase, index) => {
-    const result = reverseWords(testCase.input);
-    const passed = result === testCase.expected;
-
-    console.log(`Test ${index + 1}: ${passed ? '✅ PASSED' : '❌ FAILED'}`);
-    console.log(`Input:    "${testCase.input}"`);
-    console.log(`Expected: "${testCase.expected}"`);
-    console.log(`Got:      "${result}"`);
-    console.log('─'.repeat(50));
-  });
-}
-
-// Uncomment to run tests
-// runTests_reverse_word();
-
-// Export for use in other modules
-// export { reverseWords, reverseWordsOneLiner, reverseWordsRegex };
+ReverseWordsStringBruteForce.runTests();

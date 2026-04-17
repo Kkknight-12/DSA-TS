@@ -1,217 +1,225 @@
-// https://www.notion.so/Reverse-Words-in-a-String-281a268089688029b9b2c3ceffa86f34
-
 /**
- * PURPOSE: Reverse words using two-pointer technique
+ * REVERSE WORDS IN A STRING - BETTER
+ * ==================================
  *
- * APPROACH: Manual Parsing (Better Approach)
- * - Traverse string from right to left
- * - Extract words as we encounter them
- * - Build result array with words in reversed order
- * - No need for split/filter, more control over parsing
+ * PROBLEM:
+ * String `s` diya hai.
+ * Words ka order reverse karke return karna hai, spaces normalize karke.
  *
- * ADVANTAGES over Brute Force:
- * - Single pass through string
- * - More control over space handling
- * - Better for understanding string manipulation
- * - Interview mein coding skills show karta hai
+ * BETTER IDEA:
+ * String ko right se left scan karo.
  *
- * TIME COMPLEXITY: O(n) - single pass
- * SPACE COMPLEXITY: O(n) - for result array
+ * INTUITION (Soch):
+ * -----------------
+ * Answer me last word first aata hai.
+ *
+ * So agar hum right side se words extract karte hain,
+ * toh naturally reverse order milta jayega.
+ *
+ * Example:
+ *
+ *   s = "  hello   world  "
+ *
+ *   right se first real word = "world"
+ *   next real word           = "hello"
+ *
+ *   result = ["world", "hello"]
+ *   join   = "world hello"
+ *
+ * TIME: O(n)
+ *   - every character pointer se at most once cross hota hai
+ *
+ * SPACE: O(n)
+ *   - extracted words/result store karne ke liye
  */
 
-function reverseWords_better_sol(s: string): string {
-  /**
-   * INITIALIZATION
-   *
-   * result: Words ko reverse order mein store karenge
-   * i: Current position pointer (right to left movement)
-   * n: String length for boundary check
-   */
-  const result: string[] = [];
-  let i: number = s.length - 1;
+namespace ReverseWordsStringBetter {
+  function reverseWords(s: string): string {
+    const words: string[] = [];
+    let index = s.length - 1;
 
-  /**
-   * MAIN LOOP: String ko right to left traverse karo
-   *
-   * WHY right to left?
-   * Kyunki hume words reverse order mein chahiye.
-   * Last word pehle milega, automatically reverse ho jayega!
-   *
-   * Loop tab tak chale jab tak string ke start pe na pahunch jaye
-   */
-  while (i >= 0) {
-    //                                          16
-    //                                          ↓
-    // [ '', '', 'hello', '', '', 'world', '', '' ]
-    /**
-     * STEP 1: Skip spaces
-     *
-     * WHY? Leading, trailing, aur multiple spaces handle karne ke liye
-     *
-     * Jab tak space character mil raha hai, pointer left move karo
-     * s.charAt(i) current character return karta hai
-     *
-     * Example: "  hello" mein i=7 se start karke i=2 pe aayega
-     */
-    while (i >= 0 && s.charAt(i) === ' ') {
-      i--; // Ek position left move karo
+    while (index >= 0) {
+      while (index >= 0 && s[index] === ' ') {
+        // Space answer ka word nahi hai.
+        // Right se left parse karte waqt spaces skip karna means next real word tak jaana.
+        index--;
+      }
+
+      if (index < 0) {
+        break;
+      }
+
+      // Space skip ke baad index current word ke last character par hota hai.
+      // Is boundary ko save karte hain, kyunki index ab word start dhundhne ke liye left move karega.
+      const wordEnd = index;
+
+      while (index >= 0 && s[index] !== ' ') {
+        // Current word ke characters consume ho rahe hain.
+        // Loop rukte hi index word ke pehle space par ya -1 par hoga.
+        index--;
+      }
+
+      const wordStart = index + 1;
+
+      // substring ka end exclusive hota hai.
+      // wordEnd inclusive last char hai, so extract karne ke liye wordEnd + 1 use hota hai.
+      const word = s.substring(wordStart, wordEnd + 1);
+
+      // Right-to-left traversal ki wajah se first pushed word final answer ka first word hai.
+      words.push(word);
     }
 
-    /**
-     * BOUNDARY CHECK
-     *
-     * Agar i negative ho gaya, matlab string khatam ho gayi
-     * Ya sirf spaces the
-     *
-     * Example: "   " (only spaces) - yaha loop break ho jayega
-     */
-    if (i < 0) {
-      break; // Loop se bahar aa jao
-    }
-
-    /**
-     * STEP 2: Word ka END point mark karo
-     *
-     * WHY? Abhi jo position pe hain, waha word ka last character hai
-     * Is position ko save kar lo
-     *
-     * Example: "hello world"
-     *                    ↑
-     *                  i=10 (d ka position)
-     *                  end = 10
-     */
-    let end: number = i;
-
-    //                                14
-    //                                 ↓
-    // [ '', '', 'hello', '', '', 'world', '', '' ]
-    /**
-     * STEP 3: Word ka START point dhundo
-     *
-     * WHY? Pura word extract karne ke liye start position chahiye
-     *
-     * Peeche jao (left move karo) jab tak:
-     * - Space na mile
-     * - String start na ho jaye
-     *
-     * Example: "hello world"
-     *           ↑     ↑
-     *         start  end
-     *          i=6   saved=10
-     */
-    while (i >= 0 && s.charAt(i) !== ' ') {
-      i--; // Ek position left move karo
-    }
-
-    //                         9
-    //                         ↓
-    // [ '', '', 'hello', '', '', 'world', '', '' ]
-    /**
-     * STEP 4: Word extract karo
-     *
-     * Current state:
-     * - i: space character pe hai (ya -1 if string start)
-     * - end: word ke last character pe tha
-     *
-     * Word extract karne ke liye:
-     * - start = i + 1 (space ke baad wala character)
-     * - end = end + 1 (substring mein end exclusive hai)
-     *
-     * substring(start, end): start se end-1 tak characters return karta hai
-     *
-     * Example: s = "hello world"
-     *          i = 5 (space before world)
-     *          end = 10 (last char of world)
-     *          word = s.substring(6, 11) = "world"
-     */
-    const word: string = s.substring(i + 1, end + 1);
-
-    /**
-     * STEP 5: Word ko result mein add karo
-     *
-     * WHY? Hum right se left ja rahe hain, toh words automatically
-     * reverse order mein add ho rahe hain
-     *
-     * Example: First "world" add hoga, phir "hello"
-     * Result: ["world", "hello"]
-     */
-    result.push(word);
-
-    /**
-     * NOTE: Loop continue karega
-     * - i already next space pe ya usse pehle hai
-     * - Next iteration mein spaces skip honge
-     * - Phir next word process hoga
-     */
+    return words.join(' ');
   }
 
   /**
-   * FINAL STEP: Words ko single space se join karo
+   * ==========================================================
+   * DRY RUN - MANUAL RIGHT TO LEFT PARSING
+   * ==========================================================
    *
-   * WHY? Result array mein sab words hain reverse order mein
-   * Ab unhe single space se connect karna hai
+   * Example:
+   * s = "  hello   world  "
    *
-   * join(' '): Array elements ko space se jodta hai
+   * Index map:
    *
-   * Example: ["world", "hello"] → "world hello"
+   * +--------------------------------------------------------+
+   * | index: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15          |
+   * | char:    _ _ h e l l o _ _ _ w  o  r  l  d  _         |
+   * | plus index 16 is final trailing space                  |
+   * +--------------------------------------------------------+
+   *
+   * Start:
+   *   index = 16
+   *   words = []
+   *
+   * ==========================================================
+   * Iteration 1 - find "world"
+   * ==========================================================
+   *
+   * +--------------------------------------------------------+
+   * | index = 16, s[16] = space -> skip                     |
+   * | index = 15, s[15] = space -> skip                     |
+   * | index = 14, s[14] = 'd'                               |
+   * | wordEnd = 14                                          |
+   * | move left until space: d,l,r,o,w consumed             |
+   * | index stops at 9                                      |
+   * | wordStart = 10                                        |
+   * | substring(10, 15) = "world"                           |
+   * | words = ["world"]                                     |
+   * +--------------------------------------------------------+
+   *
+   * ==========================================================
+   * Iteration 2 - find "hello"
+   * ==========================================================
+   *
+   * +--------------------------------------------------------+
+   * | index = 9,8,7 are spaces -> skip                      |
+   * | index = 6, s[6] = 'o'                                 |
+   * | wordEnd = 6                                           |
+   * | move left until space: o,l,l,e,h consumed             |
+   * | index stops at 1                                      |
+   * | wordStart = 2                                         |
+   * | substring(2, 7) = "hello"                             |
+   * | words = ["world", "hello"]                            |
+   * +--------------------------------------------------------+
+   *
+   * Remaining:
+   *
+   * +--------------------------------------------------------+
+   * | index = 1,0 are spaces -> skip                        |
+   * | index becomes -1                                      |
+   * | loop ends                                             |
+   * +--------------------------------------------------------+
+   *
+   * Final:
+   *   words.join(" ") = "world hello"
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. Normal sentence:
+   *    "the sky is blue" -> "blue is sky the"
+   *
+   * 2. Multiple spaces:
+   *    "a good   example" -> "example good a"
+   *
+   * 3. Only spaces:
+   *    "   " -> ""
+   *
+   * 4. Single word:
+   *    "single" -> "single"
    */
-  return result.join(' ');
-}
 
-// =================== ALTERNATIVE VERSION (More Readable) ===================
-/**
- * Same logic but with more descriptive variable names
- * Interview mein agar time ho toh ye style better hai
- */
-function reverseWordsReadable(s: string): string {
-  const words: string[] = [];
-  let currentIndex: number = s.length - 1;
+  export function runTests(): void {
+    console.log('Testing Reverse Words In A String - BETTER\n');
 
-  while (currentIndex >= 0) {
-    // Skip all spaces
-    while (currentIndex >= 0 && s[currentIndex] === ' ') {
-      currentIndex--;
-    }
+    const tests: Array<{
+      s: string;
+      expected: string;
+      description: string;
+    }> = [
+      {
+        s: 'the sky is blue',
+        expected: 'blue is sky the',
+        description: 'Normal sentence',
+      },
+      {
+        s: '  hello world  ',
+        expected: 'world hello',
+        description: 'Leading and trailing spaces',
+      },
+      {
+        s: 'a good   example',
+        expected: 'example good a',
+        description: 'Multiple spaces between words',
+      },
+      {
+        s: 'single',
+        expected: 'single',
+        description: 'Single word',
+      },
+      {
+        s: '   ',
+        expected: '',
+        description: 'Only spaces',
+      },
+      {
+        s: '  Bob    Loves  Alice   ',
+        expected: 'Alice Loves Bob',
+        description: 'Mixed spacing with capitalized words',
+      },
+      {
+        s: 'a',
+        expected: 'a',
+        description: 'Single character word',
+      },
+      {
+        s: 'example      good a',
+        expected: 'a good example',
+        description: 'Large gap between words',
+      },
+    ];
 
-    // If we've reached the beginning, break
-    if (currentIndex < 0) break;
+    let passed = 0;
 
-    // Find the end of the word
-    let wordEnd: number = currentIndex;
+    tests.forEach(({ s, expected, description }, index) => {
+      const result = reverseWords(s);
+      const pass = result === expected;
 
-    // Find the start of the word
-    while (currentIndex >= 0 && s[currentIndex] !== ' ') {
-      currentIndex--;
-    }
+      if (pass) {
+        passed++;
+      }
 
-    // Extract the word (currentIndex + 1 to wordEnd + 1)
-    let wordStart: number = currentIndex + 1;
-    let word: string = s.substring(wordStart, wordEnd + 1);
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  s="${s}"`);
+      console.log(
+        `  Expected: "${expected}" | Got: "${result}" -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
 
-    // Add word to result
-    words.push(word);
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
   }
-
-  return words.join(' ');
 }
 
-// =================== COMPACT VERSION ===================
-/**
- * Interview mein agar time kam ho aur aap confident ho
- */
-function reverseWordsCompact(s: string): string {
-  const result: string[] = [];
-  let i = s.length - 1;
-
-  while (i >= 0) {
-    while (i >= 0 && s[i] === ' ') i--;
-    if (i < 0) break;
-
-    let end = i;
-    while (i >= 0 && s[i] !== ' ') i--;
-
-    result.push(s.substring(i + 1, end + 1));
-  }
-
-  return result.join(' ');
-}
+ReverseWordsStringBetter.runTests();

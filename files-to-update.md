@@ -155,7 +155,7 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ## Stack (3 files)
 
-- [ ] src/questions/stack/medium/next-greater-element-ii/optimal.ts
+- [x] src/questions/stack/medium/next-greater-element-ii/optimal.ts
 - [ ] src/questions/stack/medium/next-greater-element/solution-left-to-right.ts
 - [ ] src/questions/stack/medium/next-smaller-element/optimal.ts
 
@@ -188,10 +188,10 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 - [x] src/questions/string/medium/longest-palindromic-substring/Optimal.ts
 - [x] src/questions/string/medium/longest-palindromic-substring/better.ts
 - [x] src/questions/string/medium/longest-palindromic-substring/brute-force.ts
-- [ ] src/questions/string/medium/reverse-words-string/better-solution.ts
-- [ ] src/questions/string/medium/reverse-words-string/brute-force.ts
-- [ ] src/questions/string/medium/reverse-words-string/opitmal-solution.ts
-- [ ] src/questions/string/medium/sort-characters-by-frequency/brute-force.ts
-- [ ] src/questions/string/medium/sort-characters-by-frequency/optimal.ts
-- [ ] src/questions/string/medium/string-to-integer-(atoi)/brute-force.ts
-- [ ] src/questions/string/medium/string-to-integer-(atoi)/optimal.ts
+- [x] src/questions/string/medium/reverse-words-string/better-solution.ts
+- [x] src/questions/string/medium/reverse-words-string/brute-force.ts
+- [x] src/questions/string/medium/reverse-words-string/opitmal-solution.ts
+- [x] src/questions/string/medium/sort-characters-by-frequency/brute-force.ts
+- [x] src/questions/string/medium/sort-characters-by-frequency/optimal.ts
+- [x] src/questions/string/medium/string-to-integer-(atoi)/brute-force.ts
+- [x] src/questions/string/medium/string-to-integer-(atoi)/optimal.ts
