@@ -156,8 +156,8 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 ## Stack (3 files)
 
 - [x] src/questions/stack/medium/next-greater-element-ii/optimal.ts
-- [ ] src/questions/stack/medium/next-greater-element/solution-left-to-right.ts
-- [ ] src/questions/stack/medium/next-smaller-element/optimal.ts
+- [x] src/questions/stack/medium/next-greater-element/solution-left-to-right.ts
+- [x] src/questions/stack/medium/next-smaller-element/optimal.ts
 
 ---
 
