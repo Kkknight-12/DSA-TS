@@ -1,374 +1,393 @@
 /**
- * CHECK IF THERE EXISTS A SUBSEQUENCE WITH SUM K
+ * CHECK SUBSEQUENCE SUM K - RECURSION
+ * ===================================
  *
- * Problem: Array mein koi subsequence hai ya nahi jiska sum exactly K ho?
+ * PROBLEM:
+ * Array `arr` aur target `k` diya hai.
+ * Check karna hai ki koi non-empty subsequence exist karti hai
+ * jiska sum exactly `k` ho.
  *
- * Approach: Pure Recursion (Pick/Not Pick with Early Return)
- * - Har element pe 2 choices: Pick karo ya Skip karo
- * - Sum track karo recursively
- * - IMPORTANT: Jaise hi sum == K mila, turant return true!
- * - Agar pick path se true mila, not pick explore nahi karna
- * - Only boolean return (true/false), subsequences store nahi
+ * Example:
+ *   arr = [5, 1, 2], k = 3
+ *   subsequence [1, 2] ka sum 3 hai
+ *   answer = true
  *
- * Time Complexity: O(2^n) worst case
- * - Best case: O(log n) - jaldi mil gaya
- * - Worst case: O(2^n) - koi valid nahi ya last mein mila
+ * INTUITION (Soch):
+ * -----------------
+ * Har element par 2 choices hoti hain:
  *
- * Space Complexity: O(n)
- * - Recursion depth: O(n)
- * - Koi extra array nahi
- */
-
-/**
- * Main function: Check if subsequence with sum K exists
+ *   1. Pick karo     -> currentSum me arr[index] add hoga
+ *   2. Not pick karo -> currentSum same rahega
  *
- * @param arr - Array of positive integers
- * @param k - Target sum
- * @returns true if exists, false otherwise
+ * Is problem me hume count nahi chahiye.
+ * Sirf existence chahiye.
+ *
+ * Isliye jaise hi koi branch `true` return kare,
+ * recursion turant upar `true` propagate kar sakti hai.
  *
  * Algorithm:
- * 1. Start recursion from index 0, sum 0
- * 2. Har element pe decide: pick ya not pick
- * 3. Pick: sum mein add karo, recurse
- * 4. Agar pick se true mila → turant return true (early return!)
- * 5. Not Pick: sum same, recurse (only if pick returned false)
- * 6. Base case: sum == k → return true
- */
-function checkSubsequenceSum(arr: number[], k: number): boolean {
-  // EDGE CASE: k=0 means empty subsequence, jo hum count nahi karte
-  // WHY: Empty subsequence ka sum 0 hota hai, but problem mein
-  //      at least ek element pick karna zaroori hai
-  if (k === 0) {
-    return false; // Empty subsequence not allowed
-  }
-
-  // Index 0 aur sum 0 se start karo
-  return check(0, 0, arr, k);
-}
-
-/**
- * Helper function: Recursively check for subsequence
+ * ----------
+ * 1. Start recursion from index 0 and currentSum 0.
+ * 2. Har element par pehle pick choice try karo.
+ * 3. Pick: currentSum me arr[index] add karo, next index par recurse karo.
+ * 4. Agar pick branch true de, turant true return karo because answer mil gaya.
+ * 5. Pick branch false de tabhi not-pick branch try karo.
+ * 6. Not Pick: currentSum same rakho, next index par recurse karo.
+ * 7. Base case: currentSum === k means valid subsequence mil gayi, return true.
+ * 8. Base case: index array ke bahar chala gaya and sum nahi mila, return false.
  *
- * @param index - Current position in array
- * @param currentSum - Sum of elements picked so far
- * @param arr - Original array
- * @param k - Target sum
- * @returns true if valid subsequence found from this point
+ * TIME: O(2^n) worst case
+ *   - worst case me har element ke pick / not-pick branches explore ho sakte hain
  *
- * Decision Tree Example (arr=[1,2,5], k=3):
- *
- *                    check(0, 0)
- *                    /          \
- *              Pick 1            Not Pick 1
- *                 /                  \
- *          check(1, 1)           check(1, 0)
- *            /      \              /      \
- *        Pick 2   Skip 2       Pick 2   Skip 2
- *          /         \           /         \
- *    check(2,3)  check(2,1)  check(2,2)  check(2,0)
- *       ✓
- *    sum==3!
- *    return true
- *    (बाकी paths explore नहीं होंगे - early return!)
- *
- * Result: true (found [1,2])
- */
-function check(
-  index: number,
-  currentSum: number,
-  arr: number[],
-  k: number
-): boolean {
-  // BASE CASE 1: Sum mil gaya! ✓
-  // WHY: Ye sabse important check hai
-  // Jaise hi sum == k, turant return true
-  if (currentSum === k) {
-    return true; // Found! Aage check nahi karna
-  }
-
-  // BASE CASE 2: Saare elements process ho gaye, sum nahi mila
-  // WHY: Array khatam ho gaya but sum != k
-  if (index === arr.length) {
-    return false; // No valid subsequence found
-  }
-
-  // OPTIMIZATION: Pruning (agar sabhi elements positive hain)
-  // WHY: Agar sum already k se zyada, toh aage elements add karke
-  //      sum aur bhi bada hoga, kabhi k nahi ban sakta
-  // NOTE: Ye optimization sirf positive elements ke liye valid hai
-  if (currentSum > k) {
-    return false; // Sum already exceeded, no point continuing
-  }
-
-  // RECURSIVE CASE 1: Pick current element
-  // WHY: Ye path explore karte hain jisme current element include hai
-  // Sum mein arr[index] add karo
-  const pickResult = check(index + 1, currentSum + arr[index], arr, k);
-
-  // EARLY RETURN: Agar pick path se true mila
-  // WHY: Ek valid mil gaya toh bas! Aage check nahi karna
-  // Ye optimization bahut powerful hai
-  if (pickResult) {
-    return true; // Found in pick path! 🎯
-  }
-
-  // RECURSIVE CASE 2: Not Pick current element
-  // WHY: Sirf tab explore jab pick path se false aaya
-  // Sum same rehta hai
-  // Agar ye bhi false dega, toh final false return hoga
-  return check(index + 1, currentSum, arr, k);
-}
-
-/**
- * ═══════════════════════════════════════════════════════════════════════
- * DRY RUN: checkSubsequenceSum([1, 2, 5], 3)
- * ═══════════════════════════════════════════════════════════════════════
- *
- * Initial Call: checkSubsequenceSum([1, 2, 5], 3)
- * - Start: check(0, 0, [1,2,5], 3)
- *
- * ┌──────────────────────────────────────────────────────────────────────┐
- * │ CALL 1: check(0, 0, [1,2,5], 3)                                     │
- * ├──────────────────────────────────────────────────────────────────────┤
- * │ index = 0, currentSum = 0, k = 3                                    │
- * │ Base case 1? sum == k? 0 == 3 → Nahi                               │
- * │ Base case 2? index == 3? 0 == 3 → Nahi                             │
- * │ Pruning? sum > k? 0 > 3 → Nahi                                      │
- * │                                                                      │
- * │ CHOICE 1: Pick arr[0] = 1                                          │
- * │   pickResult = check(1, 1, [1,2,5], 3)                             │
- * │   ┌────────────────────────────────────────────────────────────┐   │
- * │   │ CALL 2: check(1, 1, [1,2,5], 3)                          │   │
- * │   ├────────────────────────────────────────────────────────────┤   │
- * │   │ index = 1, currentSum = 1, k = 3                         │   │
- * │   │ Base case 1? 1 == 3 → Nahi                               │   │
- * │   │ Base case 2? 1 == 3 → Nahi                               │   │
- * │   │ Pruning? 1 > 3 → Nahi                                     │   │
- * │   │                                                            │   │
- * │   │ CHOICE 1: Pick arr[1] = 2                                │   │
- * │   │   pickResult = check(2, 3, [1,2,5], 3)                   │   │
- * │   │   ┌──────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 3: check(2, 3, [1,2,5], 3)                │   │   │
- * │   │   ├──────────────────────────────────────────────────┤   │   │
- * │   │   │ index = 2, currentSum = 3, k = 3               │   │   │
- * │   │   │ Base case 1? 3 == 3 → HAAN! ✓✓✓               │   │   │
- * │   │   │                                                │   │   │
- * │   │   │ RETURN TRUE                                    │   │   │
- * │   │   │ ← Found: [1, 2] with sum = 3                 │   │   │
- * │   │   └──────────────────────────────────────────────────┘   │   │
- * │   │   pickResult = true                                       │   │
- * │   │                                                            │   │
- * │   │ if (pickResult) → if (true) → HAAN!                       │   │
- * │   │ RETURN TRUE ← EARLY RETURN!                               │   │
- * │   │                                                            │   │
- * │   │ NOT PICK path execute nahi hoga kyunki early return      │   │
- * │   └────────────────────────────────────────────────────────────┘   │
- * │   pickResult = true                                                │
- * │                                                                      │
- * │ if (pickResult) → if (true) → HAAN!                                │
- * │ RETURN TRUE ← EARLY RETURN!                                        │
- * │                                                                      │
- * │ NOT PICK path execute nahi hoga                                    │
- * └──────────────────────────────────────────────────────────────────────┘
- *
- * Final Result: true
- *
- * Valid subsequence found: [1, 2] with sum = 3
- *
- * Call Statistics:
- * ────────────────
- * Total calls made: 3
- * Calls avoided due to early return: 5
- * Efficiency gain: 62.5% fewer calls!
- *
- * Paths NOT explored (thanks to early return):
- *   - check(2, 1) - Skip 2 from [1]
- *   - check(1, 0) - Skip 1 from []
- *   - All sub-paths from above
- *
- *
- * ═══════════════════════════════════════════════════════════════════════
- * EARLY RETURN का POWER
- * ═══════════════════════════════════════════════════════════════════════
- *
- * WITHOUT EARLY RETURN (hypothetical):
- * ──────────────────────────────────────
- * function check(...): boolean {
- *   ...
- *   const pick = check(...);
- *   const notPick = check(...);
- *   return pick || notPick;  // Dono explore honge!
- * }
- *
- * Calls for [1,2,5], k=3:
- *   Total: 2^3 = 8 leaf nodes + internal = 15 calls
- *
- * WITH EARLY RETURN (our approach):
- * ──────────────────────────────────────
- * function check(...): boolean {
- *   ...
- *   const pick = check(...);
- *   if (pick) return true;  // Mil gaya? Ruk jao!
- *   return check(...);      // Nahi mila? Tab dusra try
- * }
- *
- * Calls for [1,2,5], k=3:
- *   Total: 3 calls (found early!)
- *
- * Performance Improvement:
- *   Without: 15 calls
- *   With: 3 calls
- *   Improvement: 80% faster! 🚀
- *
- *
- * ═══════════════════════════════════════════════════════════════════════
- * COMPARISON: COUNT vs CHECK
- * ═══════════════════════════════════════════════════════════════════════
- *
- * COUNT SUBSEQUENCES (previous problem):
- * ──────────────────────────────────────
- * function count(index, sum, k): number {
- *   if (index === n) {
- *     return sum === k ? 1 : 0;
- *   }
- *   const pick = count(index + 1, sum + arr[index], k);
- *   const notPick = count(index + 1, sum, k);
- *   return pick + notPick;  // Sabhi paths explore
- * }
- *
- * CHECK EXISTS (this problem):
- * ──────────────────────────────────────
- * function check(index, sum, k): boolean {
- *   if (sum === k) return true;  // Early check!
- *   if (index === n) return false;
- *   if (check(index + 1, sum + arr[index], k)) {
- *     return true;  // Early return!
- *   }
- *   return check(index + 1, sum, k);
- * }
- *
- * Key Differences:
- * ────────────────────────────────────────────────────────────────
- * | Feature          | Count         | Check               |
- * |------------------|---------------|---------------------|
- * | Return type      | number        | boolean             |
- * | Explore all?     | Haan (zaroori)| Nahi (early return) |
- * | Base case order  | End first     | Success first       |
- * | Optimization     | Less scope    | Early return!       |
- * | Performance      | Always 2^n    | Best: log n         |
- * ────────────────────────────────────────────────────────────────
+ * SPACE: O(n)
+ *   - recursion depth maximum array length tak ja sakti hai
  */
 
-// ═══════════════════════════════════════════════════════════════════════
-// TEST CASES
-// ═══════════════════════════════════════════════════════════════════════
+namespace CheckSubsequenceSumKRecursion {
+  export function checkSubsequenceSum(arr: number[], target: number): boolean {
+    if (target <= 0) {
+      // Is problem setup me empty subsequence count nahi hoti.
+      // Array values positive hain, so non-empty subsequence se 0 ya negative target
+      // banana possible nahi maana ja raha.
+      return false;
+    }
 
-console.log("Test 1: arr = [10, 1, 2, 7, 6, 1, 5], k = 8");
-const result1 = checkSubsequenceSum([10, 1, 2, 7, 6, 1, 5], 8);
-console.log("Expected: true");
-console.log("Got:     ", result1);
-console.log("Valid subsequences: [2,6], [1,7], [1,1,6]");
-console.log();
+    return existsFromIndex(0, 0, arr, target);
+  }
 
-console.log("Test 2: arr = [2, 3, 5, 7, 9], k = 100");
-const result2 = checkSubsequenceSum([2, 3, 5, 7, 9], 100);
-console.log("Expected: false");
-console.log("Got:     ", result2);
-console.log("Max sum = 26, impossible to reach 100");
-console.log();
+  function existsFromIndex(
+    index: number,
+    currentSum: number,
+    arr: number[],
+    target: number
+  ): boolean {
+    if (currentSum === target) {
+      // Picked elements ka sum target ban gaya.
+      // Existence problem me ek valid subsequence milte hi answer true hota hai.
+      return true;
+    }
 
-console.log("Test 3: arr = [1, 2, 3], k = 6");
-const result3 = checkSubsequenceSum([1, 2, 3], 6);
-console.log("Expected: true");
-console.log("Got:     ", result3);
-console.log("Valid subsequence: [1,2,3]");
-console.log();
+    if (index === arr.length) {
+      // Saare elements ke decisions ho chuke hain.
+      // Yahan tak target nahi bana, so ye branch fail hai.
+      return false;
+    }
 
-console.log("Test 4: arr = [5, 10, 15], k = 8");
-const result4 = checkSubsequenceSum([5, 10, 15], 8);
-console.log("Expected: false");
-console.log("Got:     ", result4);
-console.log("Possible sums: 5,10,15,20,25,30 - 8 not possible");
-console.log();
+    if (currentSum > target) {
+      // Array values positive hain.
+      // Sum target se aage nikal gaya toh future picks sum ko aur badhayenge hi.
+      return false;
+    }
 
-console.log("Test 5: arr = [1, 1, 1, 1], k = 2");
-const result5 = checkSubsequenceSum([1, 1, 1, 1], 2);
-console.log("Expected: true");
-console.log("Got:     ", result5);
-console.log("Valid subsequence: [1,1]");
-console.log();
+    const pickedCurrent = existsFromIndex(
+      index + 1,
+      currentSum + arr[index],
+      arr,
+      target
+    );
 
-console.log("Test 6: arr = [5], k = 5");
-const result6 = checkSubsequenceSum([5], 5);
-console.log("Expected: true");
-console.log("Got:     ", result6);
-console.log("Valid subsequence: [5]");
-console.log();
+    if (pickedCurrent) {
+      // Pick branch ne valid subsequence dhoondh li.
+      // Ab same frame ki not-pick branch explore karna waste hai.
+      return true;
+    }
 
-console.log("Test 7: arr = [1, 2, 3], k = 0");
-const result7 = checkSubsequenceSum([1, 2, 3], 0);
-console.log("Expected: false");
-console.log("Got:     ", result7);
-console.log("No subsequence (empty not counted)");
-console.log();
+    // Pick branch fail hui, so ab current element ko skip karke dekhte hain.
+    // Sum same rehta hai because arr[index] subsequence me include nahi hua.
+    return existsFromIndex(index + 1, currentSum, arr, target);
+  }
 
-// ═══════════════════════════════════════════════════════════════════════
-// VERIFICATION HELPER
-// ═══════════════════════════════════════════════════════════════════════
+  /**
+   * ==========================================================
+   * DRY RUN - RECURSION TREE + CALL FRAMES
+   * ==========================================================
+   *
+   * Example:
+   * arr = [5, 1, 2], target = 3
+   *
+   * Expected:
+   * true
+   *
+   * Why this example?
+   *   Pehle pick 5 fail hota hai because sum target se bada ho jata hai.
+   *   Uske baad not-pick branch run hoti hai.
+   *   Then [1, 2] milte hi early return hota hai.
+   *
+   * ==========================================================
+   * DECISION TREE
+   * ==========================================================
+   *
+   * Each node stores:
+   *   index
+   *   currentSum
+   *
+   * root  (index=0, sum=0, next=5)
+   * │
+   * ├── PICK 5 -> (index=1, sum=5)
+   * │   │
+   * │   └── PRUNE: sum 5 > target 3 -> return false
+   * │
+   * └── NOT PICK 5 -> (index=1, sum=0, next=1)
+   *     │
+   *     ├── PICK 1 -> (index=2, sum=1, next=2)
+   *     │   │
+   *     │   ├── PICK 2 -> (index=3, sum=3)
+   *     │   │   │
+   *     │   │   └── BASE CASE: sum === target -> return true
+   *     │   │
+   *     │   └── NOT PICK 2
+   *     │       skipped because PICK 2 already returned true
+   *     │
+   *     └── NOT PICK 1
+   *         skipped because PICK 1 subtree already returned true
+   *
+   * Final:
+   *   true
+   *
+   * ==========================================================
+   * NESTED BOX-HEAVY CALL FRAME DRY RUN
+   * ==========================================================
+   *
+   * Initial Call: checkSubsequenceSum([5, 1, 2], 3)
+   * - result is not stored because this is existence check
+   * - Start: existsFromIndex(0, 0, [5,1,2], 3)
+   *
+   * ┌──────────────────────────────────────────────────────────────────────┐
+   * │ CALL 1: existsFromIndex(0, 0, [5,1,2], 3)                            │
+   * ├──────────────────────────────────────────────────────────────────────┤
+   * │ index = 0                                                            │
+   * │ currentSum = 0                                                       │
+   * │ current element = arr[0] = 5                                         │
+   * │ Base: currentSum === target? 0 === 3 -> Nahi                        │
+   * │ Base: index === arr.length? 0 === 3 -> Nahi                         │
+   * │ Prune: currentSum > target? 0 > 3 -> Nahi                           │
+   * │                                                                      │
+   * │ Try PICK 5: call existsFromIndex(1, 5, [5,1,2], 3)                  │
+   * │                                                                      │
+   * │   ┌────────────────────────────────────────────────────────────┐     │
+   * │   │ CALL 2: existsFromIndex(1, 5, [5,1,2], 3)                  │     │
+   * │   ├────────────────────────────────────────────────────────────┤     │
+   * │   │ index = 1                                                  │     │
+   * │   │ currentSum = 5                                             │     │
+   * │   │ current element would be arr[1] = 1                        │     │
+   * │   │ Base: currentSum === target? 5 === 3 -> Nahi              │     │
+   * │   │ Base: index === arr.length? 1 === 3 -> Nahi               │     │
+   * │   │ Prune: currentSum > target? 5 > 3 -> Haan                 │     │
+   * │   │                                                            │     │
+   * │   │ Reason: positive numbers add karne se sum aur badhega.    │     │
+   * │   │ Return false                                              │     │
+   * │   └────────────────────────────────────────────────────────────┘     │
+   * │                                                                      │
+   * │ PICK 5 returned false                                                │
+   * │ Ab same CALL 1 me NOT PICK branch try hogi.                          │
+   * │                                                                      │
+   * │ Try NOT PICK 5: call existsFromIndex(1, 0, [5,1,2], 3)              │
+   * │                                                                      │
+   * │   ┌────────────────────────────────────────────────────────────┐     │
+   * │   │ CALL 3: existsFromIndex(1, 0, [5,1,2], 3)                  │     │
+   * │   ├────────────────────────────────────────────────────────────┤     │
+   * │   │ index = 1                                                  │     │
+   * │   │ currentSum = 0                                             │     │
+   * │   │ current element = arr[1] = 1                               │     │
+   * │   │ Base: currentSum === target? 0 === 3 -> Nahi              │     │
+   * │   │ Base: index === arr.length? 1 === 3 -> Nahi               │     │
+   * │   │ Prune: currentSum > target? 0 > 3 -> Nahi                 │     │
+   * │   │                                                            │     │
+   * │   │ Try PICK 1: call existsFromIndex(2, 1, [5,1,2], 3)        │     │
+   * │   │                                                            │     │
+   * │   │   ┌──────────────────────────────────────────────────┐     │     │
+   * │   │   │ CALL 4: existsFromIndex(2, 1, [5,1,2], 3)        │     │     │
+   * │   │   ├──────────────────────────────────────────────────┤     │     │
+   * │   │   │ index = 2                                        │     │     │
+   * │   │   │ currentSum = 1                                   │     │     │
+   * │   │   │ current element = arr[2] = 2                     │     │     │
+   * │   │   │ Base: currentSum === target? 1 === 3 -> Nahi    │     │     │
+   * │   │   │ Base: index === arr.length? 2 === 3 -> Nahi     │     │     │
+   * │   │   │ Prune: currentSum > target? 1 > 3 -> Nahi       │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │ Try PICK 2: existsFromIndex(3, 3, [5,1,2], 3)   │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │   ┌────────────────────────────────────────┐     │     │     │
+   * │   │   │   │ CALL 5: existsFromIndex(3, 3,          │     │     │     │
+   * │   │   │   │         [5,1,2], 3)                    │     │     │     │
+   * │   │   │   ├────────────────────────────────────────┤     │     │     │
+   * │   │   │   │ index = 3                              │     │     │     │
+   * │   │   │   │ currentSum = 3                         │     │     │     │
+   * │   │   │   │ Base: currentSum === target?           │     │     │     │
+   * │   │   │   │ 3 === 3 -> Haan                        │     │     │     │
+   * │   │   │   │                                        │     │     │     │
+   * │   │   │   │ Return true                            │     │     │     │
+   * │   │   │   └────────────────────────────────────────┘     │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │ PICK 2 returned true                            │     │     │
+   * │   │   │ NOT PICK 2 skipped because answer mil gaya.      │     │     │
+   * │   │   │ Return true                                     │     │     │
+   * │   │   └──────────────────────────────────────────────────┘     │     │
+   * │   │                                                            │     │
+   * │   │ PICK 1 returned true                                      │     │
+   * │   │ NOT PICK 1 skipped because answer mil gaya.                │     │
+   * │   │ Return true                                               │     │
+   * │   └────────────────────────────────────────────────────────────┘     │
+   * │                                                                      │
+   * │ NOT PICK 5 returned true                                             │
+   * │ Return true                                                          │
+   * └──────────────────────────────────────────────────────────────────────┘
+   *
+   * Final answer:
+   *   true
+   *
+   * Valid subsequence:
+   *   [1, 2]
+   *
+   * ==========================================================
+   * WHY EARLY RETURN IS VALID
+   * ==========================================================
+   *
+   * Count problem:
+   *   Har valid subsequence count karni hoti hai.
+   *   Isliye saare branches explore karna zaroori hai.
+   *
+   * Check problem:
+   *   Sirf ye puchha hai ki at least one valid subsequence exists?
+   *   Isliye first true milte hi answer final ho sakta hai.
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. arr = [5], target = 5
+   *    Pick 5 -> sum target -> true
+   *
+   * 2. arr = [5], target = 3
+   *    Pick 5 prunes, not-pick reaches end -> false
+   *
+   * 3. arr = [1, 1, 1, 1], target = 2
+   *    Any two 1s form target -> true
+   *
+   * 4. arr = [1, 2, 3], target = 10
+   *    No combination can reach target -> false
+   *
+   * 5. target = 0
+   *    Empty subsequence is not counted in this setup -> false
+   */
 
-/**
- * Verify karo by generating all subsequences (brute force)
- */
-function verifyByBruteForce(arr: number[], k: number): void {
-  console.log(`\n═══ arr=[${arr}], k=${k} ke liye Verification ═══`);
+  export function runTests(): void {
+    type TestCase = {
+      arr: number[];
+      target: number;
+      expected: boolean;
+      description: string;
+    };
 
-  // Generate all subsequences using bitmask
-  const n = arr.length;
-  let foundAny = false;
-  const validSubsequences: number[][] = [];
+    const tests: TestCase[] = [
+      {
+        arr: [10, 1, 2, 7, 6, 1, 5],
+        target: 8,
+        expected: true,
+        description: 'multiple valid subsequences exist',
+      },
+      {
+        arr: [2, 3, 5, 7, 9],
+        target: 100,
+        expected: false,
+        description: 'target is larger than possible total',
+      },
+      {
+        arr: [1, 2, 3],
+        target: 6,
+        expected: true,
+        description: 'all elements are needed',
+      },
+      {
+        arr: [5, 10, 15],
+        target: 8,
+        expected: false,
+        description: 'target cannot be formed',
+      },
+      {
+        arr: [1, 1, 1, 1],
+        target: 2,
+        expected: true,
+        description: 'repeated values can form target',
+      },
+      {
+        arr: [5],
+        target: 5,
+        expected: true,
+        description: 'single element equals target',
+      },
+      {
+        arr: [5],
+        target: 3,
+        expected: false,
+        description: 'single element does not equal target',
+      },
+      {
+        arr: [5, 1, 2],
+        target: 3,
+        expected: true,
+        description: 'pick branch fails first, not-pick branch succeeds',
+      },
+      {
+        arr: [1, 2, 3],
+        target: 0,
+        expected: false,
+        description: 'zero target does not count empty subsequence',
+      },
+    ];
 
-  // 1 se 2^n-1 tak (0 skip = empty)
-  for (let mask = 1; mask < 1 << n; mask++) {
-    const subsequence: number[] = [];
-    let sum = 0;
+    let passed = 0;
 
-    for (let i = 0; i < n; i++) {
-      if (mask & (1 << i)) {
-        subsequence.push(arr[i]);
-        sum += arr[i];
+    console.log('Testing Check Subsequence Sum K - Recursion\n');
+
+    tests.forEach(({ arr, target, expected, description }, index) => {
+      const actual = checkSubsequenceSum(arr, target);
+      const bruteExpected = verifyByBruteForce(arr, target);
+      const pass = actual === expected && actual === bruteExpected;
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  arr=[${arr.join(', ')}], target=${target}`);
+      console.log(`  Expected: ${expected}`);
+      console.log(`  Brute:    ${bruteExpected}`);
+      console.log(`  Got:      ${actual}`);
+      console.log(`  Result:   ${pass ? 'PASS' : 'FAIL'}`);
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
+
+  function verifyByBruteForce(arr: number[], target: number): boolean {
+    if (target <= 0) {
+      return false;
+    }
+
+    const totalMasks = 1 << arr.length;
+
+    for (let mask = 1; mask < totalMasks; mask++) {
+      let sum = 0;
+
+      for (let index = 0; index < arr.length; index++) {
+        if ((mask & (1 << index)) !== 0) {
+          sum += arr[index];
+        }
+      }
+
+      if (sum === target) {
+        return true;
       }
     }
 
-    if (sum === k) {
-      foundAny = true;
-      validSubsequences.push(subsequence);
-    }
+    return false;
   }
-
-  const ourResult = checkSubsequenceSum(arr, k);
-  const isCorrect = ourResult === foundAny;
-
-  console.log(`✓ Our answer: ${ourResult}`);
-  console.log(`✓ Expected: ${foundAny}`);
-  console.log(`✓ Match: ${isCorrect ? "✓" : "✗"}`);
-
-  if (foundAny && validSubsequences.length <= 10) {
-    console.log(`✓ Valid subsequences found:`);
-    validSubsequences.forEach((sub) => console.log(`  [${sub}]`));
-  } else if (foundAny) {
-    console.log(`✓ Total valid subsequences: ${validSubsequences.length}`);
-    console.log(`  First 3: ${validSubsequences.slice(0, 3).map((s) => `[${s}]`).join(", ")}`);
-  }
-
-  console.log(`\n${isCorrect ? "✅ VERIFICATION PASS!" : "❌ VERIFICATION FAIL!"}`);
 }
 
-// Run verifications
-verifyByBruteForce([10, 1, 2, 7, 6, 1, 5], 8);
-verifyByBruteForce([2, 3, 5, 7, 9], 100);
-verifyByBruteForce([1, 2, 3], 6);
-verifyByBruteForce([5, 10, 15], 8);
-verifyByBruteForce([1, 1, 1, 1], 2);
-verifyByBruteForce([1, 2, 3], 0); // Edge case: k=0
+const checkSubsequenceSum =
+  CheckSubsequenceSumKRecursion.checkSubsequenceSum;
 
-export { checkSubsequenceSum };
+CheckSubsequenceSumKRecursion.runTests();
+
+export { checkSubsequenceSum, CheckSubsequenceSumKRecursion };

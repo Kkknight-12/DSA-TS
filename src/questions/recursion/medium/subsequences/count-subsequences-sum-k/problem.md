@@ -1,547 +1,316 @@
-# Count All Subsequences with Sum K
+# Count All Subsequences With Sum K
 
-**Difficulty**: Medium
-**Topics**: Recursion, Backtracking, Dynamic Programming
-**Pattern**: Subsequences (Pick/Not Pick)
-
----
-
-(count-all-subsequences-with-sum-k)[https://takeuforward.org/data-structure/count-all-subsequences-with-sum-k]
-
-## Problem Statement
-
-Ek array `nums` aur ek integer `k` diye gaye hain. Tumhe **count** return karna hai ki kitne **non-empty subsequences** hain jinka sum **exactly k** ke equal hai.
-
-**Important:**
-- Empty subsequence count nahi karna
-- Duplicates allowed hain array mein
-- Order matter nahi karta (subsequence ki property)
-- Sirf **count** chahiye, subsequences store nahi karne
+**Difficulty:** Medium  
+**Topic:** Recursion  
+**Pattern:** Pick / Not Pick subsequences  
+**Primary approach in this folder:** Pure recursion returning count
 
 ---
 
-## Examples
+## 1. Problem Samjho
 
-### Example 1:
-```
-Input: nums = [4, 9, 2, 5, 1], k = 10
-Output: 2
+Ek array `nums` aur target `k` diya hai.
 
-Explanation:
-Subsequences with sum = 10:
-  [9, 1]     → 9 + 1 = 10 ✓
-  [4, 5, 1]  → 4 + 5 + 1 = 10 ✓
+Hume count return karna hai:
 
-Total count: 2
+```txt
+Kitni non-empty subsequences ka sum exactly k hai?
 ```
 
-### Example 2:
-```
-Input: nums = [4, 2, 10, 5, 1, 3], k = 5
-Output: 3
+Return:
 
-Explanation:
-Subsequences with sum = 5:
-  [4, 1]  → 4 + 1 = 5 ✓
-  [2, 3]  → 2 + 3 = 5 ✓
-  [5]     → 5 = 5 ✓
+| condition | return |
+|---|---:|
+| valid subsequences exist karti hain | count of all valid subsequences |
+| koi valid subsequence nahi hai | `0` |
 
-Total count: 3
-```
+Important:
 
-### Example 3:
-```
-Input: nums = [1, 2, 3], k = 6
-Output: 1
-
-Explanation:
-Subsequences with sum = 6:
-  [1, 2, 3]  → 1 + 2 + 3 = 6 ✓
-
-Total count: 1
-```
-
-### Example 4:
-```
-Input: nums = [1, 1, 1], k = 2
-Output: 3
-
-Explanation:
-Subsequences with sum = 2:
-  [1, 1] (index 0, 1)  → 1 + 1 = 2 ✓
-  [1, 1] (index 0, 2)  → 1 + 1 = 2 ✓
-  [1, 1] (index 1, 2)  → 1 + 1 = 2 ✓
-
-Total count: 3
-(Dhyan do: Different indices = different subsequences)
-```
+- Subsequence me order same rehta hai.
+- Elements continuous hona zaroori nahi.
+- Different indices different subsequences count hote hain.
+- Is problem me sirf `true/false` nahi, total count chahiye.
 
 ---
 
-## Constraints
+## 2. Examples
 
-- `1 ≤ nums.length ≤ 20`
-- `1 ≤ nums[i] ≤ 100`
-- `1 ≤ k ≤ 1000`
+### Example 1
+
+```txt
+nums = [4, 9, 2, 5, 1]
+k = 10
+```
+
+Valid subsequences:
+
+| subsequence | sum |
+|---|---:|
+| `[9, 1]` | `10` |
+| `[4, 5, 1]` | `10` |
+
+Answer:
+
+```txt
+2
+```
+
+### Example 2
+
+```txt
+nums = [4, 2, 10, 5, 1, 3]
+k = 5
+```
+
+Valid subsequences:
+
+| subsequence | sum |
+|---|---:|
+| `[4, 1]` | `5` |
+| `[2, 3]` | `5` |
+| `[5]` | `5` |
+
+Answer:
+
+```txt
+3
+```
+
+### Example 3
+
+```txt
+nums = [1, 1, 1]
+k = 2
+```
+
+Valid subsequences by indices:
+
+| indices | values | sum |
+|---|---|---:|
+| `(0, 1)` | `[1, 1]` | `2` |
+| `(0, 2)` | `[1, 1]` | `2` |
+| `(1, 2)` | `[1, 1]` | `2` |
+
+Answer:
+
+```txt
+3
+```
+
+Even though values same dikh rahi hain, indices different hain, so subsequences different count hoti hain.
 
 ---
 
-## Intuition (Soch)
+## 3. Core Observation
 
-### The Challenge
+Har element ke paas 2 choices hoti hain:
 
-**Generate All Subsets** mein humne sabhi subsets store kiye the.
-
-**Yahan different hai:**
-- Subsets store nahi karne, sirf **count** chahiye
-- Woh bhi sirf jinki **sum = k**
-
-### The Key Insight
-
-**Har element ke liye 2 choices:**
-1. **Pick** - Element ko include karo, sum mein add karo
-2. **Not Pick** - Element ko skip karo, sum same rahe
-
-**Jab saare elements process ho jayein:**
-- Agar `sum == k` → Return **1** (found one valid subsequence!)
-- Agar `sum != k` → Return **0** (invalid)
-
-**Final count:**
-```
-Total = (count from pick path) + (count from not pick path)
+```txt
+1. Pick     -> current element ko subsequence me include karo
+2. Not Pick -> current element ko skip karo
 ```
 
-### Visual Example: [4, 5, 1], k = 10
+Example:
 
-```
-                    index=0, sum=0
-                        /          \
-                   Pick 4          Not Pick 4
-                      /                \
-              index=1, sum=4       index=1, sum=0
-                  /      \             /      \
-            Pick 5    Not Pick 5   Pick 5   Not Pick 5
-               /          \          /          \
-          sum=9        sum=4      sum=5       sum=0
-            /  \        /  \       /  \        /  \
-        Pick 1  Skip  Pick 1 Skip Pick 1 Skip Pick 1 Skip
-          /      \      /     \    /     \     /      \
-       sum=10  sum=9 sum=5  sum=4 sum=6 sum=5 sum=1  sum=0
-        ✓1      ✗0    ✗0    ✗0    ✗0    ✗0    ✗0     ✗0
-
-Result: 1 valid subsequence [4, 5, 1]
+```txt
+nums = [4, 5, 1]
+k = 10
 ```
 
-**Count propagation:**
-```
-Pick 4, Pick 5, Pick 1 → sum=10 → return 1
-Pick 4, Pick 5, Skip 1 → sum=9  → return 0
-Pick 4, Skip 5, Pick 1 → sum=5  → return 0
-Pick 4, Skip 5, Skip 1 → sum=4  → return 0
-Skip 4, Pick 5, Pick 1 → sum=6  → return 0
-Skip 4, Pick 5, Skip 1 → sum=5  → return 0
-Skip 4, Skip 5, Pick 1 → sum=1  → return 0
-Skip 4, Skip 5, Skip 1 → sum=0  → return 0
+At index `0`, value `4`:
 
-Total: 1 + 0 + 0 + 0 + 0 + 0 + 0 + 0 = 1
-```
+| choice | new sum |
+|---|---:|
+| pick `4` | `4` |
+| not pick `4` | `0` |
+
+At index `1`, value `5`:
+
+| choice | if previous sum was `4` |
+|---|---:|
+| pick `5` | `9` |
+| not pick `5` | `4` |
+
+This naturally forms a recursion tree.
 
 ---
 
-## Approach: Recursion with Count Return
+## 4. Why We Cannot Early Return
+
+Previous check problem asked:
+
+```txt
+Kya koi ek subsequence target banati hai?
+```
+
+There, first `true` enough tha.
+
+This problem asks:
+
+```txt
+Kitni subsequences target banati hain?
+```
+
+So agar ek valid subsequence mil bhi jaye:
+
+```txt
+baaki branches explore karna zaroori hai
+```
+
+Because they may contain more valid subsequences.
+
+---
+
+## 5. Approach 1: Pure Recursion
+
+### Idea
+
+Recursion integer count return karegi.
+
+At each node:
+
+```txt
+count = pick branch count + not-pick branch count
+```
+
+Base case:
+
+```txt
+index === nums.length
+```
+
+Then:
+
+| condition | return |
+|---|---:|
+| `currentSum === k` | `1` |
+| otherwise | `0` |
 
 ### Algorithm
 
-```
-countSubsequences(nums, k):
-    return count(0, 0, nums, k)
-
-count(index, currentSum, nums, k):
-    // BASE CASE: Saare elements process ho gaye
-    if index == nums.length:
-        if currentSum == k:
-            return 1  // Found one valid subsequence!
-        else:
-            return 0  // Invalid subsequence
-
-    // RECURSIVE CASE 1: Pick current element
-    pickCount = count(index + 1, currentSum + nums[index], nums, k)
-
-    // RECURSIVE CASE 2: Not Pick current element
-    notPickCount = count(index + 1, currentSum, nums, k)
-
-    // Return total count
-    return pickCount + notPickCount
+```txt
+1. Start recursion from index 0 and currentSum 0.
+2. Har element par pick branch explore karo.
+3. Pick branch me currentSum + nums[index] ke saath next index par jao.
+4. Har element par not-pick branch bhi explore karo.
+5. Not-pick branch me currentSum same rakho and next index par jao.
+6. Base case par agar currentSum target ke equal hai, return 1.
+7. Base case par agar currentSum target ke equal nahi hai, return 0.
+8. Current frame ka answer = pickCount + notPickCount.
 ```
 
-**Key Parameters:**
-- `index`: Current position in array
-- `currentSum`: Sum so far of picked elements
-- `nums`: Original array
-- `k`: Target sum
+### Why This Works
 
-**Return Value:**
-- **Integer count** of valid subsequences (not array!)
+Every possible subsequence ek unique pick/not-pick decision path se banti hai.
+
+When a branch reaches array end:
+
+```txt
+that one path represents exactly one subsequence
+```
+
+If that path ka sum `k` hai, count `1`.
+
+If not, count `0`.
+
+Parent frame dono child counts add karke total valid subsequences batata hai.
+
+### Complexity
+
+| complexity | value | why |
+|---|---:|---|
+| Time | `O(2^n)` worst case | har element ke 2 choices |
+| Space | `O(n)` | recursion stack depth |
 
 ---
 
-## Complete Dry Run: nums = [4, 5, 1], k = 10
+## 6. Approach 2: Recursion + Memoization
 
-**Input**: `nums = [4, 5, 1]`, `k = 10`
+### Idea
 
-**Expected Output**: `1` (only [4, 5, 1])
+Same state repeat ho sakti hai:
 
-### Decision Tree with Sum Tracking:
-
-```
-                    count(0, 0)
-                    /          \
-              Pick 4            Not Pick 4
-                 /                  \
-          count(1, 4)           count(1, 0)
-            /      \              /      \
-        Pick 5   Skip 5       Pick 5   Skip 5
-          /         \           /         \
-    count(2,9)  count(2,4)  count(2,5)  count(2,0)
-      /    \      /    \      /    \      /    \
-   Pick1 Skip1 Pick1 Skip1 Pick1 Skip1 Pick1 Skip1
-     |     |     |     |     |     |     |     |
-   (3,10)(3,9)(3,5)(3,4)(3,6)(3,5)(3,1)(3,0)
-    ✓1    ✗0   ✗0   ✗0   ✗0   ✗0   ✗0   ✗0
+```txt
+(index, currentSum)
 ```
 
-### Detailed Trace:
+If hum kisi state ka count already calculate kar chuke hain, cache se return kar sakte hain.
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│ CALL 1: count(0, 0, [4,5,1], 10)                                    │
-├──────────────────────────────────────────────────────────────────────┤
-│ index = 0, sum = 0, k = 10                                          │
-│ Base case? 0 == 3 → Nahi                                            │
-│                                                                      │
-│ CHOICE 1: Pick nums[0] = 4                                          │
-│   ┌────────────────────────────────────────────────────────────┐   │
-│   │ CALL 2: count(1, 4, [4,5,1], 10)                          │   │
-│   ├────────────────────────────────────────────────────────────┤   │
-│   │ index = 1, sum = 4, k = 10                                │   │
-│   │ Base case? 1 == 3 → Nahi                                  │   │
-│   │                                                            │   │
-│   │ CHOICE 1: Pick nums[1] = 5                                │   │
-│   │   ┌──────────────────────────────────────────────────┐   │   │
-│   │   │ CALL 3: count(2, 9, [4,5,1], 10)                │   │   │
-│   │   ├──────────────────────────────────────────────────┤   │   │
-│   │   │ index = 2, sum = 9, k = 10                      │   │   │
-│   │   │ Base case? 2 == 3 → Nahi                        │   │   │
-│   │   │                                                  │   │   │
-│   │   │ CHOICE 1: Pick nums[2] = 1                      │   │   │
-│   │   │   ┌────────────────────────────────────────┐   │   │   │
-│   │   │   │ CALL 4: count(3, 10, [4,5,1], 10)     │   │   │   │
-│   │   │   ├────────────────────────────────────────┤   │   │   │
-│   │   │   │ index = 3, sum = 10, k = 10           │   │   │   │
-│   │   │   │ Base case? 3 == 3 → Haan! ✓           │   │   │   │
-│   │   │   │ sum == k? 10 == 10 → Haan! ✓          │   │   │   │
-│   │   │   │ Return 1 (Found valid subsequence!)   │   │   │   │
-│   │   │   └────────────────────────────────────────┘   │   │   │
-│   │   │   pickCount = 1                                 │   │   │
-│   │   │                                                  │   │   │
-│   │   │ CHOICE 2: Not Pick nums[2] = 1                  │   │   │
-│   │   │   ┌────────────────────────────────────────┐   │   │   │
-│   │   │   │ CALL 5: count(3, 9, [4,5,1], 10)      │   │   │   │
-│   │   │   ├────────────────────────────────────────┤   │   │   │
-│   │   │   │ index = 3, sum = 9, k = 10            │   │   │   │
-│   │   │   │ Base case? 3 == 3 → Haan! ✓           │   │   │   │
-│   │   │   │ sum == k? 9 == 10 → Nahi ✗            │   │   │   │
-│   │   │   │ Return 0 (Invalid, sum not equal)     │   │   │   │
-│   │   │   └────────────────────────────────────────┘   │   │   │
-│   │   │   notPickCount = 0                              │   │   │
-│   │   │                                                  │   │   │
-│   │   │ Return pickCount + notPickCount = 1 + 0 = 1    │   │   │
-│   │   └──────────────────────────────────────────────────┘   │   │
-│   │   pickCount (from Pick 5) = 1                             │   │
-│   │                                                            │   │
-│   │ CHOICE 2: Not Pick nums[1] = 5                            │   │
-│   │   ┌──────────────────────────────────────────────────┐   │   │
-│   │   │ CALL 6: count(2, 4, [4,5,1], 10)                │   │   │
-│   │   ├──────────────────────────────────────────────────┤   │   │
-│   │   │ index = 2, sum = 4, k = 10                      │   │   │
-│   │   │                                                  │   │   │
-│   │   │ Pick 1: count(3, 5, ...) → sum != k → return 0  │   │   │
-│   │   │ Skip 1: count(3, 4, ...) → sum != k → return 0  │   │   │
-│   │   │                                                  │   │   │
-│   │   │ Return 0 + 0 = 0                                 │   │   │
-│   │   └──────────────────────────────────────────────────┘   │   │
-│   │   notPickCount (from Skip 5) = 0                          │   │
-│   │                                                            │   │
-│   │ Return pickCount + notPickCount = 1 + 0 = 1               │   │
-│   └────────────────────────────────────────────────────────────┘   │
-│   pickCount (from Pick 4) = 1                                      │
-│                                                                      │
-│ CHOICE 2: Not Pick nums[0] = 4                                     │
-│   ┌────────────────────────────────────────────────────────────┐   │
-│   │ CALL 7: count(1, 0, [4,5,1], 10)                          │   │
-│   ├────────────────────────────────────────────────────────────┤   │
-│   │ index = 1, sum = 0, k = 10                                │   │
-│   │                                                            │   │
-│   │ Pick 5:                                                    │   │
-│   │   count(2, 5, ...)                                         │   │
-│   │     Pick 1: count(3, 6, ...) → 6 != 10 → return 0         │   │
-│   │     Skip 1: count(3, 5, ...) → 5 != 10 → return 0         │   │
-│   │   Returns: 0 + 0 = 0                                       │   │
-│   │                                                            │   │
-│   │ Skip 5:                                                    │   │
-│   │   count(2, 0, ...)                                         │   │
-│   │     Pick 1: count(3, 1, ...) → 1 != 10 → return 0         │   │
-│   │     Skip 1: count(3, 0, ...) → 0 != 10 → return 0         │   │
-│   │   Returns: 0 + 0 = 0                                       │   │
-│   │                                                            │   │
-│   │ Return 0 + 0 = 0                                           │   │
-│   └────────────────────────────────────────────────────────────┘   │
-│   notPickCount (from Skip 4) = 0                                   │
-│                                                                      │
-│ Return pickCount + notPickCount = 1 + 0 = 1                        │
-└──────────────────────────────────────────────────────────────────────┘
+### Complexity
 
-Final Result: 1
+| complexity | value | why |
+|---|---:|---|
+| Time | `O(n * k)` | each state once |
+| Space | `O(n * k)` | memo table |
 
-Valid subsequence found: [4, 5, 1] (sum = 10)
-```
+This is useful when constraints larger ho.
 
 ---
 
-## Count Propagation (Bottom-up)
+## 7. Approach 3: Bottom-Up DP
 
-Recursion tree ke **leaf nodes** (base cases) se count **propagate** hota hai:
+### Idea
 
+DP table:
+
+```txt
+dp[i][sum]
 ```
-Level 3 (Base cases):
-  sum=10 → return 1 ✓
-  sum=9  → return 0
-  sum=5  → return 0
-  sum=4  → return 0
-  sum=6  → return 0
-  sum=5  → return 0
-  sum=1  → return 0
-  sum=0  → return 0
 
-Level 2 (Merge):
-  count(2,9):  1 + 0 = 1
-  count(2,4):  0 + 0 = 0
-  count(2,5):  0 + 0 = 0
-  count(2,0):  0 + 0 = 0
+Meaning:
 
-Level 1 (Merge):
-  count(1,4):  1 + 0 = 1
-  count(1,0):  0 + 0 = 0
-
-Level 0 (Final):
-  count(0,0):  1 + 0 = 1 ← Final answer!
+```txt
+First i elements se sum banane ke kitne ways hain?
 ```
+
+Then pick / not-pick relation:
+
+```txt
+dp[i][sum] = not-pick ways + pick ways
+```
+
+### Complexity
+
+| complexity | value |
+|---|---:|
+| Time | `O(n * k)` |
+| Space | `O(n * k)` |
 
 ---
 
-## Time & Space Complexity
+## 8. Approach Comparison
 
-**Time Complexity: O(2^n)**
-
-**Kyun?**
-- Har element ke liye 2 choices: Pick ya Not Pick
-- Total paths: 2^n
-- Har path explore karna padta hai
-
-**Detailed:**
-```
-n = 3 elements:
-  - Total recursive calls: 2^3 = 8 (leaf nodes)
-  - Plus internal nodes: 2^4 - 1 = 15 total calls
-  - But work per call: O(1)
-  - Total: O(2^n)
-```
-
-**Simple shabdon mein:**
-Agar array mein 20 elements hain, toh 2^20 = 1,048,576 paths explore karne padenge. That's why constraint n ≤ 20 hai.
-
-**Space Complexity: O(n)**
-
-**Kyun?**
-- Recursion depth: **O(n)** (maximum n levels)
-- Har level pe constant space (sirf index aur sum variables)
-- Koi extra data structure nahi (arrays store nahi kar rahe)
-
-**Stack space:**
-```
-Level 0: count(0, sum)
-Level 1: count(1, sum)
-Level 2: count(2, sum)
-...
-Level n: count(n, sum) → Base case
-
-Maximum depth = n
-```
+| approach | time | space | prerequisite | when useful |
+|---|---:|---:|---|---|
+| Pure recursion | `O(2^n)` | `O(n)` | recursion tree | learning count merge |
+| Memoization | `O(n * k)` | `O(n * k)` | recursion + cache | repeated states |
+| Tabulation | `O(n * k)` | `O(n * k)` | DP table | optimized count |
 
 ---
 
-## Edge Cases
+## 9. Important Edge Cases
 
-### 1. No valid subsequence
-```
-Input: nums = [1, 2, 3], k = 10
-Output: 0
-
-Explanation: Maximum sum = 1+2+3 = 6, k=10 impossible
-```
-
-### 2. Single element equals k
-```
-Input: nums = [5], k = 5
-Output: 1
-
-Explanation: [5] hi ek valid subsequence
-```
-
-### 3. Multiple ways with duplicates
-```
-Input: nums = [1, 1, 1, 1], k = 2
-Output: 6
-
-Explanation: Har pair of 1s ek subsequence
-  [1,1] at indices (0,1), (0,2), (0,3), (1,2), (1,3), (2,3)
-  Total: C(4,2) = 6
-```
-
-### 4. All elements needed
-```
-Input: nums = [2, 3, 5], k = 10
-Output: 1
-
-Explanation: [2, 3, 5] sabhi chahiye
-```
-
-### 5. Zero sum
-```
-Input: nums = [1, 2, 3], k = 0
-Output: 0
-
-Explanation: Empty subsequence not counted, koi valid nahi
-```
+| case | example | answer | why |
+|---|---|---:|---|
+| one valid subsequence | `[4,5,1]`, `k=10` | `1` | `[4,5,1]` |
+| multiple valid subsequences | `[4,9,2,5,1]`, `k=10` | `2` | `[9,1]`, `[4,5,1]` |
+| repeated values | `[1,1,1]`, `k=2` | `3` | index pairs differ |
+| no valid subsequence | `[1,2,3]`, `k=10` | `0` | target not possible |
+| single element equals target | `[5]`, `k=5` | `1` | `[5]` |
+| zero target in this setup | `[1,2,3]`, `k=0` | `0` | empty subsequence not counted |
 
 ---
 
-## Optimization: Dynamic Programming
+## 10. What We Will Implement
 
-Agar same `(index, sum)` pair baar baar aa raha hai, toh **memoization** use kar sakte ho:
+We will implement:
 
-```
-Memoization Table:
-  memo[index][sum] = count of subsequences from index onwards with remaining sum
-
-Time: O(n × sum)  ← Much better than O(2^n) for large sums!
-Space: O(n × sum)
+```txt
+Pure recursion returning count.
 ```
 
-**Trade-off:**
-- Small k: DP better (O(n × k))
-- Large k: Recursion simple (O(2^n))
+Why this implementation first:
 
----
-
-## Common Mistakes to Avoid
-
-❌ **Empty subsequence count karna**
-```javascript
-// WRONG
-if (index === n) {
-  return sum === k ? 1 : 0; // Empty bhi count ho jayega
-}
-
-// CORRECT - Empty avoid karne ke liye
-// Option 1: Problem mein explicitly bola "non-empty"
-// Option 2: Check karo ki kuch picked hai ya nahi
-```
-
-❌ **Count store karna instead of return**
-```javascript
-// WRONG
-let count = 0;
-if (sum === k) count++; // Global variable, galat result
-
-// CORRECT
-return (sum === k) ? 1 : 0; // Return karo
-```
-
-❌ **Subsequences store karna**
-```javascript
-// WRONG (unnecessary for counting)
-result.push([...current]); // Sirf count chahiye tha!
-
-// CORRECT
-return 1; // Just return count
-```
-
-❌ **Sum overflow check bhoolna**
-```javascript
-// Agar elements bade hain, sum overflow ho sakta hai
-// Check karo: if (currentSum > k) return 0; (optimization)
-```
-
-✅ **Return count from both paths**
-✅ **Base case: Check sum == k**
-✅ **No need to store subsequences**
-✅ **Optimization: Prune if sum > k already**
-
----
-
-## Interview Tips
-
-**Interviewer ko kya bolna hai:**
-
-*"Ye ek subsequence counting problem hai jisme hum Pick/Not Pick pattern use karenge. Har element pe decide karna hai ki use include karu (sum mein add karu) ya skip karu. Jab saare elements process ho jayein aur sum exactly k ke equal ho, toh return 1 (found one valid). Otherwise return 0. Final count dono paths (pick aur not pick) se aane wali counts ka sum hoga. Time complexity O(2^n) hai kyunki har element ke liye 2 choices hain. Agar k chhota hai, toh memoization se optimize kar sakte hain O(n×k) mein."*
-
-**Follow-up Questions:**
-
-**Q: Kya store kar sakte ho subsequences bhi?**
-A: Haan, current array maintain karo aur base case mein sum==k ho toh result mein add karo. Lekin sirf count ke liye ye unnecessary overhead hai.
-
-**Q: Optimize kar sakte ho?**
-A: Haan, memoization use karo. Agar (index, sum) repeat ho raha hai toh cache se return karo. Time complexity O(n × k) ho jayega.
-
-**Q: Agar negative numbers hon?**
-A: Tab optimization tricky ho jayega kyunki sum decrease bhi ho sakta hai. Basic recursion same rahega, but pruning nahi kar sakte.
-
-**Q: Kya iteratively kar sakte ho?**
-A: Haan, DP table bana sakte ho. dp[i][s] = count of subsequences from first i elements with sum s. But recursion zyada intuitive hai.
-
----
-
-## Related Problems
-
-**Similar Pattern:**
-- **Subset Sum** - Boolean return (exists or not)
-- **Count Subsets with Sum K** - Exactly ye problem!
-- **Partition Equal Subset Sum** - Sum ko half karna
-- **Target Sum** - +/- signs add karke target banana
-- **Combination Sum** - Repetition allowed
-
-**Same Pick/Not Pick pattern, different constraints!** 🎯
-
----
-
-## Key Takeaways
-
-1. **Counting ≠ Generating**
-   - Store nahi karna, sirf count return karna
-
-2. **Return 1 or 0**
-   - Valid subsequence → return 1
-   - Invalid → return 0
-
-3. **Merge counts**
-   - Total = pickCount + notPickCount
-
-4. **Optimization possible**
-   - Memoization if (index, sum) repeats
-   - Pruning if sum > k
-
-5. **Pick/Not Pick Pattern**
-   - Same as subsets, but return type different
-
-Implementation ready? Solution.ts banau? 🚀
+- Pick/not-pick count merge clearly visible hota hai.
+- It directly contrasts with `check-subsequence-sum-k`.
+- It builds the base for memoization and DP later.

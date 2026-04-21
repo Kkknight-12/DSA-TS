@@ -1,7 +1,15 @@
 # Files Needing Explanation Format Update
 
 Total: 106 files (includes 2 new find-x files)
-Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runTests()
+Missing: namespace wrapper, Intuition/Soch section, numbered Algorithm section, ASCII diagram, dry run, runTests()
+
+---
+
+## Global Backfill Reminder
+
+After finishing the current `Recursion (5 files)` and `Linked List (15 files)` batches, add a clear numbered `Algorithm:` section to all already-updated solution files that are missing it.
+
+Going forward, every file updated from this tracker should include this `Algorithm:` section during the normal rewrite, not as a later add-on.
 
 ---
 
@@ -143,13 +151,36 @@ Missing: namespace wrapper, Intuition/Soch section, ASCII diagram, dry run, runT
 
 ---
 
-## Recursion (5 files)
+## Recursion (23 files)
 
-- [ ] src/questions/recursion/medium/generate-binary-strings/solution.ts
-- [ ] src/questions/recursion/medium/generate-parentheses/solution.ts
-- [ ] src/questions/recursion/medium/subsequences/check-subsequence-sum-k/solution.ts
-- [ ] src/questions/recursion/medium/subsequences/count-subsequences-sum-k/solution.ts
-- [ ] src/questions/recursion/medium/subsequences/subsets/solution.ts
+### Recursion - Medium (20 files)
+
+- [ ] src/questions/recursion/medium/combination-sum/solution.ts
+- [ ] src/questions/recursion/medium/combination-sum-ii/solution.ts
+- [ ] src/questions/recursion/medium/combination-sum-iii/solution.ts
+- [ ] src/questions/recursion/medium/count-good-numbers/solution.ts
+- [x] src/questions/recursion/medium/generate-binary-strings/solution.ts
+- [x] src/questions/recursion/medium/generate-parentheses/solution.ts
+- [x] src/questions/recursion/medium/letter-combinations-phone-number/solution.ts
+- [ ] src/questions/recursion/medium/palindrome-partitioning/solution.ts
+- [ ] src/questions/recursion/medium/pow-x-n/brute-force.ts
+- [ ] src/questions/recursion/medium/pow-x-n/optimal-iterative.ts
+- [ ] src/questions/recursion/medium/pow-x-n/optimal-recursive.ts
+- [ ] src/questions/recursion/medium/reverse-stack/solution.ts
+- [ ] src/questions/recursion/medium/sort-stack/solution.ts
+- [ ] src/questions/recursion/medium/string-to-integer-atoi/recursive.ts
+- [x] src/questions/recursion/medium/subsequences/check-subsequence-sum-k/solution.ts
+- [x] src/questions/recursion/medium/subsequences/count-subsequences-sum-k/solution.ts
+- [x] src/questions/recursion/medium/subsequences/subsets/solution.ts
+- [ ] src/questions/recursion/medium/subsets-ii/solution.ts
+- [ ] src/questions/recursion/medium/word-break/solution.ts
+- [ ] src/questions/recursion/medium/word-search/solution.ts
+
+### Recursion - Hard (3 files)
+
+- [ ] src/questions/recursion/hard/expression-add-operators/solution.ts
+- [ ] src/questions/recursion/hard/n-queens/solution.ts
+- [ ] src/questions/recursion/hard/sudoku-solver/solution.ts
 
 ---
 

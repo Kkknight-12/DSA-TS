@@ -1,642 +1,324 @@
-# Subsets (Power Set)
+# Subsets / Power Set
 
-**Difficulty**: Medium
-**Topics**: Recursion, Backtracking, Array, Bit Manipulation
-**Source**: LeetCode
-
----
-
-## Problem Statement
-
-[subsets](https://leetcode.com/problems/subsets/)
-
-Ek integer array `nums` diya gaya hai jisme **unique elements** hain. Tumhe sabhi possible **subsets** (power set) return karni hain.
-
-**Note**:
-- Solution set mein duplicate subsets nahi hone chahiye
-- Kisi bhi order mein return kar sakte ho
-
-**Power Set kya hai?**
-Power set ek set ke saare possible subsets ka collection hai, including empty set.
+**Difficulty:** Medium  
+**Topic:** Recursion, Backtracking  
+**Pattern:** Include / Exclude  
+**Primary approach in this folder:** Backtracking with pick / not-pick choices
 
 ---
 
-## Prerequisites (Agar Koi Chahiye)
+## 1. Problem Samjho
 
-**Optional Background Knowledge:**
+Ek array `nums` diya hai jisme unique elements hain.
 
-**Backtracking:**
-- Ye ek classic backtracking problem hai
-- "Include/Exclude" pattern use hota hai
-- Har element ke liye decision banana: include karu ya skip karu
+Hume saare possible subsets return karne hain.
 
-**Tumhe kya chahiye:**
-- ✅ Basic recursion samajh (base case + recursive case)
-- ✅ Arrays ke saath comfortable ho
-- ✅ Decision making at each step
+Power set ka meaning:
 
-**Bottom Line**: Recursion samajhte ho toh ye problem solve ho jayega. Include/Exclude pattern naturally samajh aa jayega!
+```txt
+Original set ke saare possible subsets ka collection.
+```
+
+Example:
+
+```txt
+nums = [1, 2]
+```
+
+Subsets:
+
+```txt
+[[1, 2], [1], [2], []]
+```
+
+Order kisi bhi valid order me ho sakta hai.
+
+Important:
+
+- Empty subset `[]` bhi include hota hai.
+- Full subset `[1, 2]` bhi include hota hai.
+- Elements unique hain, so duplicate subsets ka issue nahi.
 
 ---
 
-### Examples:
+## 2. Examples
 
-**Example 1:**
-```
-Input: nums = [1,2,3]
-Output: [[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]
+### Example 1
 
-Explanation:
-3 elements hain, toh 2^3 = 8 subsets possible hain:
-  []        - empty subset (koi element nahi)
-  [1]       - sirf 1
-  [2]       - sirf 2
-  [1,2]     - 1 aur 2
-  [3]       - sirf 3
-  [1,3]     - 1 aur 3
-  [2,3]     - 2 aur 3
-  [1,2,3]   - sabhi elements
-
-Note: Order matter nahi karta
-  [1,2,3] same as [3,2,1]
+```txt
+nums = [1, 2, 3]
 ```
 
-**Example 2:**
-```
-Input: nums = [0]
-Output: [[],[0]]
+Total subsets:
 
-Explanation:
-1 element hai, toh 2^1 = 2 subsets:
-  []   - empty
-  [0]  - sirf 0
+```txt
+2^3 = 8
 ```
 
-**Example 3:**
-```
-Input: nums = [1,2]
-Output: [[],[1],[2],[1,2]]
+One valid output:
 
-Explanation:
-2 elements hain, toh 2^2 = 4 subsets:
-  []     - koi nahi
-  [1]    - sirf 1
-  [2]    - sirf 2
-  [1,2]  - dono
+```txt
+[[1,2,3], [1,2], [1,3], [1], [2,3], [2], [3], []]
 ```
 
----
+### Example 2
 
-### Constraints:
-- `1 ≤ nums.length ≤ 10`
-- `-10 ≤ nums[i] ≤ 10`
-- Saare numbers **unique** hain (duplicates nahi)
-
----
-
-## Intuition (Soch)
-
-### The Pattern: Include/Exclude
-
-Har element ke liye sirf **2 choices** hain:
-1. **Include** - Current subset mein element add karo
-2. **Exclude** - Current subset mein element skip karo
-
-**Example [1,2,3]:**
-
-```
-Start with empty []
-
-Element 1 pe decision:
-  Include 1?
-    Yes → [1]
-    No  → []
-
-Element 2 pe decision (har existing subset ke liye):
-  [1] + Include 2? → [1,2] ya [1]
-  []  + Include 2? → [2] ya []
-
-Element 3 pe decision:
-  [1,2] + Include 3? → [1,2,3] ya [1,2]
-  [1]   + Include 3? → [1,3] ya [1]
-  [2]   + Include 3? → [2,3] ya [2]
-  []    + Include 3? → [3] ya []
+```txt
+nums = [0]
 ```
 
-### Decision Tree (nums = [1,2])
+Total subsets:
 
-```
-                          []
-                        /    \
-              Include 1        Skip 1
-                   /              \
-                [1]                []
-               /   \              /   \
-        Inc 2       Skip 2   Inc 2    Skip 2
-           /          \        /         \
-        [1,2]        [1]     [2]         []
-          ✓           ✓       ✓          ✓
+```txt
+2^1 = 2
 ```
 
-**Result:** `[[1,2], [1], [2], []]`
+Output:
 
-**Key Observations:**
-1. Har level pe ek element consider karte hain
-2. Har node pe 2 choices: Include ya Exclude
-3. Tree ki depth = n (elements ki count)
-4. Leaf nodes = 2^n (total subsets)
-
-### Why This Works
-
-**Recursive Pattern:**
-```
-subsets(nums, index, current, result):
-    // BASE CASE: Saare elements process ho gaye
-    if index == nums.length:
-        result.push(copy of current)
-        return
-
-    // CHOICE 1: Include current element
-    current.push(nums[index])
-    subsets(nums, index + 1, current, result)
-    current.pop()  // Backtrack!
-
-    // CHOICE 2: Skip current element
-    subsets(nums, index + 1, current, result)
+```txt
+[[0], []]
 ```
 
-**Example for [1,2]:**
+### Example 3
+
+```txt
+nums = []
 ```
-Start: index=0, current=[]
 
-Include 1:
-  current = [1]
-  index = 1
+Total subsets:
 
-  Include 2:
-    current = [1,2]
-    index = 2 → BASE CASE! Add [1,2] ✓
-    Backtrack: current = [1]
+```txt
+2^0 = 1
+```
 
-  Skip 2:
-    current = [1]
-    index = 2 → BASE CASE! Add [1] ✓
-    Backtrack: current = []
+Output:
 
-Skip 1:
-  current = []
-  index = 1
+```txt
+[[]]
+```
 
-  Include 2:
-    current = [2]
-    index = 2 → BASE CASE! Add [2] ✓
-    Backtrack: current = []
+Even empty array ka bhi one subset hota hai:
 
-  Skip 2:
-    current = []
-    index = 2 → BASE CASE! Add [] ✓
-
-Result: [[1,2], [1], [2], []]
+```txt
+empty subset
 ```
 
 ---
 
-## Approach: Backtracking (Include/Exclude Pattern)
+## 3. Core Observation
+
+Har element ke paas 2 choices hoti hain:
+
+```txt
+1. Include -> current subset me element add karo
+2. Exclude -> current subset me element skip karo
+```
+
+For `nums = [1, 2]`:
+
+At element `1`:
+
+| choice | current subset |
+|---|---|
+| include `1` | `[1]` |
+| exclude `1` | `[]` |
+
+At element `2`, each current subset again has 2 choices:
+
+| starting subset | include `2` | exclude `2` |
+|---|---|---|
+| `[1]` | `[1,2]` | `[1]` |
+| `[]` | `[2]` | `[]` |
+
+Final:
+
+```txt
+[[1,2], [1], [2], []]
+```
+
+---
+
+## 4. Why Backtracking Is Needed
+
+We use one `current` array while exploring branches.
+
+When we include an element:
+
+```txt
+current.push(nums[index])
+```
+
+After that include branch finishes, we must undo:
+
+```txt
+current.pop()
+```
+
+Why?
+
+Because next branch is the exclude branch.
+
+If we do not pop, exclude branch will still carry the included element.
+
+Example:
+
+```txt
+current = []
+push 1 -> [1]
+push 2 -> [1,2]
+save [1,2]
+```
+
+Now to explore “skip 2”, current should be:
+
+```txt
+[1]
+```
+
+So we pop:
+
+```txt
+[1,2] -> [1]
+```
+
+This is backtracking:
+
+```txt
+Undo only the current frame's choice before trying the next choice.
+```
+
+---
+
+## 5. Approach 1: Backtracking Recursion
+
+### Idea
+
+Start at index `0` with empty current subset.
+
+At every index:
+
+```txt
+include nums[index]
+then
+exclude nums[index]
+```
+
+When index reaches end:
+
+```txt
+current subset complete hai
+copy karke result me add karo
+```
 
 ### Algorithm
 
-```
-subsets(nums):
-    result = []
-    generate(nums, 0, [], result)
-    return result
-
-generate(nums, index, current, result):
-    // BASE CASE: Saare elements dekh liye
-    if index == nums.length:
-        result.push([...current])  // Current subset add karo
-        return
-
-    // RECURSIVE CASE 1: Current element ko INCLUDE karo
-    current.push(nums[index])
-    generate(nums, index + 1, current, result)
-    current.pop()  // Backtrack (undo karo)
-
-    // RECURSIVE CASE 2: Current element ko SKIP karo
-    generate(nums, index + 1, current, result)
+```txt
+1. Start with empty result and empty current subset.
+2. Start recursion from index 0.
+3. Har index par pehle nums[index] ko current me include karo.
+4. Include branch ke liye next index par recurse karo.
+5. Include branch return kare toh current.pop() karke choice undo karo.
+6. Ab same frame me nums[index] ko skip karne wali branch recurse karo.
+7. Base case: index nums.length ke equal ho jaye toh current ka copy result me add karo.
+8. Final result me saare leaf paths ke subsets mil jayenge.
 ```
 
-**Key Parameters:**
-- `nums`: Original array
-- `index`: Current position (which element we're deciding on)
-- `current`: Current subset being built
-- `result`: Sabhi subsets store karne ke liye
+### Why Copy Is Required
 
-**Important - Backtracking:**
-- Include karne ke baad recursive call
-- Wapas aaye toh `pop()` karke undo karo
-- Tab skip wala path explore karo
+At base case:
+
+```txt
+result.push([...current])
+```
+
+Why not:
+
+```txt
+result.push(current)
+```
+
+Because `current` same array reference hai.
+
+Backtracking me `current` mutate hota rahega.
+
+If reference store kar diya, result ke andar stored subsets bhi mutate ho jayenge.
+
+So:
+
+```txt
+copy store karo, reference nahi
+```
+
+### Complexity
+
+| complexity | value | why |
+|---|---:|---|
+| Time | `O(n * 2^n)` | `2^n` subsets, each copy can cost `O(n)` |
+| Space | `O(n)` excluding output | recursion stack + current subset |
+| Output Space | `O(n * 2^n)` | all subsets stored |
 
 ---
 
-## Complete Dry Run (nums = [1,2])
+## 6. Approach 2: Bit Manipulation
 
-**Input**: `nums = [1,2]`
+### Idea
 
-**Expected Output**: `[[1,2], [1], [2], []]` (kisi bhi order mein)
+For `n` elements, total masks:
 
-### Decision Tree with State:
-
-```
-                    index=0, current=[]
-                          |
-              ┌──────────┴──────────┐
-              │                     │
-        Include 1               Skip 1
-              │                     │
-       index=1, [1]          index=1, []
-              |                     |
-        ┌─────┴─────┐         ┌─────┴─────┐
-        │           │         │           │
-    Include 2   Skip 2    Include 2   Skip 2
-        │           │         │           │
-    index=2     index=2   index=2     index=2
-    [1,2]       [1]       [2]         []
-      ✓          ✓         ✓           ✓
+```txt
+0 to 2^n - 1
 ```
 
-### Detailed Trace:
+Each bit decides whether an element is included.
 
+Example:
+
+```txt
+nums = [1, 2]
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│ CALL 1: generate([1,2], 0, [], result)                          │
-├──────────────────────────────────────────────────────────────────┤
-│ index = 0, current = [], nums.length = 2                        │
-│ Base case? 0 == 2 → Nahi                                        │
-│                                                                  │
-│ CHOICE 1: Include nums[0] = 1                                   │
-│   current.push(1) → current = [1]                               │
-│   ┌────────────────────────────────────────────────────────┐   │
-│   │ CALL 2: generate([1,2], 1, [1], result)               │   │
-│   ├────────────────────────────────────────────────────────┤   │
-│   │ index = 1, current = [1], nums.length = 2             │   │
-│   │ Base case? 1 == 2 → Nahi                              │   │
-│   │                                                        │   │
-│   │ CHOICE 1: Include nums[1] = 2                         │   │
-│   │   current.push(2) → current = [1,2]                   │   │
-│   │   ┌──────────────────────────────────────────────┐   │   │
-│   │   │ CALL 3: generate([1,2], 2, [1,2], result)   │   │   │
-│   │   ├──────────────────────────────────────────────┤   │   │
-│   │   │ index = 2, current = [1,2]                  │   │   │
-│   │   │ Base case? 2 == 2 → Haan! ✓                │   │   │
-│   │   │                                              │   │   │
-│   │   │ result.push([1,2])                          │   │   │
-│   │   │ result = [[1,2]]                            │   │   │
-│   │   │ Return                                       │   │   │
-│   │   └──────────────────────────────────────────────┘   │   │
-│   │   BACKTRACK: current.pop() → current = [1]            │   │
-│   │                                                        │   │
-│   │ CHOICE 2: Skip nums[1] = 2                            │   │
-│   │   current = [1] (no change)                           │   │
-│   │   ┌──────────────────────────────────────────────┐   │   │
-│   │   │ CALL 4: generate([1,2], 2, [1], result)     │   │   │
-│   │   ├──────────────────────────────────────────────┤   │   │
-│   │   │ index = 2, current = [1]                    │   │   │
-│   │   │ Base case? 2 == 2 → Haan! ✓                │   │   │
-│   │   │                                              │   │   │
-│   │   │ result.push([1])                            │   │   │
-│   │   │ result = [[1,2], [1]]                       │   │   │
-│   │   │ Return                                       │   │   │
-│   │   └──────────────────────────────────────────────┘   │   │
-│   │ Return                                                 │   │
-│   └────────────────────────────────────────────────────────┘   │
-│   BACKTRACK: current.pop() → current = []                      │
-│                                                                  │
-│ CHOICE 2: Skip nums[0] = 1                                     │
-│   current = [] (no change)                                     │
-│   ┌────────────────────────────────────────────────────────┐   │
-│   │ CALL 5: generate([1,2], 1, [], result)                │   │
-│   ├────────────────────────────────────────────────────────┤   │
-│   │ index = 1, current = [], nums.length = 2              │   │
-│   │ Base case? 1 == 2 → Nahi                              │   │
-│   │                                                        │   │
-│   │ CHOICE 1: Include nums[1] = 2                         │   │
-│   │   current.push(2) → current = [2]                     │   │
-│   │   ┌──────────────────────────────────────────────┐   │   │
-│   │   │ CALL 6: generate([1,2], 2, [2], result)     │   │   │
-│   │   ├──────────────────────────────────────────────┤   │   │
-│   │   │ index = 2, current = [2]                    │   │   │
-│   │   │ Base case? 2 == 2 → Haan! ✓                │   │   │
-│   │   │                                              │   │   │
-│   │   │ result.push([2])                            │   │   │
-│   │   │ result = [[1,2], [1], [2]]                  │   │   │
-│   │   │ Return                                       │   │   │
-│   │   └──────────────────────────────────────────────┘   │   │
-│   │   BACKTRACK: current.pop() → current = []             │   │
-│   │                                                        │   │
-│   │ CHOICE 2: Skip nums[1] = 2                            │   │
-│   │   current = [] (no change)                            │   │
-│   │   ┌──────────────────────────────────────────────┐   │   │
-│   │   │ CALL 7: generate([1,2], 2, [], result)      │   │   │
-│   │   ├──────────────────────────────────────────────┤   │   │
-│   │   │ index = 2, current = []                     │   │   │
-│   │   │ Base case? 2 == 2 → Haan! ✓                │   │   │
-│   │   │                                              │   │   │
-│   │   │ result.push([])                             │   │   │
-│   │   │ result = [[1,2], [1], [2], []]              │   │   │
-│   │   │ Return                                       │   │   │
-│   │   └──────────────────────────────────────────────┘   │   │
-│   │ Return                                                 │   │
-│   └────────────────────────────────────────────────────────┘   │
-│ Return                                                          │
-└──────────────────────────────────────────────────────────────────┘
 
-Final Result: [[1,2], [1], [2], []]
+| mask | subset |
+|---|---|
+| `00` | `[]` |
+| `01` | `[1]` |
+| `10` | `[2]` |
+| `11` | `[1,2]` |
 
-Verification:
-✓ Total subsets = 2^2 = 4
-✓ Empty subset included
-✓ Saare combinations present hain
-✓ Koi duplicates nahi
-```
+This is iterative and also valid, but recursion explains the include/exclude decision tree more clearly.
 
 ---
 
-## Backtracking Kyun Zaroori Hai?
+## 7. Approach Comparison
 
-**Backtracking ka matlab:** Changes ko undo karna taaki dusra path explore kar sakein.
-
-**Example:**
-```
-current = []
-
-// Include 1
-current.push(1) → [1]
-  // Explore path with 1
-
-  current.pop()   // ← BACKTRACK!
-
-current = []  // Wapas original state
-
-// Skip 1 path
-  // Explore path without 1
-```
-
-**Agar backtracking nahi karte:**
-```
-current = []
-current.push(1) → [1]
-  current.push(2) → [1,2]  ✓
-  // Skip 2 path explore karna hai
-  // Lekin current abhi bhi [1,2] hai!
-  // [1] path miss ho jayega ✗
-```
-
-**With backtracking:**
-```
-current = []
-current.push(1) → [1]
-  current.push(2) → [1,2]  ✓
-  current.pop()    → [1]   // Backtrack!
-  // Ab [1] path explore kar sakte hain ✓
-```
-
-**Visual:**
-```
-           []
-          /
-        [1]  ← Yahan aaye
-        /
-     [1,2]  ← Include 2, base case, add to result
-       ↓
-      [1]   ← pop() se wapas aaye (BACKTRACK)
-       ↓
-      [1]   ← Skip 2, base case, add to result
-       ↓
-      []    ← pop() se wapas aaye (BACKTRACK)
-       ↓
-      []    ← Ab skip 1 path explore karo
-```
+| approach | time | space excluding output | prerequisite | when useful |
+|---|---:|---:|---|---|
+| Backtracking recursion | `O(n * 2^n)` | `O(n)` | recursion tree, backtracking | learning include/exclude |
+| Bit manipulation | `O(n * 2^n)` | `O(1)` | binary masks | compact iterative solution |
 
 ---
 
-## Time & Space Complexity
+## 8. Important Edge Cases
 
-**Time Complexity: O(n × 2^n)**
-
-**Kyun?**
-- Total subsets: **2^n**
-- Har subset ko copy karne mein: **O(n)** worst case (jab saare elements include hon)
-- Total: **O(n × 2^n)**
-
-**Detailed breakdown:**
-```
-n = 3 ke liye:
-  - Total subsets = 2^3 = 8
-  - Largest subset size = 3
-  - Worst case: 8 × 3 = 24 operations
-```
-
-**Simple shabdon mein:**
-Agar array mein 10 elements hain, toh 2^10 = 1024 subsets generate hongi. Har subset ko copy karne mein average O(5) operations (average subset size n/2 hai), toh roughly 1024 × 5 = 5000 operations.
-
-**Space Complexity: O(n)**
-
-**Kyun?**
-- Recursion depth: **O(n)** (maximum n levels deep)
-- Current subset array: **O(n)** (maximum n elements)
-- **Output space:** O(n × 2^n) to store all subsets (ye count nahi karte usually)
-
-**Recursion stack:**
-```
-Level 0: index=0
-Level 1: index=1
-Level 2: index=2
-...
-Level n: index=n (base case)
-
-Maximum depth = n
-```
+| case | example | answer | why |
+|---|---|---|---|
+| empty input | `[]` | `[[]]` | empty set has one subset |
+| one element | `[0]` | `[[0], []]` | include or exclude |
+| two elements | `[1,2]` | 4 subsets | `2^2` |
+| negative values | `[-1,0,1]` | 8 subsets | value sign does not matter |
+| unique values | `[1,2,3]` | no duplicate subsets | input has no duplicates |
 
 ---
 
-## Edge Cases
+## 9. What We Will Implement
 
-### 1. Single element
-```
-Input: nums = [1]
-Output: [[], [1]]
-Explanation: 2^1 = 2 subsets
-```
+We will implement:
 
-### 2. Maximum size (10 elements)
-```
-Input: nums = [1,2,3,4,5,6,7,8,9,10]
-Output: 2^10 = 1024 subsets!
-Explanation: Still manageable
+```txt
+Backtracking recursion with include / exclude.
 ```
 
-### 3. Negative numbers
-```
-Input: nums = [-1, 0, 1]
-Output: [[], [-1], [0], [-1,0], [1], [-1,1], [0,1], [-1,0,1]]
-Explanation: Negative numbers bhi same way handle hote hain
-```
+Why this implementation:
 
-### 4. Empty result subset
-```
-Empty subset [] hamesha result mein hota hai
-Kyunki: Jab sab elements skip karte hain, toh [] milta hai
-```
-
----
-
-## Alternative Approach: Iterative (Cascading)
-
-Recursive ke alawa, iterative bhi kar sakte ho:
-
-```
-subsets(nums):
-    result = [[]]  // Empty subset se start
-
-    for num in nums:
-        newSubsets = []
-        for subset in result:
-            newSubsets.push([...subset, num])
-        result = result.concat(newSubsets)
-
-    return result
-```
-
-**Example [1,2]:**
-```
-Start: result = [[]]
-
-Process 1:
-  Existing: [[]]
-  Add 1 to each: [[1]]
-  result = [[], [1]]
-
-Process 2:
-  Existing: [[], [1]]
-  Add 2 to each: [[2], [1,2]]
-  result = [[], [1], [2], [1,2]]
-```
-
-**Trade-offs:**
-- Iterative: Easier to understand, no recursion overhead
-- Recursive: More elegant, natural backtracking pattern
-
----
-
-## Pattern Recognition: Power Set Pattern
-
-**Formula:** For n unique elements, total subsets = **2^n**
-
-**Why?**
-Har element ke liye 2 choices (include/exclude):
-```
-Element 1: 2 choices
-Element 2: 2 choices
-Element 3: 2 choices
-...
-Total: 2 × 2 × 2 × ... (n times) = 2^n
-```
-
-**Comparison with Other Problems:**
-
-| Problem | Pattern | Choices per Element | Total Combinations |
-|---------|---------|--------------------|--------------------|
-| **Binary Strings (n=3)** | Include '0' or '1' | 2 | 2^3 = 8 |
-| **Subsets (n=3)** | Include or Skip | 2 | 2^3 = 8 |
-| **Parentheses (n=3)** | '(' or ')' with constraints | 2 (conditional) | 5 (Catalan) |
-
-**Dhyan do:**
-- Binary strings aur Subsets mein same count hai (2^n)
-- Lekin Parentheses mein constraints ki wajah se kam (Catalan number)
-
----
-
-## Common Mistakes to Avoid
-
-❌ **Backtracking bhoolna** - `pop()` nahi kiya
-```javascript
-// WRONG
-current.push(nums[index]);
-generate(index + 1, current);
-// current.pop() bhool gaye! ✗
-generate(index + 1, current);
-```
-
-❌ **Reference copy karna** - Array reference add kar diya instead of copy
-```javascript
-// WRONG
-result.push(current);  // Reference add ho gaya ✗
-
-// CORRECT
-result.push([...current]);  // Copy add karo ✓
-```
-
-❌ **Base case galat** - Index bounds check nahi kiya
-```javascript
-// WRONG
-if (current.length === n) // ✗
-
-// CORRECT
-if (index === nums.length) // ✓
-```
-
-❌ **Empty subset bhoolna** - Empty subset ko handle nahi kiya
-```javascript
-// Agar sab elements skip karte hain, [] result mein aana chahiye
-```
-
-✅ **Hamesha backtrack karo** (`pop()`) recursive call ke baad
-✅ **Array ka copy add karo** result mein, reference nahi
-✅ **Index-based base case** use karo
-✅ **Empty subset automatic hai** - sab skip karoge toh milega
-
----
-
-## Interview Tips
-
-**Interviewer ko kya bolna hai:**
-
-*"Ye ek power set generation problem hai jisme hum backtracking use karte hain. Har element ke liye do choices hain: use include karu current subset mein ya skip karu. Hum recursively har element ko process karte hain. Base case tab hit hoti hai jab saare elements process ho chuke hon - tab current subset ko result mein add kar dete hain. Important part hai backtracking - include karne ke baad recursive call se wapas aaye toh element ko pop karke undo karna padta hai, taaki skip wala path bhi explore kar sakein. Total 2^n subsets generate hote hain."*
-
-**Follow-up Questions:**
-
-**Q: Kitne subsets honge n elements ke liye?**
-A: 2^n subsets. Har element ke liye 2 choices hain (include/exclude), toh total 2^n combinations.
-
-**Q: Kya iteratively kar sakte ho?**
-A: Haan! Cascading approach - empty set se start karo, har element ke liye existing subsets ki copy banake nayi element add karo. Time complexity same rahegi O(n × 2^n).
-
-**Q: Agar duplicates hon array mein?**
-A: Tab pehle sort karo, phir backtracking mein check karo - agar current element previous ke equal hai aur previous skip kiya tha, toh current ko bhi skip karo (duplicate subsets avoid karne ke liye).
-
-**Q: Space optimize kar sakte ho?**
-A: Recursion depth toh O(n) hi rahega. Current array ki jagah StringBuilder ya index tracking use kar sakte ho, but overall complexity same rahega.
-
-**Q: Bit manipulation se kar sakte ho?**
-A: Haan! 0 se 2^n-1 tak iterate karo. Har number ka binary representation ek subset represent karta hai. Agar i-th bit set hai toh i-th element include karo.
-
----
-
-## Related Problems
-
-**Similar Pattern (Include/Exclude Backtracking):**
-- Combination Sum
-- Permutations
-- Letter Case Permutation
-- Subsets II (with duplicates)
-
-**Similar Pattern (Power Set):**
-- Generate all binary strings
-- All possible combinations of k elements
-
-Sabhi mein har element ke liye choices banani padti hain!
-
----
-
-Implementation dekhna hai? 🤔
+- Recursion tree clearly visible hota hai.
+- Backtracking ka `push -> recurse -> pop` pattern strongly samajh aata hai.
+- Ye subsequence family ke next problems ke liye foundation hai.

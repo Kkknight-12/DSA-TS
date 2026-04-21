@@ -1,345 +1,398 @@
 /**
- * GENERATE ALL BINARY STRINGS
+ * GENERATE BINARY STRINGS - RECURSION
+ * ===================================
  *
- * Problem: Integer n diya gaya hai, length n ki saari binary strings generate karni hain ascending order mein.
+ * PROBLEM:
+ * Integer `n` diya hai.
+ * Length `n` ki saari binary strings generate karni hain.
  *
- * Approach: Recursive Backtracking
- * - Har position pe humein 2 choices hain: '0' append karo ya '1' append karo
- * - String ko character by character recursively build karte hain
- * - Jab length n tak pahunch jaye, result mein add kar do
- * - Ascending order ke liye pehle '0' try karo phir '1'
+ * Binary string:
+ *   sirf '0' aur '1' characters allowed
  *
- * Time Complexity: O(n × 2^n)
- * - 2^n strings generate karni hain
- * - Har string build karne mein O(n) operations
+ * Example:
+ *   n = 2
+ *   answer = ["00", "01", "10", "11"]
  *
- * Space Complexity: O(n)
- * - Recursion depth: O(n) stack frames
- * - Output array count nahi kar rahe (jo O(n × 2^n) hai)
+ * INTUITION (Soch):
+ * -----------------
+ * Har position par 2 choices hoti hain:
+ *
+ *   1. '0' add karo
+ *   2. '1' add karo
+ *
+ * Recursion ka role:
+ *   current partial string ko aage build karna.
+ *
+ * Base case:
+ *   current.length === n
+ *
+ * Meaning:
+ *   String complete ho gayi, result me add karo.
+ *
+ * Why '0' first?
+ *   Ascending / lexicographic order ke liye.
+ *
+ * TIME: O(n * 2^n)
+ *   - 2^n strings generate hoti hain
+ *   - each string length n hoti hai
+ *
+ * SPACE: O(n) recursion depth, excluding output
+ * OUTPUT SPACE: O(n * 2^n)
  */
 
-/**
- * Main function: Length n ki saari binary strings generate karo
- *
- * @param n - Binary strings ki length
- * @returns Saari binary strings ascending order mein
- *
- * Algorithm:
- * 1. Empty result array initialize karo
- * 2. Empty string ke saath recursive generation start karo
- * 3. Har step pe, do paths mein branch karo: '0' append karo ya '1'
- * 4. Jab string length n ke equal ho jaye, result mein add karo
- * 5. Lexicographic order ke liye hamesha pehle '0' try karo phir '1'
- */
-function generateBinaryStrings(n: number): string[] {
-  const result: string[] = [];
+namespace GenerateBinaryStringsRecursion {
+  function generateBinaryStrings(n: number): string[] {
+    const result: string[] = [];
 
-  // Empty string se recursive generation start karo
-  generate('', n, result);
+    buildBinaryString('', n, result);
 
-  return result;
-}
-
-/**
- * Helper function: Binary strings ko recursively build karo
- *
- * @param current - Current string jo build ho rahi hai
- * @param n - Target length
- * @param result - Complete strings store karne ke liye array
- *
- * Decision Tree Example (n=2):
- *
- *                 ""
- *               /    \
- *            "0"      "1"
- *           /  \      /  \
- *        "00" "01"  "10" "11"
- *         ✓    ✓     ✓    ✓
- *
- * Order: ["00", "01", "10", "11"] (ascending)
- */
-function generate(current: string, n: number, result: string[]): void {
-  // BASE CASE: String complete ho gayi (length n ke equal)
-  if (current.length === n) {
-    result.push(current);
-    return;
+    return result;
   }
 
-  // RECURSIVE CASE: String ko character by character build karo
-
-  // Choice 1: '0' append karo (ascending order ke liye pehle ye try karo)
-  generate(current + '0', n, result);
-
-  // Choice 2: '1' append karo
-  generate(current + '1', n, result);
-}
-
-/**
- * ═══════════════════════════════════════════════════════════════════════
- * DRY RUN: generateBinaryStrings(2)
- * ═══════════════════════════════════════════════════════════════════════
- *
- * Initial Call: generateBinaryStrings(2)
- * - result = []
- * - Start: generate("", 2, result)
- *
- * ┌────────────────────────────────────────────────────────────────────┐
- * │ CALL 1: generate("", 2, result)                                    │
- * ├────────────────────────────────────────────────────────────────────┤
- * │ current = ""                                                       │
- * │ current.length = 0, n = 2                                         │
- * │ 0 !== 2 → Base case nahi, recursion continue karo                │
- * │                                                                    │
- * │ Choice 1: Pehle '0' try karo (ascending order ke liye)           │
- * │   ┌──────────────────────────────────────────────────────────┐   │
- * │   │ CALL 2: generate("0", 2, result)                         │   │
- * │   ├──────────────────────────────────────────────────────────┤   │
- * │   │ current = "0"                                            │   │
- * │   │ current.length = 1, n = 2                               │   │
- * │   │ 1 !== 2 → Base case nahi, recursion continue karo      │   │
- * │   │                                                          │   │
- * │   │ Choice 1: Pehle '0' try karo                            │   │
- * │   │   ┌────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 3: generate("00", 2, result)              │   │   │
- * │   │   ├────────────────────────────────────────────────┤   │   │
- * │   │   │ current = "00"                                 │   │   │
- * │   │   │ current.length = 2, n = 2                     │   │   │
- * │   │   │ 2 === 2 → BASE CASE MIL GAYA! ✓               │   │   │
- * │   │   │                                                │   │   │
- * │   │   │ Action: result.push("00")                     │   │   │
- * │   │   │ result = ["00"]                                │   │   │
- * │   │   │ Return karo                                    │   │   │
- * │   │   └────────────────────────────────────────────────┘   │   │
- * │   │                                                          │   │
- * │   │ Wapas CALL 2 mein                                       │   │
- * │   │                                                          │   │
- * │   │ Choice 2: Ab '1' try karo                               │   │
- * │   │   ┌────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 4: generate("01", 2, result)              │   │   │
- * │   │   ├────────────────────────────────────────────────┤   │   │
- * │   │   │ current = "01"                                 │   │   │
- * │   │   │ current.length = 2, n = 2                     │   │   │
- * │   │   │ 2 === 2 → BASE CASE MIL GAYA! ✓               │   │   │
- * │   │   │                                                │   │   │
- * │   │   │ Action: result.push("01")                     │   │   │
- * │   │   │ result = ["00", "01"]                          │   │   │
- * │   │   │ Return karo                                    │   │   │
- * │   │   └────────────────────────────────────────────────┘   │   │
- * │   │                                                          │   │
- * │   │ "0" ke liye saare choices explore ho gaye, return      │   │
- * │   └──────────────────────────────────────────────────────────┘   │
- * │                                                                    │
- * │ Wapas CALL 1 mein                                                 │
- * │                                                                    │
- * │ Choice 2: Ab '1' try karo                                         │
- * │   ┌──────────────────────────────────────────────────────────┐   │
- * │   │ CALL 5: generate("1", 2, result)                         │   │
- * │   ├──────────────────────────────────────────────────────────┤   │
- * │   │ current = "1"                                            │   │
- * │   │ current.length = 1, n = 2                               │   │
- * │   │ 1 !== 2 → Base case nahi, recursion continue karo      │   │
- * │   │                                                          │   │
- * │   │ Choice 1: Pehle '0' try karo                            │   │
- * │   │   ┌────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 6: generate("10", 2, result)              │   │   │
- * │   │   ├────────────────────────────────────────────────┤   │   │
- * │   │   │ current = "10"                                 │   │   │
- * │   │   │ current.length = 2, n = 2                     │   │   │
- * │   │   │ 2 === 2 → BASE CASE MIL GAYA! ✓               │   │   │
- * │   │   │                                                │   │   │
- * │   │   │ Action: result.push("10")                     │   │   │
- * │   │   │ result = ["00", "01", "10"]                    │   │   │
- * │   │   │ Return karo                                    │   │   │
- * │   │   └────────────────────────────────────────────────┘   │   │
- * │   │                                                          │   │
- * │   │ Wapas CALL 5 mein                                       │   │
- * │   │                                                          │   │
- * │   │ Choice 2: Ab '1' try karo                               │   │
- * │   │   ┌────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 7: generate("11", 2, result)              │   │   │
- * │   │   ├────────────────────────────────────────────────┤   │   │
- * │   │   │ current = "11"                                 │   │   │
- * │   │   │ current.length = 2, n = 2                     │   │   │
- * │   │   │ 2 === 2 → BASE CASE MIL GAYA! ✓               │   │   │
- * │   │   │                                                │   │   │
- * │   │   │ Action: result.push("11")                     │   │   │
- * │   │   │ result = ["00", "01", "10", "11"]              │   │   │
- * │   │   │ Return karo                                    │   │   │
- * │   │   └────────────────────────────────────────────────┘   │   │
- * │   │                                                          │   │
- * │   │ "1" ke liye saare choices explore ho gaye, return      │   │
- * │   └──────────────────────────────────────────────────────────┘   │
- * │                                                                    │
- * │ "" ke liye saare choices explore ho gaye, return                 │
- * └────────────────────────────────────────────────────────────────────┘
- *
- * Final Result: ["00", "01", "10", "11"]
- *
- * Verification:
- * ✓ Saari strings ki length 2 hai
- * ✓ Total count = 2^2 = 4
- * ✓ Order ascending hai (lexicographic)
- * ✓ Koi duplicates nahi
- *
- *
- * ═══════════════════════════════════════════════════════════════════════
- * ASCENDING ORDER KYUN AATA HAI
- * ═══════════════════════════════════════════════════════════════════════
- *
- * Key Principle: Har recursive call mein hamesha '0' ko '1' se PEHLE try karo
- *
- * Isse depth-first search ban jata hai jo hamesha "chhota" branch (0) ko
- * "bade" branch (1) se pehle explore karta hai.
- *
- * Visual Comparison:
- *
- * Humara Order (0 pehle):        Galat Order (1 pehle):
- *        ""                           ""
- *      ↙    ↘                       ↙    ↘
- *    "0"     "1"                  "1"     "0"
- *   ↙  ↘    ↙  ↘                ↙  ↘    ↙  ↘
- * "00" "01" "10" "11"          "11" "10" "01" "00"
- *  ↑    ↑    ↑    ↑            ↑    ↑    ↑    ↑
- * 1st  2nd  3rd  4th          1st  2nd  3rd  4th
- *
- * Result: Ascending ✓         Result: Descending ✗
- *
- *
- * ═══════════════════════════════════════════════════════════════════════
- * RECURSION CALL COUNT ANALYSIS
- * ═══════════════════════════════════════════════════════════════════════
- *
- * n=2 ke liye:
- * - Level 0 (length 0): 1 call   ("" → 2 mein split hota hai)
- * - Level 1 (length 1): 2 calls  ("0", "1" → har ek 2 mein split)
- * - Level 2 (length 2): 4 calls  ("00", "01", "10", "11" → base case)
- *
- * Total calls: 1 + 2 + 4 = 7 = (2^3 - 1) = (2^(n+1) - 1)
- * Base case hits: 4 = 2^2 = 2^n
- *
- * General n ke liye:
- * - Total recursive calls: 2^(n+1) - 1
- * - Base case hits (strings generated): 2^n
- *
- * Example n=3 ke liye:
- * - Total calls: 2^4 - 1 = 15
- * - Strings generated: 2^3 = 8
- * - Internal nodes (non-base calls): 15 - 8 = 7
- *
- *
- * ═══════════════════════════════════════════════════════════════════════
- * VISUALIZATION: COMPLETE RECURSION TREE (n=3)
- * ═══════════════════════════════════════════════════════════════════════
- *
- *                               "" (Level 0)
- *                             /    \
- *                          "0"      "1" (Level 1)
- *                         /   \     /   \
- *                      "00"  "01" "10"  "11" (Level 2)
- *                      / \    / \   / \   / \
- *                   "000" "001" ... ... "110" "111" (Level 3)
- *                    ✓     ✓              ✓     ✓
- *
- * Result Order:
- * 1. "000"  ← Sabse left path (hamesha 0 choose karo)
- * 2. "001"  ← Ek level backtrack, 1 try karo
- * 3. "010"  ← Do level backtrack, 1 try karo, phir 0
- * 4. "011"  ← Ek level backtrack, 1 try karo
- * 5. "100"  ← Poora backtrack, 1 try, phir 0, phir 0
- * 6. "101"  ← Ek level backtrack, 1 try karo
- * 7. "110"  ← Do level backtrack, 1 try, phir 0
- * 8. "111"  ← Ek level backtrack, 1 try karo
- *
- * Ye Depth-First Search (DFS) hai left-first exploration ke saath!
- */
-
-// ═══════════════════════════════════════════════════════════════════════
-// TEST CASES
-// ═══════════════════════════════════════════════════════════════════════
-
-console.log('Test 1: n = 2');
-console.log("Expected: ['00', '01', '10', '11']");
-console.log('Got:     ', generateBinaryStrings(2));
-console.log();
-
-console.log('Test 2: n = 1');
-console.log("Expected: ['0', '1']");
-console.log('Got:     ', generateBinaryStrings(1));
-console.log();
-
-console.log('Test 3: n = 3');
-console.log(
-  "Expected: ['000', '001', '010', '011', '100', '101', '110', '111']"
-);
-console.log('Got:     ', generateBinaryStrings(3));
-console.log();
-
-console.log('Test 4: n = 4 (pehli 5 strings)');
-const result4 = generateBinaryStrings(4);
-console.log("Expected: ['0000', '0001', '0010', '0011', '0100', ...]");
-console.log('Got:     ', result4.slice(0, 5), '...');
-console.log('Total strings:', result4.length, '(expected: 16)');
-console.log();
-
-console.log('Test 5: n = 5 ke liye count verify karo');
-const result5 = generateBinaryStrings(5);
-console.log('Expected count: 2^5 = 32');
-console.log('Got count:     ', result5.length);
-console.log('Pehli 3:       ', result5.slice(0, 3));
-console.log('Last 3:        ', result5.slice(-3));
-console.log();
-
-// ═══════════════════════════════════════════════════════════════════════
-// VERIFICATION HELPER
-// ═══════════════════════════════════════════════════════════════════════
-
-/**
- * Verify karo ki generated strings saari requirements meet karti hain
- */
-function verifyResults(n: number, results: string[]): void {
-  console.log(`\n═══ n=${n} ke liye Verification ═══`);
-
-  // Check 1: Correct count
-  const expectedCount = Math.pow(2, n);
-  const countOk = results.length === expectedCount;
-  console.log(
-    `✓ Count: ${results.length} (expected: ${expectedCount}) ${countOk ? '✓' : '✗'}`
-  );
-
-  // Check 2: Saari strings ki length n hai
-  const allCorrectLength = results.every((s) => s.length === n);
-  console.log(
-    `✓ Saari strings ki length ${n} hai: ${allCorrectLength ? '✓' : '✗'}`
-  );
-
-  // Check 3: Saari strings mein sirf '0' aur '1' hai
-  const allBinary = results.every((s) => /^[01]+$/.test(s));
-  console.log(`✓ Saari binary strings hain: ${allBinary ? '✓' : '✗'}`);
-
-  // Check 4: Ascending order (lexicographic)
-  let isAscending = true;
-  for (let i = 1; i < results.length; i++) {
-    if (results[i] <= results[i - 1]) {
-      isAscending = false;
-      break;
+  function buildBinaryString(
+    current: string,
+    targetLength: number,
+    result: string[]
+  ): void {
+    if (current.length === targetLength) {
+      // Current string ki length target ke equal ho gayi.
+      // Is branch ka complete answer mil gaya, so result me store karo.
+      result.push(current);
+      return;
     }
+
+    // '0' branch pehle explore karte hain because lexicographic order me
+    // 0-prefixed strings, 1-prefixed strings se pehle aati hain.
+    buildBinaryString(current + '0', targetLength, result);
+
+    // '0' branch complete hone ke baad same call frame wapas aata hai,
+    // phir '1' branch explore hoti hai.
+    buildBinaryString(current + '1', targetLength, result);
   }
-  console.log(`✓ Ascending order: ${isAscending ? '✓' : '✗'}`);
 
-  // Check 5: Koi duplicates nahi
-  const uniqueCount = new Set(results).size;
-  const noDuplicates = uniqueCount === results.length;
-  console.log(`✓ Koi duplicates nahi: ${noDuplicates ? '✓' : '✗'}`);
+  /**
+   * ==========================================================
+   * DRY RUN - DECISION TREE + CALL FRAMES
+   * ==========================================================
+   *
+   * Example:
+   * n = 3
+   *
+   * Goal:
+   * Generate all length-3 binary strings.
+   *
+   * ==========================================================
+   * DECISION TREE
+   * ==========================================================
+   *
+   * Har node ek `current` string represent karta hai.
+   * Left branch = append '0'
+   * Right branch = append '1'
+   *
+   *                                   ""
+   *                         /                   \
+   *                      "0"                    "1"
+   *                   /      \                /      \
+   *                "00"      "01"          "10"      "11"
+   *               /   \      /   \         /   \     /   \
+   *            "000" "001" "010" "011" "100" "101" "110" "111"
+   *              |     |     |     |     |     |     |     |
+   *             add   add   add   add   add   add   add   add
+   *
+   * Output order:
+   *   ["000", "001", "010", "011", "100", "101", "110", "111"]
+   *
+   * ==========================================================
+   * TREE NODE MEANING
+   * ==========================================================
+   *
+   * Node: "01"
+   *
+   * Meaning:
+   *   Abhi tak 2 positions fill ho chuki hain.
+   *   Target length 3 hai.
+   *   Ek aur character choose karna baaki hai.
+   *
+   * Children:
+   *   "010" by choosing '0'
+   *   "011" by choosing '1'
+   *
+   * Base node:
+   *   "010"
+   *
+   * Meaning:
+   *   length 3 complete ho gayi.
+   *   result.push("010")
+   *   return to parent "01"
+   *
+   * ==========================================================
+   * FULL RECURSION TREE - REFERENCE STYLE
+   * ==========================================================
+   *
+   * Code lines for this tree:
+   *
+   * LINE A: if current.length === targetLength -> push current, return
+   * LINE B: buildBinaryString(current + '0', targetLength, result)
+   * LINE C: buildBinaryString(current + '1', targetLength, result)
+   *
+   * root  (current="", result=[])
+   * │
+   * ├── LINE B: choose '0' -> build("0")  ALLOWED
+   * │   Reason: current length 0 hai, target 3 hai, so next char choose karo.
+   * │   │
+   * │   │   (current="0", result=[])
+   * │   │   ├── LINE B: choose '0' -> build("00")  ALLOWED
+   * │   │   │   Reason: "0" abhi length 1 hai, target 3 hai.
+   * │   │   │   │
+   * │   │   │   │   (current="00", result=[])
+   * │   │   │   │   ├── LINE B: choose '0' -> build("000")  ALLOWED
+   * │   │   │   │   │   LINE A: BASE CASE -> push "000"
+   * │   │   │   │   │   result=["000"]
+   * │   │   │   │   │   return to current="00"
+   * │   │   │   │   │
+   * │   │   │   │   └── LINE C: choose '1' -> build("001")  ALLOWED
+   * │   │   │   │       LINE A: BASE CASE -> push "001"
+   * │   │   │   │       result=["000", "001"]
+   * │   │   │   │       return to current="00"
+   * │   │   │   │
+   * │   │   │   │   both branches done for current="00"
+   * │   │   │   │   return to current="0"
+   * │   │   │
+   * │   │   └── LINE C: choose '1' -> build("01")  ALLOWED
+   * │   │       Reason: "0" ka '0' subtree complete ho gaya, now same frame tries '1'.
+   * │   │       │
+   * │   │       │   (current="01", result=["000", "001"])
+   * │   │       │   ├── LINE B: choose '0' -> build("010")  ALLOWED
+   * │   │       │   │   LINE A: BASE CASE -> push "010"
+   * │   │       │   │   result=["000", "001", "010"]
+   * │   │       │   │   return to current="01"
+   * │   │       │   │
+   * │   │       │   └── LINE C: choose '1' -> build("011")  ALLOWED
+   * │   │       │       LINE A: BASE CASE -> push "011"
+   * │   │       │       result=["000", "001", "010", "011"]
+   * │   │       │       return to current="01"
+   * │   │       │
+   * │   │       │   both branches done for current="01"
+   * │   │       │   return to current="0"
+   * │   │
+   * │   │   both branches done for current="0"
+   * │   │   return to root current=""
+   * │
+   * └── LINE C: choose '1' -> build("1")  ALLOWED
+   *     Reason: root ka '0' subtree complete ho gaya, now root tries '1'.
+   *     │
+   *     │   (current="1", result=["000", "001", "010", "011"])
+   *     │   ├── LINE B: choose '0' -> build("10")  ALLOWED
+   *     │   │   │
+   *     │   │   │   (current="10", result=["000", "001", "010", "011"])
+   *     │   │   │   ├── LINE B: choose '0' -> build("100")  ALLOWED
+   *     │   │   │   │   LINE A: BASE CASE -> push "100"
+   *     │   │   │   │   result=["000", "001", "010", "011", "100"]
+   *     │   │   │   │   return to current="10"
+   *     │   │   │   │
+   *     │   │   │   └── LINE C: choose '1' -> build("101")  ALLOWED
+   *     │   │   │       LINE A: BASE CASE -> push "101"
+   *     │   │   │       result=["000", "001", "010", "011", "100", "101"]
+   *     │   │   │       return to current="10"
+   *     │   │   │
+   *     │   │   │   both branches done for current="10"
+   *     │   │   │   return to current="1"
+   *     │   │
+   *     │   └── LINE C: choose '1' -> build("11")  ALLOWED
+   *     │       │
+   *     │       │   (current="11", result=["000", "001", "010", "011", "100", "101"])
+   *     │       │   ├── LINE B: choose '0' -> build("110")  ALLOWED
+   *     │       │   │   LINE A: BASE CASE -> push "110"
+   *     │       │   │   result=["000", "001", "010", "011", "100", "101", "110"]
+   *     │       │   │   return to current="11"
+   *     │       │   │
+   *     │       │   └── LINE C: choose '1' -> build("111")  ALLOWED
+   *     │       │       LINE A: BASE CASE -> push "111"
+   *     │       │       result=["000", "001", "010", "011", "100", "101", "110", "111"]
+   *     │       │       return to current="11"
+   *     │       │
+   *     │       │   both branches done for current="11"
+   *     │       │   return to current="1"
+   *     │
+   *     │   both branches done for current="1"
+   *     │   return to root current=""
+   *
+   * root ke dono branches complete.
+   * Final result=["000", "001", "010", "011", "100", "101", "110", "111"]
+   *
+   * Note:
+   *   Is problem me manual pop/backtrack nahi hai because `current + '0'`
+   *   and `current + '1'` new strings create karte hain.
+   *   Return ke baad parent frame simply next branch run karta hai.
+   *
+   * ==========================================================
+   * BOX-HEAVY CALL FRAME VIEW FOR n = 2
+   * ==========================================================
+   *
+   * +--------------------------------------------------------+
+   * | CALL: build("", 2, result)                             |
+   * | current.length = 0, targetLength = 2                   |
+   * | Not complete. First choose '0'.                        |
+   * +--------------------------------------------------------+
+   *                      |
+   *                      v
+   * +--------------------------------------------------------+
+   * | CALL: build("0", 2, result)                            |
+   * | current.length = 1, targetLength = 2                   |
+   * | Not complete. First choose '0'.                        |
+   * +--------------------------------------------------------+
+   *                      |
+   *                      v
+   * +--------------------------------------------------------+
+   * | CALL: build("00", 2, result)                           |
+   * | current.length = 2, targetLength = 2                   |
+   * | BASE CASE: result.push("00")                           |
+   * | result = ["00"]                                       |
+   * | return to build("0")                                  |
+   * +--------------------------------------------------------+
+   *
+   * Back at build("0"):
+   *
+   * +--------------------------------------------------------+
+   * | build("0") ka '0' branch complete ho gaya.             |
+   * | Ab same call frame me next line run hoti hai:          |
+   * | build("01", 2, result)                                |
+   * +--------------------------------------------------------+
+   *                      |
+   *                      v
+   * +--------------------------------------------------------+
+   * | CALL: build("01", 2, result)                           |
+   * | BASE CASE: result.push("01")                           |
+   * | result = ["00", "01"]                                 |
+   * | return to build("0")                                  |
+   * +--------------------------------------------------------+
+   *
+   * build("0") ke dono branches complete.
+   * return to build("").
+   *
+   * Then build("") runs its second recursive call:
+   *
+   * +--------------------------------------------------------+
+   * | CALL: build("1", 2, result)                            |
+   * | First choose '0' -> build("10")                        |
+   * | BASE: add "10"                                        |
+   * | Then choose '1' -> build("11")                         |
+   * | BASE: add "11"                                        |
+   * +--------------------------------------------------------+
+   *
+   * Final result:
+   *   ["00", "01", "10", "11"]
+   *
+   * ==========================================================
+   * WHY ORDER IS ASCENDING
+   * ==========================================================
+   *
+   * At every node:
+   *
+   *   first explore current + '0'
+   *   then explore current + '1'
+   *
+   * That means:
+   *
+   *   all strings starting with "0" finish before strings starting with "1"
+   *   inside "0", all "00..." finish before "01..."
+   *   inside "1", all "10..." finish before "11..."
+   *
+   * This is exactly lexicographic order.
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. n = 0:
+   *    [""]
+   *    One empty string exists with length 0.
+   *
+   * 2. n = 1:
+   *    ["0", "1"]
+   *
+   * 3. n = 2:
+   *    ["00", "01", "10", "11"]
+   *
+   * 4. n = 3:
+   *    8 strings, from "000" to "111"
+   */
 
-  const allPassed =
-    countOk && allCorrectLength && allBinary && isAscending && noDuplicates;
-  console.log(
-    `\n${allPassed ? '✅ SAARE CHECKS PASS HO GAYE!' : '❌ KOI CHECKS FAIL HO GAYE'}`
-  );
+  export function runTests(): void {
+    console.log('Testing Generate Binary Strings - Recursion\n');
+
+    const tests: Array<{
+      n: number;
+      expected: string[];
+      description: string;
+    }> = [
+      {
+        n: 0,
+        expected: [''],
+        description: 'Length zero has one empty string',
+      },
+      {
+        n: 1,
+        expected: ['0', '1'],
+        description: 'Single character strings',
+      },
+      {
+        n: 2,
+        expected: ['00', '01', '10', '11'],
+        description: 'Two-character strings in ascending order',
+      },
+      {
+        n: 3,
+        expected: ['000', '001', '010', '011', '100', '101', '110', '111'],
+        description: 'Three-character strings',
+      },
+      {
+        n: 4,
+        expected: [
+          '0000',
+          '0001',
+          '0010',
+          '0011',
+          '0100',
+          '0101',
+          '0110',
+          '0111',
+          '1000',
+          '1001',
+          '1010',
+          '1011',
+          '1100',
+          '1101',
+          '1110',
+          '1111',
+        ],
+        description: 'Four-character strings count and order',
+      },
+    ];
+
+    let passed = 0;
+
+    tests.forEach(({ n, expected, description }, index) => {
+      const result = generateBinaryStrings(n);
+      const pass = JSON.stringify(result) === JSON.stringify(expected);
+
+      if (pass) {
+        passed++;
+      }
+
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  n=${n}`);
+      console.log(
+        `  Expected count: ${expected.length} | Got count: ${result.length}`
+      );
+      console.log(`  Expected: ${JSON.stringify(expected)}`);
+      console.log(
+        `  Got:      ${JSON.stringify(result)} -> ${pass ? 'PASS' : 'FAIL'}`
+      );
+    });
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 }
 
-// Verification run karo
-verifyResults(3, generateBinaryStrings(3));
-verifyResults(4, generateBinaryStrings(4));
-
-export { generateBinaryStrings };
+GenerateBinaryStringsRecursion.runTests();

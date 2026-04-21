@@ -1,367 +1,422 @@
 /**
- * COUNT ALL SUBSEQUENCES WITH SUM K
+ * COUNT SUBSEQUENCES SUM K - RECURSION
+ * ====================================
  *
- * Problem: Array mein se kitne subsequences hain jinka sum exactly K ke equal hai?
+ * PROBLEM:
+ * Array `nums` aur target `k` diya hai.
+ * Count karna hai ki kitni non-empty subsequences ka sum exactly `k` hai.
  *
- * Approach: Recursion (Pick/Not Pick Pattern)
- * - Har element pe 2 choices: Pick karo (sum mein add) ya Skip karo
- * - Sum track karo recursively
- * - Base case: Saare elements process ho gaye
- *   - Agar sum == K → return 1 (found one valid!)
- *   - Agar sum != K → return 0 (invalid)
- * - Total count = pickCount + notPickCount
+ * Example:
+ *   nums = [4, 5, 1], k = 10
+ *   valid subsequence = [4, 5, 1]
+ *   answer = 1
  *
- * Time Complexity: O(2^n)
- * - Har element ke liye 2 choices
- * - Total paths: 2^n
+ * INTUITION (Soch):
+ * -----------------
+ * Har element par 2 choices hoti hain:
  *
- * Space Complexity: O(n)
- * - Recursion depth: O(n)
- * - Koi extra array nahi (sirf count return)
- */
-
-/**
- * Main function: Count subsequences with sum = K
+ *   1. Pick karo     -> currentSum me nums[index] add hoga
+ *   2. Not pick karo -> currentSum same rahega
  *
- * @param nums - Array of integers
- * @param k - Target sum
- * @returns Count of subsequences with sum = K
+ * Check problem me first true enough tha.
+ * Count problem me first valid path enough nahi hai.
+ *
+ * Kyun?
+ *   Hume saari valid subsequences ka count chahiye.
+ *   Isliye pick aur not-pick dono branches explore karni padti hain.
  *
  * Algorithm:
- * 1. Start recursion from index 0, sum 0
- * 2. Har element pe decide: pick ya not pick
- * 3. Pick: sum mein add karo
- * 4. Not Pick: sum same rakho
- * 5. Base case: Agar sum == K, return 1, else return 0
- * 6. Merge counts from both paths
+ * ----------
+ * 1. Start recursion from index 0 and currentSum 0.
+ * 2. Har element par pick branch explore karo.
+ * 3. Pick branch me currentSum + nums[index] ke saath next index par jao.
+ * 4. Har element par not-pick branch bhi explore karo.
+ * 5. Not-pick branch me currentSum same rakho and next index par jao.
+ * 6. Base case par agar currentSum target ke equal hai, return 1.
+ * 7. Base case par agar currentSum target ke equal nahi hai, return 0.
+ * 8. Current frame ka answer = pickCount + notPickCount.
+ *
+ * TIME: O(2^n) worst case
+ *   - har element ke pick / not-pick branches explore ho sakte hain
+ *
+ * SPACE: O(n)
+ *   - recursion depth maximum array length tak ja sakti hai
  */
-function countSubsequencesWithSumK(nums: number[], k: number): number {
-  // Index 0 aur sum 0 se start karo
-  return count(0, 0, nums, k);
-}
 
-/**
- * Helper function: Recursively count subsequences
- *
- * @param index - Current position in array
- * @param currentSum - Sum of elements picked so far
- * @param nums - Original array
- * @param k - Target sum
- * @returns Count of valid subsequences from this point
- *
- * Decision Tree Example (nums=[4,5,1], k=10):
- *
- *                    count(0, 0)
- *                    /          \
- *              Pick 4            Not Pick 4
- *                 /                  \
- *          count(1, 4)           count(1, 0)
- *            /      \              /      \
- *        Pick 5   Skip 5       Pick 5   Skip 5
- *          /         \           /         \
- *    count(2,9)  count(2,4)  count(2,5)  count(2,0)
- *      /    \      /    \      /    \      /    \
- *   Pick1 Skip1 Pick1 Skip1 Pick1 Skip1 Pick1 Skip1
- *     |     |     |     |     |     |     |     |
- *   (3,10)(3,9)(3,5)(3,4)(3,6)(3,5)(3,1)(3,0)
- *    ✓1    ✗0   ✗0   ✗0   ✗0   ✗0   ✗0   ✗0
- *
- * Result: 1 (only [4,5,1])
- */
-function count(
-  index: number,
-  currentSum: number,
-  nums: number[],
-  k: number
-): number {
-  // BASE CASE: Saare elements process ho gaye
-  if (index === nums.length) {
-    // Agar sum exactly K ke equal hai, toh 1 valid subsequence mila
-    // WHY: Ye ek valid subsequence hai jo hum count kar rahe hain
-    if (currentSum === k) {
-      return 1; // Found one!
+namespace CountSubsequencesSumKRecursion {
+  export function countSubsequencesWithSumK(
+    nums: number[],
+    target: number
+  ): number {
+    if (target <= 0) {
+      // Is problem setup me empty subsequence count nahi hoti.
+      // Values positive hain, so non-empty subsequence se 0 ya negative target
+      // banana possible nahi maana ja raha.
+      return 0;
     }
-    // Otherwise, ye invalid subsequence hai
-    return 0; // Not valid
+
+    return countFromIndex(0, 0, nums, target);
   }
 
-  // RECURSIVE CASE 1: Pick current element
-  // WHY: Ye path explore karte hain jisme current element include hai
-  // Sum mein nums[index] add karo
-  const pickCount = count(index + 1, currentSum + nums[index], nums, k);
+  function countFromIndex(
+    index: number,
+    currentSum: number,
+    nums: number[],
+    target: number
+  ): number {
+    if (index === nums.length) {
+      // Ek complete decision path ban chuka hai.
+      // Ye path exactly one subsequence represent karta hai.
+      return currentSum === target ? 1 : 0;
+    }
 
-  // RECURSIVE CASE 2: Not Pick current element
-  // WHY: Ye path explore karte hain jisme current element skip hai
-  // Sum same rehta hai
-  const notPickCount = count(index + 1, currentSum, nums, k);
+    if (currentSum > target) {
+      // Values positive hain.
+      // Current sum target se aage nikal gaya, so future picks ise kam nahi kar sakte.
+      return 0;
+    }
 
-  // Total count: Dono paths se aane wali counts ka sum
-  // WHY: Pick path se kitne + Not Pick path se kitne = total kitne
-  return pickCount + notPickCount;
-}
+    const pickCount = countFromIndex(
+      index + 1,
+      currentSum + nums[index],
+      nums,
+      target
+    );
 
-/**
- * ═══════════════════════════════════════════════════════════════════════
- * DRY RUN: countSubsequencesWithSumK([4, 5, 1], 10)
- * ═══════════════════════════════════════════════════════════════════════
- *
- * Initial Call: countSubsequencesWithSumK([4, 5, 1], 10)
- * - Start: count(0, 0, [4,5,1], 10)
- *
- * ┌──────────────────────────────────────────────────────────────────────┐
- * │ CALL 1: count(0, 0, [4,5,1], 10)                                    │
- * ├──────────────────────────────────────────────────────────────────────┤
- * │ index = 0, currentSum = 0, k = 10                                   │
- * │ Base case? 0 === 3 → Nahi                                           │
- * │                                                                      │
- * │ CHOICE 1: Pick nums[0] = 4                                          │
- * │   ┌────────────────────────────────────────────────────────────┐   │
- * │   │ CALL 2: count(1, 4, [4,5,1], 10)                          │   │
- * │   ├────────────────────────────────────────────────────────────┤   │
- * │   │ index = 1, currentSum = 4, k = 10                         │   │
- * │   │ Base case? 1 === 3 → Nahi                                 │   │
- * │   │                                                            │   │
- * │   │ CHOICE 1: Pick nums[1] = 5                                │   │
- * │   │   ┌──────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 3: count(2, 9, [4,5,1], 10)                │   │   │
- * │   │   ├──────────────────────────────────────────────────┤   │   │
- * │   │   │ index = 2, currentSum = 9, k = 10               │   │   │
- * │   │   │ Base case? 2 === 3 → Nahi                       │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ CHOICE 1: Pick nums[2] = 1                      │   │   │
- * │   │   │   ┌────────────────────────────────────────┐   │   │   │
- * │   │   │   │ CALL 4: count(3, 10, [4,5,1], 10)     │   │   │   │
- * │   │   │   ├────────────────────────────────────────┤   │   │   │
- * │   │   │   │ index = 3, currentSum = 10, k = 10    │   │   │   │
- * │   │   │   │ Base case? 3 === 3 → Haan! ✓          │   │   │   │
- * │   │   │   │ currentSum === k? 10 === 10 → Haan! ✓ │   │   │   │
- * │   │   │   │ Return 1                               │   │   │   │
- * │   │   │   │ ← Found: [4, 5, 1]                    │   │   │   │
- * │   │   │   └────────────────────────────────────────┘   │   │   │
- * │   │   │   pickCount = 1                                 │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ CHOICE 2: Not Pick nums[2] = 1                  │   │   │
- * │   │   │   ┌────────────────────────────────────────┐   │   │   │
- * │   │   │   │ CALL 5: count(3, 9, [4,5,1], 10)      │   │   │   │
- * │   │   │   ├────────────────────────────────────────┤   │   │   │
- * │   │   │   │ index = 3, currentSum = 9, k = 10     │   │   │   │
- * │   │   │   │ Base case? 3 === 3 → Haan! ✓          │   │   │   │
- * │   │   │   │ currentSum === k? 9 === 10 → Nahi ✗   │   │   │   │
- * │   │   │   │ Return 0                               │   │   │   │
- * │   │   │   │ ← Invalid: [4, 5] sum=9               │   │   │   │
- * │   │   │   └────────────────────────────────────────┘   │   │   │
- * │   │   │   notPickCount = 0                              │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ Return: pickCount + notPickCount = 1 + 0 = 1   │   │   │
- * │   │   └──────────────────────────────────────────────────┘   │   │
- * │   │   pickCount (from Pick 5) = 1                             │   │
- * │   │                                                            │   │
- * │   │ CHOICE 2: Not Pick nums[1] = 5                            │   │
- * │   │   ┌──────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 6: count(2, 4, [4,5,1], 10)                │   │   │
- * │   │   ├──────────────────────────────────────────────────┤   │   │
- * │   │   │ index = 2, currentSum = 4, k = 10               │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ Pick 1: count(3, 5, ...) → 5 != 10 → return 0   │   │   │
- * │   │   │   ← Invalid: [4, 1] sum=5                       │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ Skip 1: count(3, 4, ...) → 4 != 10 → return 0   │   │   │
- * │   │   │   ← Invalid: [4] sum=4                          │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ Return: 0 + 0 = 0                                │   │   │
- * │   │   └──────────────────────────────────────────────────┘   │   │
- * │   │   notPickCount (from Skip 5) = 0                          │   │
- * │   │                                                            │   │
- * │   │ Return: pickCount + notPickCount = 1 + 0 = 1              │   │
- * │   └────────────────────────────────────────────────────────────┘   │
- * │   pickCount (from Pick 4) = 1                                      │
- * │                                                                      │
- * │ CHOICE 2: Not Pick nums[0] = 4                                     │
- * │   ┌────────────────────────────────────────────────────────────┐   │
- * │   │ CALL 7: count(1, 0, [4,5,1], 10)                          │   │
- * │   ├────────────────────────────────────────────────────────────┤   │
- * │   │ index = 1, currentSum = 0, k = 10                         │   │
- * │   │                                                            │   │
- * │   │ Pick 5:                                                    │   │
- * │   │   count(2, 5, ...)                                         │   │
- * │   │     Pick 1: count(3, 6, ...) → 6 != 10 → return 0         │   │
- * │   │       ← Invalid: [5, 1] sum=6                              │   │
- * │   │     Skip 1: count(3, 5, ...) → 5 != 10 → return 0         │   │
- * │   │       ← Invalid: [5] sum=5                                 │   │
- * │   │   Returns: 0 + 0 = 0                                       │   │
- * │   │                                                            │   │
- * │   │ Skip 5:                                                    │   │
- * │   │   count(2, 0, ...)                                         │   │
- * │   │     Pick 1: count(3, 1, ...) → 1 != 10 → return 0         │   │
- * │   │       ← Invalid: [1] sum=1                                 │   │
- * │   │     Skip 1: count(3, 0, ...) → 0 != 10 → return 0         │   │
- * │   │       ← Invalid: [] sum=0 (empty)                          │   │
- * │   │   Returns: 0 + 0 = 0                                       │   │
- * │   │                                                            │   │
- * │   │ Return: 0 + 0 = 0                                          │   │
- * │   └────────────────────────────────────────────────────────────┘   │
- * │   notPickCount (from Skip 4) = 0                                   │
- * │                                                                      │
- * │ Return: pickCount + notPickCount = 1 + 0 = 1                       │
- * └──────────────────────────────────────────────────────────────────────┘
- *
- * Final Result: 1
- *
- * Valid subsequence found: [4, 5, 1] with sum = 10
- *
- * Count Propagation (bottom-up):
- * ────────────────────────────────
- * Leaf nodes:    1, 0, 0, 0, 0, 0, 0, 0
- * Level 2:       1+0=1, 0+0=0, 0+0=0, 0+0=0
- * Level 1:       1+0=1, 0+0=0
- * Level 0:       1+0=1 ← Final answer!
- *
- *
- * ═══════════════════════════════════════════════════════════════════════
- * KEY DIFFERENCE: COUNT vs GENERATE
- * ═══════════════════════════════════════════════════════════════════════
- *
- * GENERATE ALL SUBSETS (humne pehle kiya):
- * ──────────────────────────────────────────
- * function generate(index, current, result) {
- *   if (index === n) {
- *     result.push([...current]);  ← Store karo
- *     return;
- *   }
- *   current.push(nums[index]);
- *   generate(index + 1, current, result);
- *   current.pop();  ← Backtrack
- *   generate(index + 1, current, result);
- * }
- *
- * COUNT WITH SUM K (ye problem):
- * ──────────────────────────────────────────
- * function count(index, sum, k): number {
- *   if (index === n) {
- *     return sum === k ? 1 : 0;  ← Return count
- *   }
- *   const pick = count(index + 1, sum + nums[index], k);
- *   const notPick = count(index + 1, sum, k);
- *   return pick + notPick;  ← Merge counts
- * }
- *
- * Differences:
- * ────────────────────────────────────────────
- * | Feature          | Generate      | Count         |
- * |------------------|---------------|---------------|
- * | Return type      | void          | number        |
- * | Store data?      | Haan (array)  | Nahi          |
- * | Backtracking?    | Haan (pop)    | Nahi zaroori  |
- * | Base case        | Push to array | Return 1 or 0 |
- * | Merge logic      | N/A           | Add counts    |
- * | Space for result | O(2^n × n)    | O(1)          |
- */
+    const notPickCount = countFromIndex(
+      index + 1,
+      currentSum,
+      nums,
+      target
+    );
 
-// ═══════════════════════════════════════════════════════════════════════
-// TEST CASES
-// ═══════════════════════════════════════════════════════════════════════
+    // Count problem me dono branches zaroori hain.
+    // Pick branch ke valid paths + not-pick branch ke valid paths = total paths.
+    return pickCount + notPickCount;
+  }
 
-console.log("Test 1: nums = [4, 9, 2, 5, 1], k = 10");
-const result1 = countSubsequencesWithSumK([4, 9, 2, 5, 1], 10);
-console.log("Expected: 2");
-console.log("Got:     ", result1);
-console.log("Valid subsequences: [9,1], [4,5,1]");
-console.log();
+  /**
+   * ==========================================================
+   * DRY RUN - RECURSION TREE + CALL FRAMES
+   * ==========================================================
+   *
+   * Example:
+   * nums = [4, 5, 1], target = 10
+   *
+   * Expected:
+   * 1
+   *
+   * Why this example?
+   *   Ek valid subsequence [4, 5, 1] milti hai.
+   *   But count problem hone ki wajah se baaki branches bhi 0 return karke
+   *   total count me merge hoti hain.
+   *
+   * ==========================================================
+   * DECISION TREE
+   * ==========================================================
+   *
+   * Each leaf returns either:
+   *   1 -> this path ka sum target hai
+   *   0 -> this path ka sum target nahi hai
+   *
+   * root  (index=0, sum=0, next=4)
+   * │
+   * ├── PICK 4 -> (index=1, sum=4, next=5)
+   * │   │
+   * │   ├── PICK 5 -> (index=2, sum=9, next=1)
+   * │   │   │
+   * │   │   ├── PICK 1 -> (index=3, sum=10)
+   * │   │   │   └── BASE CASE: sum === target -> return 1
+   * │   │   │
+   * │   │   └── NOT PICK 1 -> (index=3, sum=9)
+   * │   │       └── BASE CASE: sum !== target -> return 0
+   * │   │
+   * │   └── NOT PICK 5 -> (index=2, sum=4, next=1)
+   * │       │
+   * │       ├── PICK 1 -> (index=3, sum=5) -> return 0
+   * │       └── NOT PICK 1 -> (index=3, sum=4) -> return 0
+   * │
+   * └── NOT PICK 4 -> (index=1, sum=0, next=5)
+   *     │
+   *     ├── PICK 5 -> (index=2, sum=5, next=1)
+   *     │   │
+   *     │   ├── PICK 1 -> (index=3, sum=6) -> return 0
+   *     │   └── NOT PICK 1 -> (index=3, sum=5) -> return 0
+   *     │
+   *     └── NOT PICK 5 -> (index=2, sum=0, next=1)
+   *         │
+   *         ├── PICK 1 -> (index=3, sum=1) -> return 0
+   *         └── NOT PICK 1 -> (index=3, sum=0) -> return 0
+   *
+   * Count propagation:
+   *   left subtree  = 1
+   *   right subtree = 0
+   *   final = 1 + 0 = 1
+   *
+   * ==========================================================
+   * NESTED BOX-HEAVY CALL FRAME DRY RUN
+   * ==========================================================
+   *
+   * Initial Call: countSubsequencesWithSumK([4, 5, 1], 10)
+   * - count starts from 0 conceptually
+   * - Start: countFromIndex(0, 0, [4,5,1], 10)
+   *
+   * ┌──────────────────────────────────────────────────────────────────────┐
+   * │ CALL 1: countFromIndex(0, 0, [4,5,1], 10)                            │
+   * ├──────────────────────────────────────────────────────────────────────┤
+   * │ index = 0                                                            │
+   * │ currentSum = 0                                                       │
+   * │ current element = nums[0] = 4                                        │
+   * │ Base: index === nums.length? 0 === 3 -> Nahi                        │
+   * │ Prune: currentSum > target? 0 > 10 -> Nahi                          │
+   * │                                                                      │
+   * │ Try PICK 4: call countFromIndex(1, 4, [4,5,1], 10)                  │
+   * │                                                                      │
+   * │   ┌────────────────────────────────────────────────────────────┐     │
+   * │   │ CALL 2: countFromIndex(1, 4, [4,5,1], 10)                  │     │
+   * │   ├────────────────────────────────────────────────────────────┤     │
+   * │   │ index = 1                                                  │     │
+   * │   │ currentSum = 4                                             │     │
+   * │   │ current element = nums[1] = 5                              │     │
+   * │   │ Base: index === nums.length? 1 === 3 -> Nahi              │     │
+   * │   │ Prune: currentSum > target? 4 > 10 -> Nahi                │     │
+   * │   │                                                            │     │
+   * │   │ Try PICK 5: countFromIndex(2, 9, [4,5,1], 10)             │     │
+   * │   │                                                            │     │
+   * │   │   ┌──────────────────────────────────────────────────┐     │     │
+   * │   │   │ CALL 3: countFromIndex(2, 9, [4,5,1], 10)        │     │     │
+   * │   │   ├──────────────────────────────────────────────────┤     │     │
+   * │   │   │ index = 2                                        │     │     │
+   * │   │   │ currentSum = 9                                   │     │     │
+   * │   │   │ current element = nums[2] = 1                    │     │     │
+   * │   │   │ Base: index === nums.length? 2 === 3 -> Nahi    │     │     │
+   * │   │   │ Prune: currentSum > target? 9 > 10 -> Nahi      │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │ Try PICK 1: countFromIndex(3, 10, [4,5,1], 10)  │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │   ┌────────────────────────────────────────┐     │     │     │
+   * │   │   │   │ CALL 4: countFromIndex(3, 10,          │     │     │     │
+   * │   │   │   │         [4,5,1], 10)                   │     │     │     │
+   * │   │   │   ├────────────────────────────────────────┤     │     │     │
+   * │   │   │   │ index = 3                              │     │     │     │
+   * │   │   │   │ currentSum = 10                        │     │     │     │
+   * │   │   │   │ Base: index === nums.length?           │     │     │     │
+   * │   │   │   │ 3 === 3 -> Haan                        │     │     │     │
+   * │   │   │   │ currentSum === target?                 │     │     │     │
+   * │   │   │   │ 10 === 10 -> Haan                      │     │     │     │
+   * │   │   │   │                                        │     │     │     │
+   * │   │   │   │ Return 1                               │     │     │     │
+   * │   │   │   └────────────────────────────────────────┘     │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │ pickCount = 1                                    │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │ Try NOT PICK 1: countFromIndex(3, 9, ...)        │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │   ┌────────────────────────────────────────┐     │     │     │
+   * │   │   │   │ CALL 5: countFromIndex(3, 9,           │     │     │     │
+   * │   │   │   │         [4,5,1], 10)                   │     │     │     │
+   * │   │   │   ├────────────────────────────────────────┤     │     │     │
+   * │   │   │   │ index = 3                              │     │     │     │
+   * │   │   │   │ currentSum = 9                         │     │     │     │
+   * │   │   │   │ Base: index === nums.length?           │     │     │     │
+   * │   │   │   │ 3 === 3 -> Haan                        │     │     │     │
+   * │   │   │   │ currentSum === target?                 │     │     │     │
+   * │   │   │   │ 9 === 10 -> Nahi                       │     │     │     │
+   * │   │   │   │                                        │     │     │     │
+   * │   │   │   │ Return 0                               │     │     │     │
+   * │   │   │   └────────────────────────────────────────┘     │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │ notPickCount = 0                                 │     │     │
+   * │   │   │ Return pickCount + notPickCount = 1 + 0 = 1      │     │     │
+   * │   │   └──────────────────────────────────────────────────┘     │     │
+   * │   │                                                            │     │
+   * │   │ pickCount from PICK 5 = 1                                  │     │
+   * │   │                                                            │     │
+   * │   │ Try NOT PICK 5: countFromIndex(2, 4, [4,5,1], 10)          │     │
+   * │   │ This subtree returns 0 because sums become 5 or 4.          │     │
+   * │   │                                                            │     │
+   * │   │ notPickCount from NOT PICK 5 = 0                           │     │
+   * │   │ Return 1 + 0 = 1                                           │     │
+   * │   └────────────────────────────────────────────────────────────┘     │
+   * │                                                                      │
+   * │ pickCount from PICK 4 = 1                                            │
+   * │                                                                      │
+   * │ Try NOT PICK 4: countFromIndex(1, 0, [4,5,1], 10)                   │
+   * │ This subtree returns 0 because no path reaches sum 10.               │
+   * │                                                                      │
+   * │ notPickCount from NOT PICK 4 = 0                                     │
+   * │ Return pickCount + notPickCount = 1 + 0 = 1                         │
+   * └──────────────────────────────────────────────────────────────────────┘
+   *
+   * Final answer:
+   *   1
+   *
+   * ==========================================================
+   * WHY BOTH BRANCHES ARE REQUIRED
+   * ==========================================================
+   *
+   * Check problem:
+   *   pick branch true -> return true immediately
+   *
+   * Count problem:
+   *   pick branch count milne ke baad bhi not-pick branch run karni padegi
+   *
+   * Why?
+   *   Because not-pick branch me bhi valid subsequences ho sakti hain.
+   *
+   * Example:
+   *   nums = [1, 1, 1], target = 2
+   *
+   * Valid index pairs:
+   *   (0,1), (0,2), (1,2)
+   *
+   * Agar first valid pair milte hi return kar diya,
+   * answer 3 ke bajaye 1 aa sakta hai.
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. nums = [5], target = 5
+   *    Pick 5 -> one valid path -> 1
+   *
+   * 2. nums = [5], target = 3
+   *    No valid path -> 0
+   *
+   * 3. nums = [1, 1, 1], target = 2
+   *    Three index pairs -> 3
+   *
+   * 4. nums = [1, 2, 3], target = 6
+   *    Whole array works -> 1
+   *
+   * 5. target = 0
+   *    Empty subsequence is not counted in this setup -> 0
+   */
 
-console.log("Test 2: nums = [4, 2, 10, 5, 1, 3], k = 5");
-const result2 = countSubsequencesWithSumK([4, 2, 10, 5, 1, 3], 5);
-console.log("Expected: 3");
-console.log("Got:     ", result2);
-console.log("Valid subsequences: [4,1], [2,3], [5]");
-console.log();
+  export function runTests(): void {
+    type TestCase = {
+      nums: number[];
+      target: number;
+      expected: number;
+      description: string;
+    };
 
-console.log("Test 3: nums = [1, 2, 3], k = 6");
-const result3 = countSubsequencesWithSumK([1, 2, 3], 6);
-console.log("Expected: 1");
-console.log("Got:     ", result3);
-console.log("Valid subsequences: [1,2,3]");
-console.log();
+    const tests: TestCase[] = [
+      {
+        nums: [4, 9, 2, 5, 1],
+        target: 10,
+        expected: 2,
+        description: 'two valid subsequences',
+      },
+      {
+        nums: [4, 2, 10, 5, 1, 3],
+        target: 5,
+        expected: 3,
+        description: 'three different subsequences',
+      },
+      {
+        nums: [1, 2, 3],
+        target: 6,
+        expected: 1,
+        description: 'all elements needed',
+      },
+      {
+        nums: [1, 1, 1],
+        target: 2,
+        expected: 3,
+        description: 'same values but different index pairs',
+      },
+      {
+        nums: [1, 2, 3],
+        target: 10,
+        expected: 0,
+        description: 'no valid subsequence',
+      },
+      {
+        nums: [5],
+        target: 5,
+        expected: 1,
+        description: 'single element equals target',
+      },
+      {
+        nums: [5],
+        target: 3,
+        expected: 0,
+        description: 'single element does not equal target',
+      },
+      {
+        nums: [2, 3, 5],
+        target: 10,
+        expected: 1,
+        description: 'whole array forms target',
+      },
+      {
+        nums: [1, 2, 1, 2],
+        target: 3,
+        expected: 4,
+        description: 'multiple index combinations with repeated values',
+      },
+      {
+        nums: [1, 2, 3],
+        target: 0,
+        expected: 0,
+        description: 'zero target does not count empty subsequence',
+      },
+    ];
 
-console.log("Test 4: nums = [1, 1, 1], k = 2");
-const result4 = countSubsequencesWithSumK([1, 1, 1], 2);
-console.log("Expected: 3");
-console.log("Got:     ", result4);
-console.log("Valid subsequences: [1,1] at different index pairs");
-console.log();
+    let passed = 0;
 
-console.log("Test 5: nums = [1, 2, 3], k = 10 (no valid)");
-const result5 = countSubsequencesWithSumK([1, 2, 3], 10);
-console.log("Expected: 0");
-console.log("Got:     ", result5);
-console.log();
+    console.log('Testing Count Subsequences Sum K - Recursion\n');
 
-console.log("Test 6: nums = [5], k = 5 (single element)");
-const result6 = countSubsequencesWithSumK([5], 5);
-console.log("Expected: 1");
-console.log("Got:     ", result6);
-console.log();
+    tests.forEach(({ nums, target, expected, description }, index) => {
+      const actual = countSubsequencesWithSumK(nums, target);
+      const bruteExpected = verifyByBruteForce(nums, target);
+      const pass = actual === expected && actual === bruteExpected;
 
-console.log("Test 7: nums = [2, 3, 5], k = 10 (all needed)");
-const result7 = countSubsequencesWithSumK([2, 3, 5], 10);
-console.log("Expected: 1");
-console.log("Got:     ", result7);
-console.log("Valid subsequences: [2,3,5]");
-console.log();
+      if (pass) {
+        passed++;
+      }
 
-// ═══════════════════════════════════════════════════════════════════════
-// VERIFICATION HELPER
-// ═══════════════════════════════════════════════════════════════════════
+      console.log(`Test ${index + 1}: ${description}`);
+      console.log(`  nums=[${nums.join(', ')}], target=${target}`);
+      console.log(`  Expected: ${expected}`);
+      console.log(`  Brute:    ${bruteExpected}`);
+      console.log(`  Got:      ${actual}`);
+      console.log(`  Result:   ${pass ? 'PASS' : 'FAIL'}`);
+    });
 
-/**
- * Verify karo ki count sahi hai (exhaustive check for small arrays)
- */
-function verifyByBruteForce(nums: number[], k: number): void {
-  console.log(`\n═══ nums=[${nums}], k=${k} ke liye Verification ═══`);
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
 
-  // Generate all subsequences using bitmask
-  const n = nums.length;
-  let count = 0;
-  const validSubsequences: number[][] = [];
+  function verifyByBruteForce(nums: number[], target: number): number {
+    if (target <= 0) {
+      return 0;
+    }
 
-  // 0 se 2^n-1 tak har number ek subset represent karta hai
-  for (let mask = 1; mask < 1 << n; mask++) {
-    // mask = 0 skip (empty subset)
-    const subsequence: number[] = [];
-    let sum = 0;
+    const totalMasks = 2 ** nums.length;
+    let count = 0;
 
-    for (let i = 0; i < n; i++) {
-      // Agar i-th bit set hai, toh nums[i] include karo
-      if (mask & (1 << i)) {
-        subsequence.push(nums[i]);
-        sum += nums[i];
+    for (let mask = 1; mask < totalMasks; mask++) {
+      let sum = 0;
+
+      for (let index = 0; index < nums.length; index++) {
+        if ((mask & (1 << index)) !== 0) {
+          sum += nums[index];
+        }
+      }
+
+      if (sum === target) {
+        count++;
       }
     }
 
-    if (sum === k) {
-      count++;
-      validSubsequences.push(subsequence);
-    }
+    return count;
   }
-
-  const ourResult = countSubsequencesWithSumK(nums, k);
-  const isCorrect = ourResult === count;
-
-  console.log(`✓ Our count: ${ourResult}`);
-  console.log(`✓ Expected count: ${count}`);
-  console.log(`✓ Match: ${isCorrect ? "✓" : "✗"}`);
-
-  if (validSubsequences.length <= 10) {
-    console.log(`✓ Valid subsequences:`);
-    validSubsequences.forEach((sub) => console.log(`  [${sub}]`));
-  }
-
-  console.log(`\n${isCorrect ? "✅ VERIFICATION PASS!" : "❌ VERIFICATION FAIL!"}`);
 }
 
-// Run verifications
-verifyByBruteForce([4, 9, 2, 5, 1], 10);
-verifyByBruteForce([4, 2, 10, 5, 1, 3], 5);
-verifyByBruteForce([1, 1, 1], 2);
-verifyByBruteForce([1, 2, 3], 10);
+const countSubsequencesWithSumK =
+  CountSubsequencesSumKRecursion.countSubsequencesWithSumK;
 
-export { countSubsequencesWithSumK };
+CountSubsequencesSumKRecursion.runTests();
+
+export { countSubsequencesWithSumK, CountSubsequencesSumKRecursion };

@@ -20,6 +20,17 @@
  * - Try all letters for each digit
  * - Implicit backtracking (pass new string, don't modify)
  *
+ * Algorithm:
+ * 1. If digits string empty hai, return [] because koi digit process nahi karna.
+ * 2. Phone keypad mapping banao: '2' -> "abc", '3' -> "def", and so on.
+ * 3. Empty result array initialize karo.
+ * 4. Recursion index 0 aur current string "" se start karo.
+ * 5. Current digit ke mapped letters nikalo.
+ * 6. Har mapped letter ko current ke saath append karke next index par recurse karo.
+ * 7. Base case: index digits.length ke equal ho jaye toh current complete combination hai.
+ * 8. Complete current string ko result me push karo and return.
+ * 9. Strings immutable hain, so current + letter new string banata hai; explicit pop/backtrack needed nahi.
+ *
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -303,6 +314,101 @@ namespace LetterCombinationsBacktracking {
    *           d  e  f   d  e  f   d  e  f    (digit '3')
    *           ↓  ↓  ↓   ↓  ↓  ↓   ↓  ↓  ↓
    *          ad ae af  bd be bf  cd ce cf    (Complete!)
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * REFERENCE-STYLE RECURSION TREE
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * root  (index=0, current="", result=[])
+   * │
+   * ├── choose 'a' from digit '2' -> backtrack(1, "a")
+   * │   Reason: first digit ke liye 'a' choose kiya, ab next digit process hoga.
+   * │   │
+   * │   │   (index=1, current="a", result=[])
+   * │   │   ├── choose 'd' from digit '3' -> backtrack(2, "ad")
+   * │   │   │   BASE CASE: index 2 === digits.length 2
+   * │   │   │   push "ad"
+   * │   │   │   result=["ad"]
+   * │   │   │   return to current="a"
+   * │   │   │
+   * │   │   ├── choose 'e' from digit '3' -> backtrack(2, "ae")
+   * │   │   │   BASE CASE: push "ae"
+   * │   │   │   result=["ad", "ae"]
+   * │   │   │   return to current="a"
+   * │   │   │
+   * │   │   └── choose 'f' from digit '3' -> backtrack(2, "af")
+   * │   │       BASE CASE: push "af"
+   * │   │       result=["ad", "ae", "af"]
+   * │   │       return to current="a"
+   * │   │
+   * │   │   loop over "def" complete
+   * │   │   return to root current=""
+   * │
+   * ├── choose 'b' from digit '2' -> backtrack(1, "b")
+   * │   digit '3' ke letters "def" se "bd", "be", "bf" push honge
+   * │   result=["ad", "ae", "af", "bd", "be", "bf"]
+   * │   return to root current=""
+   * │
+   * └── choose 'c' from digit '2' -> backtrack(1, "c")
+   *     digit '3' ke letters "def" se "cd", "ce", "cf" push honge
+   *     result=["ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf"]
+   *     return to root current=""
+   *
+   * root ke saare letters complete.
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * SPACIOUS CALL-FRAME SNAPSHOT
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * Initial Call: letterCombinations("23")
+   * - result = []
+   * - Start: backtrack(0, "", "23", result)
+   *
+   * ┌──────────────────────────────────────────────────────────────────────┐
+   * │ CALL 1: backtrack(0, "", "23", result)                              │
+   * ├──────────────────────────────────────────────────────────────────────┤
+   * │ index = 0                                                            │
+   * │ current = ""                                                         │
+   * │ result = []                                                          │
+   * │ Base case? index === digits.length? 0 === 2 -> Nahi                 │
+   * │ digit = digits[0] = '2'                                              │
+   * │ letters = phoneMap['2'] = "abc"                                      │
+   * │                                                                      │
+   * │ Try letter 'a': current + 'a' = "a"                                  │
+   * │                                                                      │
+   * │   ┌────────────────────────────────────────────────────────────┐     │
+   * │   │ CALL 2: backtrack(1, "a", "23", result)                    │     │
+   * │   ├────────────────────────────────────────────────────────────┤     │
+   * │   │ index = 1                                                  │     │
+   * │   │ current = "a"                                              │     │
+   * │   │ Base case? 1 === 2 -> Nahi                                 │     │
+   * │   │ digit = digits[1] = '3'                                    │     │
+   * │   │ letters = phoneMap['3'] = "def"                            │     │
+   * │   │                                                            │     │
+   * │   │ Try letter 'd': current + 'd' = "ad"                       │     │
+   * │   │                                                            │     │
+   * │   │   ┌──────────────────────────────────────────────────┐     │     │
+   * │   │   │ CALL 3: backtrack(2, "ad", "23", result)         │     │     │
+   * │   │   ├──────────────────────────────────────────────────┤     │     │
+   * │   │   │ index = 2                                        │     │     │
+   * │   │   │ current = "ad"                                   │     │     │
+   * │   │   │ Base case? 2 === 2 -> Haan                       │     │     │
+   * │   │   │ result.push("ad")                                │     │     │
+   * │   │   │ result = ["ad"]                                  │     │     │
+   * │   │   │ Return                                           │     │     │
+   * │   │   └──────────────────────────────────────────────────┘     │     │
+   * │   │                                                            │     │
+   * │   │ Return to CALL 2                                           │     │
+   * │   │ current is still "a" because strings are immutable.        │     │
+   * │   │ Next loop letters 'e' and 'f' will create "ae", "af".      │     │
+   * │   │ Return                                                     │     │
+   * │   └────────────────────────────────────────────────────────────┘     │
+   * │                                                                      │
+   * │ Return to CALL 1                                                     │
+   * │ current is still "" because "a" was passed as a new string.          │
+   * │ Next loop letters 'b' and 'c' will create "b", "c".                 │
+   * │ Return                                                               │
+   * └──────────────────────────────────────────────────────────────────────┘
    *
    * Key Observations:
    * ✓ Each path from root to leaf is one combination

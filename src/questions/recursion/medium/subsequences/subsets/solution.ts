@@ -1,390 +1,450 @@
 /**
- * SUBSETS (POWER SET)
+ * SUBSETS / POWER SET - RECURSION + BACKTRACKING
+ * =================================================
  *
- * Problem: Integer array diya gaya hai (unique elements), sabhi possible subsets return karo.
+ * PROBLEM:
+ * Unique integers ka array `nums` diya hai.
+ * Saare possible subsets return karne hain.
  *
- * Approach: Backtracking (Include/Exclude Pattern)
- * - Har element ke liye 2 choices hain:
- *   1. Include - Element ko current subset mein add karo
- *   2. Exclude - Element ko skip karo
- * - Recursively saare elements process karo
- * - Jab saare elements process ho jayein, current subset result mein add karo
- * - IMPORTANT: Include karne ke baad backtrack karo (pop karo)
+ * Example:
+ *   nums = [1, 2]
+ *   answer = [[1, 2], [1], [2], []]
  *
- * Time Complexity: O(n × 2^n)
- * - Total subsets: 2^n
- * - Har subset ko copy karne mein: O(n) worst case
+ * INTUITION (Soch):
+ * -----------------
+ * Har element ke paas 2 choices hoti hain:
  *
- * Space Complexity: O(n)
- * - Recursion depth: O(n)
- * - Current array: O(n)
- * - Output space: O(n × 2^n) (ye usually count nahi karte)
- */
-
-/**
- * Main function: Saare possible subsets generate karo
+ *   1. Include karo -> current subset me nums[index] add hoga
+ *   2. Exclude karo -> current subset same rahega
  *
- * @param nums - Array of unique integers
- * @returns Saare subsets (power set)
+ * Jab saare elements ke decisions complete ho jaate hain,
+ * current subset ek final subset ban chuka hota hai.
+ *
+ * Backtracking ka role:
+ *   Include branch ke baad `pop()` se current frame ki choice undo karo,
+ *   taki same frame ka exclude branch clean state se start ho.
  *
  * Algorithm:
- * 1. Empty result array initialize karo
- * 2. Empty current subset aur index=0 se start karo
- * 3. Har element pe decide karo: include karu ya skip
- * 4. Jab saare elements process ho jayein, subset add karo
+ * ----------
+ * 1. Start with empty result and empty current subset.
+ * 2. Start recursion from index 0.
+ * 3. Har index par pehle nums[index] ko current me include karo.
+ * 4. Include branch ke liye next index par recurse karo.
+ * 5. Include branch return kare toh current.pop() karke choice undo karo.
+ * 6. Ab same frame me nums[index] ko skip karne wali branch recurse karo.
+ * 7. Base case: index nums.length ke equal ho jaye toh current ka copy result me add karo.
+ * 8. Final result me saare leaf paths ke subsets mil jayenge.
+ *
+ * TIME: O(n * 2^n)
+ *   - total subsets 2^n
+ *   - each subset copy karne me worst case O(n)
+ *
+ * SPACE: O(n) excluding output
+ *   - recursion stack + current subset
+ *
+ * OUTPUT SPACE: O(n * 2^n)
  */
-function subsets(nums: number[]): number[][] {
-  const result: number[][] = [];
 
-  // Index 0 aur empty current subset se start karo
-  generate(nums, 0, [], result);
+namespace SubsetsRecursion {
+  export function subsets(nums: number[]): number[][] {
+    const result: number[][] = [];
+    const current: number[] = [];
 
-  return result;
-}
+    buildSubsets(0, nums, current, result);
 
-/**
- * Helper function: Recursively subsets generate karo
- *
- * @param nums - Original array
- * @param index - Current position (which element we're deciding on)
- * @param current - Current subset being built
- * @param result - Sabhi subsets store karne ke liye
- *
- * Decision Tree Example (nums=[1,2]):
- *
- *                    index=0, []
- *                    /         \
- *            Include 1         Skip 1
- *                /                 \
- *          index=1, [1]        index=1, []
- *            /      \            /      \
- *        Inc 2    Skip 2     Inc 2    Skip 2
- *          /         \          /         \
- *      [1,2]        [1]       [2]        []
- *       ✓            ✓         ✓          ✓
- */
-function generate(
-  nums: number[],
-  index: number,
-  current: number[],
-  result: number[][]
-): void {
-  // BASE CASE: Saare elements process ho gaye
-  // Ab current subset ko result mein add karo
-  if (index === nums.length) {
-    // IMPORTANT: Array ka COPY add karo, reference nahi!
-    // [...current] spread operator se copy banta hai
-    result.push([...current]);
-    return;
+    return result;
   }
 
-  // RECURSIVE CASE 1: Current element ko INCLUDE karo
-  // WHY: Ye path explore karne ke liye jisme current element hai
-  current.push(nums[index]);
-  generate(nums, index + 1, current, result);
-
-  // BACKTRACK: Undo karo taaki skip path explore kar sakein
-  // WHY: current array ko original state mein wapas lana hai
-  current.pop();
-
-  // RECURSIVE CASE 2: Current element ko SKIP karo
-  // WHY: Ye path explore karne ke liye jisme current element nahi hai
-  generate(nums, index + 1, current, result);
-}
-
-/**
- * ═══════════════════════════════════════════════════════════════════════
- * DRY RUN: subsets([1,2])
- * ═══════════════════════════════════════════════════════════════════════
- *
- * Initial Call: subsets([1,2])
- * - result = []
- * - Start: generate([1,2], 0, [], result)
- *
- * ┌──────────────────────────────────────────────────────────────────────┐
- * │ CALL 1: generate([1,2], 0, [], result)                              │
- * ├──────────────────────────────────────────────────────────────────────┤
- * │ nums = [1,2], index = 0, current = []                               │
- * │ Base case? 0 === 2 → Nahi                                           │
- * │                                                                      │
- * │ CHOICE 1: Include nums[0] = 1                                       │
- * │   current.push(1) → current = [1]                                   │
- * │   ┌────────────────────────────────────────────────────────────┐   │
- * │   │ CALL 2: generate([1,2], 1, [1], result)                   │   │
- * │   ├────────────────────────────────────────────────────────────┤   │
- * │   │ nums = [1,2], index = 1, current = [1]                    │   │
- * │   │ Base case? 1 === 2 → Nahi                                 │   │
- * │   │                                                            │   │
- * │   │ CHOICE 1: Include nums[1] = 2                             │   │
- * │   │   current.push(2) → current = [1,2]                       │   │
- * │   │   ┌──────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 3: generate([1,2], 2, [1,2], result)       │   │   │
- * │   │   ├──────────────────────────────────────────────────┤   │   │
- * │   │   │ nums = [1,2], index = 2, current = [1,2]        │   │   │
- * │   │   │ Base case? 2 === 2 → Haan! ✓                   │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ result.push([...current])                       │   │   │
- * │   │   │ result.push([1,2])  ← Copy add hua              │   │   │
- * │   │   │ result = [[1,2]]                                │   │   │
- * │   │   │ Return                                           │   │   │
- * │   │   └──────────────────────────────────────────────────┘   │   │
- * │   │                                                            │   │
- * │   │ Wapas CALL 2 mein                                         │   │
- * │   │ BACKTRACK: current.pop() → current = [1]                  │   │
- * │   │            ^                                               │   │
- * │   │            └─ Ye ZAROORI hai! Undo karo                  │   │
- * │   │                                                            │   │
- * │   │ CHOICE 2: Skip nums[1] = 2                                │   │
- * │   │   current = [1] (koi change nahi)                         │   │
- * │   │   ┌──────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 4: generate([1,2], 2, [1], result)         │   │   │
- * │   │   ├──────────────────────────────────────────────────┤   │   │
- * │   │   │ nums = [1,2], index = 2, current = [1]          │   │   │
- * │   │   │ Base case? 2 === 2 → Haan! ✓                   │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ result.push([...current])                       │   │   │
- * │   │   │ result.push([1])  ← Copy add hua                │   │   │
- * │   │   │ result = [[1,2], [1]]                           │   │   │
- * │   │   │ Return                                           │   │   │
- * │   │   └──────────────────────────────────────────────────┘   │   │
- * │   │ Return                                                     │   │
- * │   └────────────────────────────────────────────────────────────┘   │
- * │                                                                      │
- * │ Wapas CALL 1 mein                                                   │
- * │ BACKTRACK: current.pop() → current = []                             │
- * │            ^                                                         │
- * │            └─ 1 ko remove kiya, ab skip path explore karo          │
- * │                                                                      │
- * │ CHOICE 2: Skip nums[0] = 1                                          │
- * │   current = [] (koi change nahi)                                    │
- * │   ┌────────────────────────────────────────────────────────────┐   │
- * │   │ CALL 5: generate([1,2], 1, [], result)                    │   │
- * │   ├────────────────────────────────────────────────────────────┤   │
- * │   │ nums = [1,2], index = 1, current = []                     │   │
- * │   │ Base case? 1 === 2 → Nahi                                 │   │
- * │   │                                                            │   │
- * │   │ CHOICE 1: Include nums[1] = 2                             │   │
- * │   │   current.push(2) → current = [2]                         │   │
- * │   │   ┌──────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 6: generate([1,2], 2, [2], result)         │   │   │
- * │   │   ├──────────────────────────────────────────────────┤   │   │
- * │   │   │ nums = [1,2], index = 2, current = [2]          │   │   │
- * │   │   │ Base case? 2 === 2 → Haan! ✓                   │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ result.push([...current])                       │   │   │
- * │   │   │ result.push([2])  ← Copy add hua                │   │   │
- * │   │   │ result = [[1,2], [1], [2]]                      │   │   │
- * │   │   │ Return                                           │   │   │
- * │   │   └──────────────────────────────────────────────────┘   │   │
- * │   │                                                            │   │
- * │   │ Wapas CALL 5 mein                                         │   │
- * │   │ BACKTRACK: current.pop() → current = []                   │   │
- * │   │                                                            │   │
- * │   │ CHOICE 2: Skip nums[1] = 2                                │   │
- * │   │   current = [] (koi change nahi)                          │   │
- * │   │   ┌──────────────────────────────────────────────────┐   │   │
- * │   │   │ CALL 7: generate([1,2], 2, [], result)          │   │   │
- * │   │   ├──────────────────────────────────────────────────┤   │   │
- * │   │   │ nums = [1,2], index = 2, current = []           │   │   │
- * │   │   │ Base case? 2 === 2 → Haan! ✓                   │   │   │
- * │   │   │                                                  │   │   │
- * │   │   │ result.push([...current])                       │   │   │
- * │   │   │ result.push([])  ← Empty subset!                │   │   │
- * │   │   │ result = [[1,2], [1], [2], []]                  │   │   │
- * │   │   │ Return                                           │   │   │
- * │   │   └──────────────────────────────────────────────────┘   │   │
- * │   │ Return                                                     │   │
- * │   └────────────────────────────────────────────────────────────┘   │
- * │ Return                                                               │
- * └──────────────────────────────────────────────────────────────────────┘
- *
- * Final Result: [[1,2], [1], [2], []]
- *
- * Verification:
- * ✓ Total subsets = 2^2 = 4
- * ✓ Empty subset [] included
- * ✓ Saare combinations present: [1,2], [1], [2], []
- * ✓ Koi duplicates nahi
- *
- *
- * ═══════════════════════════════════════════════════════════════════════
- * BACKTRACKING KA IMPORTANCE
- * ═══════════════════════════════════════════════════════════════════════
- *
- * Backtracking kyun zaroori hai? Isko samajhne ke liye example dekhte hain:
- *
- * AGAR BACKTRACKING NAHI HOTA:
- * ────────────────────────────────────────
- * current = []
- * current.push(1) → [1]
- *   current.push(2) → [1,2]
- *     Add to result → [[1,2]] ✓
- *   Return
- *   // current abhi bhi [1,2] hai! ✗
- *   // Skip 2 path explore karna hai
- *   // Lekin current mein already 2 hai!
- *   Add to result → [[1,2], [1,2]] ✗✗ DUPLICATE!
- *
- * WITH BACKTRACKING:
- * ────────────────────────────────────────
- * current = []
- * current.push(1) → [1]
- *   current.push(2) → [1,2]
- *     Add to result → [[1,2]] ✓
- *   Return
- *   current.pop()    → [1]  ← BACKTRACK! Undo kiya
- *   // Ab current = [1] hai, perfect!
- *   // Skip 2 path explore karo
- *   Add to result → [[1,2], [1]] ✓ CORRECT!
- *
- * Visual Flow:
- * ────────────────────────────────────────
- *        []
- *        ↓ push(1)
- *       [1]
- *        ↓ push(2)
- *      [1,2] ← Include 2 path, add to result
- *        ↓ pop()  ← BACKTRACK!
- *       [1]  ← Wapas original state
- *        ↓ skip 2
- *       [1]  ← Skip 2 path, add to result
- *        ↓ pop()  ← BACKTRACK!
- *       []   ← Wapas original state
- *        ↓ skip 1
- *       []   ← Ab skip 1 path explore karo
- *
- *
- * ═══════════════════════════════════════════════════════════════════════
- * REFERENCE VS COPY (VERY IMPORTANT!)
- * ═══════════════════════════════════════════════════════════════════════
- *
- * WRONG WAY (Reference add karna):
- * ────────────────────────────────────────
- * result.push(current);  // ✗ Reference add hua
- *
- * Kya hoga:
- *   1. current = [1,2], result = [[1,2]]
- *   2. current.pop() → current = [1]
- *   3. Lekin result[0] bhi [1] ho jayega! ✗
- *   4. Kyunki same array ka reference hai
- *
- * Result: [[], [], [], []]  ✗✗ Sab empty!
- *
- * CORRECT WAY (Copy add karna):
- * ────────────────────────────────────────
- * result.push([...current]);  // ✓ Copy add hua
- *
- * Kya hoga:
- *   1. current = [1,2], result = [[1,2]] (copy add hua)
- *   2. current.pop() → current = [1]
- *   3. result[0] abhi bhi [1,2] hai ✓
- *   4. Kyunki alag array ka copy hai
- *
- * Result: [[1,2], [1], [2], []]  ✓✓ PERFECT!
- *
- * Three ways to copy:
- *   1. [...current]           ← Spread operator (modern, clean)
- *   2. current.slice()        ← Array method
- *   3. Array.from(current)    ← Conversion method
- */
-
-// ═══════════════════════════════════════════════════════════════════════
-// TEST CASES
-// ═══════════════════════════════════════════════════════════════════════
-
-console.log("Test 1: nums = [1,2,3]");
-const result1 = subsets([1, 2, 3]);
-console.log("Expected: 8 subsets (2^3)");
-console.log("Got:     ", result1.length, "subsets");
-console.log("Subsets: ", result1);
-console.log();
-
-console.log("Test 2: nums = [0]");
-const result2 = subsets([0]);
-console.log("Expected: 2 subsets (2^1)");
-console.log("Got:     ", result2.length, "subsets");
-console.log("Subsets: ", result2);
-console.log();
-
-console.log("Test 3: nums = [1,2]");
-const result3 = subsets([1, 2]);
-console.log("Expected: 4 subsets (2^2)");
-console.log("Got:     ", result3.length, "subsets");
-console.log("Subsets: ", result3);
-console.log();
-
-console.log("Test 4: nums = [5,6,7,8]");
-const result4 = subsets([5, 6, 7, 8]);
-console.log("Expected: 16 subsets (2^4)");
-console.log("Got:     ", result4.length, "subsets");
-console.log("Pehle 5: ", result4.slice(0, 5));
-console.log("Last 3:  ", result4.slice(-3));
-console.log();
-
-console.log("Test 5: Negative numbers [-1, 0, 1]");
-const result5 = subsets([-1, 0, 1]);
-console.log("Expected: 8 subsets (2^3)");
-console.log("Got:     ", result5.length, "subsets");
-console.log("Subsets: ", result5);
-console.log();
-
-// ═══════════════════════════════════════════════════════════════════════
-// VERIFICATION HELPER
-// ═══════════════════════════════════════════════════════════════════════
-
-/**
- * Verify karo ki generated subsets sahi hain
- */
-function verifyResults(nums: number[], results: number[][]): void {
-  console.log(`\n═══ nums=[${nums}] ke liye Verification ═══`);
-
-  // Check 1: Correct count (2^n)
-  const expectedCount = Math.pow(2, nums.length);
-  const countOk = results.length === expectedCount;
-  console.log(
-    `✓ Count: ${results.length} (expected: ${expectedCount} = 2^${nums.length}) ${
-      countOk ? "✓" : "✗"
-    }`
-  );
-
-  // Check 2: Empty subset included hai
-  const hasEmptySubset = results.some((subset) => subset.length === 0);
-  console.log(`✓ Empty subset [] present: ${hasEmptySubset ? "✓" : "✗"}`);
-
-  // Check 3: Full subset included hai
-  const hasFullSubset = results.some((subset) => subset.length === nums.length);
-  console.log(
-    `✓ Full subset [${nums}] present: ${hasFullSubset ? "✓" : "✗"}`
-  );
-
-  // Check 4: Koi duplicates nahi
-  const stringified = results.map((subset) => JSON.stringify(subset.sort()));
-  const uniqueCount = new Set(stringified).size;
-  const noDuplicates = uniqueCount === results.length;
-  console.log(`✓ Koi duplicates nahi: ${noDuplicates ? "✓" : "✗"}`);
-
-  // Check 5: Sabhi subsets valid hain (elements nums mein se hain)
-  let allValid = true;
-  for (const subset of results) {
-    for (const element of subset) {
-      if (!nums.includes(element)) {
-        console.log(`  ✗ Invalid element ${element} in subset [${subset}]`);
-        allValid = false;
-      }
+  function buildSubsets(
+    index: number,
+    nums: number[],
+    current: number[],
+    result: number[][]
+  ): void {
+    if (index === nums.length) {
+      // Saare elements ke include/exclude decisions complete ho gaye.
+      // `current` mutate hota rahega, isliye result me copy store karni zaroori hai.
+      result.push([...current]);
+      return;
     }
-  }
-  console.log(`✓ Sabhi subsets valid hain: ${allValid ? "✓" : "✗"}`);
 
-  const allPassed = countOk && hasEmptySubset && hasFullSubset && noDuplicates && allValid;
-  console.log(
-    `\n${allPassed ? "✅ SAARE CHECKS PASS HO GAYE!" : "❌ KOI CHECKS FAIL HO GAYE"}`
-  );
+    current.push(nums[index]);
+    // Include branch: current element is subset ka part ban chuka hai.
+    buildSubsets(index + 1, nums, current, result);
+
+    // Backtrack sirf is frame ki include choice undo karta hai.
+    // Parent frame ke choices current me preserved rehte hain.
+    current.pop();
+
+    // Exclude branch: same index ka element skip hua, so current unchanged state me aage badhta hai.
+    buildSubsets(index + 1, nums, current, result);
+  }
+
+  /**
+   * ==========================================================
+   * DRY RUN - RECURSION TREE + CALL FRAMES
+   * ==========================================================
+   *
+   * Example:
+   * nums = [1, 2]
+   *
+   * Expected:
+   * [[1, 2], [1], [2], []]
+   *
+   * ==========================================================
+   * HIGH-LEVEL DECISION TREE
+   * ==========================================================
+   *
+   * Is tree ka goal sirf choices dikhana hai:
+   *   include current element
+   *   exclude current element
+   *
+   *                             []  (start)
+   *                              |
+   *                    Decide for nums[0] = 1
+   *                    /                         \
+   *             include 1                       exclude 1
+   *                 |                              |
+   *                [1]                            []
+   *                 |                              |
+   *        Decide for nums[1] = 2        Decide for nums[1] = 2
+   *          /              \              /              \
+   *   include 2          exclude 2   include 2          exclude 2
+   *       |                  |           |                  |
+   *     [1,2]              [1]         [2]                 []
+   *       |                  |           |                  |
+   *      add                add         add                add
+   *
+   * Final order with include-first recursion:
+   *   [[1,2], [1], [2], []]
+   *
+   * ==========================================================
+   * FULL RECURSION TREE - WITH RETURNS + BACKTRACKING
+   * ==========================================================
+   *
+   * Each node stores:
+   *   index
+   *   current subset
+   *
+   * root  (index=0, current=[], result=[])
+   * │
+   * ├── INCLUDE 1 -> current=[1]
+   * │   │
+   * │   ├── INCLUDE 2 -> current=[1,2]
+   * │   │   └── BASE CASE: push copy [1,2]
+   * │   │       result=[[1,2]]
+   * │   │       return to current=[1,2]
+   * │   │
+   * │   ├── BACKTRACK after INCLUDE 2 -> pop 2
+   * │   │   current=[1]
+   * │   │
+   * │   └── EXCLUDE 2 -> current=[1]
+   * │       └── BASE CASE: push copy [1]
+   * │           result=[[1,2], [1]]
+   * │           return to current=[1]
+   * │
+   * ├── BACKTRACK after INCLUDE 1 -> pop 1
+   * │   current=[]
+   * │
+   * └── EXCLUDE 1 -> current=[]
+   *     │
+   *     ├── INCLUDE 2 -> current=[2]
+   *     │   └── BASE CASE: push copy [2]
+   *     │       result=[[1,2], [1], [2]]
+   *     │       return to current=[2]
+   *     │
+   *     ├── BACKTRACK after INCLUDE 2 -> pop 2
+   *     │   current=[]
+   *     │
+   *     └── EXCLUDE 2 -> current=[]
+   *         └── BASE CASE: push copy []
+   *             result=[[1,2], [1], [2], []]
+   *
+   * root ke dono branches complete.
+   *
+   * ==========================================================
+   * NESTED BOX-HEAVY CALL FRAME DRY RUN
+   * ==========================================================
+   *
+   * Initial Call: subsets([1, 2])
+   * - result = []
+   * - current = []
+   * - Start: buildSubsets(0, [1,2], [], result)
+   *
+   * ┌──────────────────────────────────────────────────────────────────────┐
+   * │ CALL 1: buildSubsets(0, [1,2], [], result)                           │
+   * ├──────────────────────────────────────────────────────────────────────┤
+   * │ index = 0                                                            │
+   * │ current = []                                                         │
+   * │ result = []                                                          │
+   * │ Base case? index === nums.length? 0 === 2 -> Nahi                   │
+   * │                                                                      │
+   * │ Try INCLUDE nums[0] = 1                                              │
+   * │ current.push(1) -> current = [1]                                     │
+   * │                                                                      │
+   * │   ┌────────────────────────────────────────────────────────────┐     │
+   * │   │ CALL 2: buildSubsets(1, [1,2], [1], result)                │     │
+   * │   ├────────────────────────────────────────────────────────────┤     │
+   * │   │ index = 1                                                  │     │
+   * │   │ current = [1]                                              │     │
+   * │   │ result = []                                                │     │
+   * │   │ Base case? 1 === 2 -> Nahi                                 │     │
+   * │   │                                                            │     │
+   * │   │ Try INCLUDE nums[1] = 2                                    │     │
+   * │   │ current.push(2) -> current = [1,2]                         │     │
+   * │   │                                                            │     │
+   * │   │   ┌──────────────────────────────────────────────────┐     │     │
+   * │   │   │ CALL 3: buildSubsets(2, [1,2], [1,2], result)    │     │     │
+   * │   │   ├──────────────────────────────────────────────────┤     │     │
+   * │   │   │ index = 2                                        │     │     │
+   * │   │   │ current = [1,2]                                  │     │     │
+   * │   │   │ Base case? 2 === 2 -> Haan                       │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │ result.push([...current])                        │     │     │
+   * │   │   │ result.push([1,2])                               │     │     │
+   * │   │   │ result = [[1,2]]                                 │     │     │
+   * │   │   │ Return                                           │     │     │
+   * │   │   └──────────────────────────────────────────────────┘     │     │
+   * │   │                                                            │     │
+   * │   │ Return to CALL 2                                           │     │
+   * │   │ current is still [1,2]                                     │     │
+   * │   │                                                            │     │
+   * │   │ BACKTRACK: current.pop() removes 2                         │     │
+   * │   │ current = [1]                                              │     │
+   * │   │ Reason: Ab skip-2 branch ko [1] state se run karna hai.    │     │
+   * │   │                                                            │     │
+   * │   │ Try EXCLUDE nums[1] = 2                                    │     │
+   * │   │ current stays [1]                                          │     │
+   * │   │                                                            │     │
+   * │   │   ┌──────────────────────────────────────────────────┐     │     │
+   * │   │   │ CALL 4: buildSubsets(2, [1,2], [1], result)      │     │     │
+   * │   │   ├──────────────────────────────────────────────────┤     │     │
+   * │   │   │ index = 2                                        │     │     │
+   * │   │   │ current = [1]                                    │     │     │
+   * │   │   │ Base case? 2 === 2 -> Haan                       │     │     │
+   * │   │   │                                                  │     │     │
+   * │   │   │ result.push([...current])                        │     │     │
+   * │   │   │ result.push([1])                                 │     │     │
+   * │   │   │ result = [[1,2], [1]]                            │     │     │
+   * │   │   │ Return                                           │     │     │
+   * │   │   └──────────────────────────────────────────────────┘     │     │
+   * │   │                                                            │     │
+   * │   │ Return                                                     │     │
+   * │   └────────────────────────────────────────────────────────────┘     │
+   * │                                                                      │
+   * │ Return to CALL 1                                                     │
+   * │ current is still [1]                                                 │
+   * │                                                                      │
+   * │ BACKTRACK: current.pop() removes 1                                   │
+   * │ current = []                                                         │
+   * │ Reason: Ab skip-1 branch ko empty state se run karna hai.            │
+   * │                                                                      │
+   * │ Try EXCLUDE nums[0] = 1                                              │
+   * │ current stays []                                                     │
+   * │                                                                      │
+   * │   ┌────────────────────────────────────────────────────────────┐     │
+   * │   │ CALL 5: buildSubsets(1, [1,2], [], result)                 │     │
+   * │   ├────────────────────────────────────────────────────────────┤     │
+   * │   │ index = 1                                                  │     │
+   * │   │ current = []                                               │     │
+   * │   │ result = [[1,2], [1]]                                      │     │
+   * │   │ Base case? 1 === 2 -> Nahi                                 │     │
+   * │   │                                                            │     │
+   * │   │ Try INCLUDE nums[1] = 2                                    │     │
+   * │   │ current.push(2) -> current = [2]                           │     │
+   * │   │                                                            │     │
+   * │   │   ┌──────────────────────────────────────────────────┐     │     │
+   * │   │   │ CALL 6: buildSubsets(2, [1,2], [2], result)      │     │     │
+   * │   │   ├──────────────────────────────────────────────────┤     │     │
+   * │   │   │ index = 2                                        │     │     │
+   * │   │   │ current = [2]                                    │     │     │
+   * │   │   │ Base case? 2 === 2 -> Haan                       │     │     │
+   * │   │   │ result.push([2])                                 │     │     │
+   * │   │   │ result = [[1,2], [1], [2]]                       │     │     │
+   * │   │   │ Return                                           │     │     │
+   * │   │   └──────────────────────────────────────────────────┘     │     │
+   * │   │                                                            │     │
+   * │   │ BACKTRACK: current.pop() removes 2                         │     │
+   * │   │ current = []                                               │     │
+   * │   │                                                            │     │
+   * │   │ Try EXCLUDE nums[1] = 2                                    │     │
+   * │   │ current stays []                                           │     │
+   * │   │                                                            │     │
+   * │   │   ┌──────────────────────────────────────────────────┐     │     │
+   * │   │   │ CALL 7: buildSubsets(2, [1,2], [], result)       │     │     │
+   * │   │   ├──────────────────────────────────────────────────┤     │     │
+   * │   │   │ index = 2                                        │     │     │
+   * │   │   │ current = []                                     │     │     │
+   * │   │   │ Base case? 2 === 2 -> Haan                       │     │     │
+   * │   │   │ result.push([])                                  │     │     │
+   * │   │   │ result = [[1,2], [1], [2], []]                   │     │     │
+   * │   │   │ Return                                           │     │     │
+   * │   │   └──────────────────────────────────────────────────┘     │     │
+   * │   │                                                            │     │
+   * │   │ Return                                                     │     │
+   * │   └────────────────────────────────────────────────────────────┘     │
+   * │                                                                      │
+   * │ Return                                                               │
+   * └──────────────────────────────────────────────────────────────────────┘
+   *
+   * Final answer:
+   *   [[1,2], [1], [2], []]
+   *
+   * ==========================================================
+   * WHY COPY IS REQUIRED
+   * ==========================================================
+   *
+   * Wrong:
+   *   result.push(current)
+   *
+   * Why wrong?
+   *   `current` same array reference hai.
+   *   Backtracking pop/push ke saath mutate hota rahega.
+   *
+   * Correct:
+   *   result.push([...current])
+   *
+   * Why correct?
+   *   Har base case par current ka snapshot store hota hai.
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. nums = []
+   *    Output: [[]]
+   *
+   * 2. nums = [0]
+   *    Output: [[0], []]
+   *
+   * 3. nums = [1, 2]
+   *    Output count: 4
+   *
+   * 4. nums = [-1, 0, 1]
+   *    Output count: 8
+   */
+
+  export function runTests(): void {
+    type TestCase = {
+      nums: number[];
+      expectedCount: number;
+      expectedSubsets?: number[][];
+      description: string;
+    };
+
+    const tests: TestCase[] = [
+      {
+        nums: [],
+        expectedCount: 1,
+        expectedSubsets: [[]],
+        description: 'empty input has one subset',
+      },
+      {
+        nums: [0],
+        expectedCount: 2,
+        expectedSubsets: [[0], []],
+        description: 'single zero',
+      },
+      {
+        nums: [1, 2],
+        expectedCount: 4,
+        expectedSubsets: [[1, 2], [1], [2], []],
+        description: 'two elements exact order',
+      },
+      {
+        nums: [1, 2, 3],
+        expectedCount: 8,
+        description: 'three positive numbers',
+      },
+      {
+        nums: [-1, 0, 1],
+        expectedCount: 8,
+        description: 'negative, zero, positive values',
+      },
+      {
+        nums: [5, 6, 7, 8],
+        expectedCount: 16,
+        description: 'four elements count check',
+      },
+    ];
+
+    let passed = 0;
+
+    console.log('Testing Subsets - Recursion + Backtracking\n');
+
+    tests.forEach(
+      ({ nums, expectedCount, expectedSubsets, description }, index) => {
+        const result = subsets(nums);
+        const countOk = result.length === expectedCount;
+        const expectedPowerSetCount = result.length === 2 ** nums.length;
+        const emptyIncluded = result.some((subset) => subset.length === 0);
+        const fullIncluded = hasSubset(result, nums);
+        const allValid = result.every((subset) =>
+          subset.every((value) => nums.includes(value))
+        );
+        const noDuplicates =
+          new Set(result.map(toSubsetSignature)).size === result.length;
+        const exactMatch = expectedSubsets
+          ? sameSubsetCollection(result, expectedSubsets)
+          : true;
+
+        const pass =
+          countOk &&
+          expectedPowerSetCount &&
+          emptyIncluded &&
+          fullIncluded &&
+          allValid &&
+          noDuplicates &&
+          exactMatch;
+
+        if (pass) {
+          passed++;
+        }
+
+        console.log(`Test ${index + 1}: ${description}`);
+        console.log(`  nums=[${nums.join(', ')}]`);
+        console.log(`  Expected count: ${expectedCount}`);
+        console.log(`  Got count:      ${result.length}`);
+        console.log(
+          `  Checks -> count=${countOk}, powerSet=${expectedPowerSetCount}, empty=${emptyIncluded}, full=${fullIncluded}, valid=${allValid}, unique=${noDuplicates}, exact=${exactMatch}`
+        );
+        console.log(`  Result: ${pass ? 'PASS' : 'FAIL'}`);
+      }
+    );
+
+    console.log(`\nResults: ${passed}/${tests.length} passed`);
+  }
+
+  function hasSubset(allSubsets: number[][], targetSubset: number[]): boolean {
+    const targetSignature = toSubsetSignature(targetSubset);
+    return allSubsets.some(
+      (subset) => toSubsetSignature(subset) === targetSignature
+    );
+  }
+
+  function sameSubsetCollection(
+    actual: number[][],
+    expected: number[][]
+  ): boolean {
+    if (actual.length !== expected.length) {
+      return false;
+    }
+
+    const actualSignatures = actual.map(toSubsetSignature).sort();
+    const expectedSignatures = expected.map(toSubsetSignature).sort();
+
+    return actualSignatures.every(
+      (signature, index) => signature === expectedSignatures[index]
+    );
+  }
+
+  function toSubsetSignature(subset: number[]): string {
+    return JSON.stringify([...subset].sort((left, right) => left - right));
+  }
 }
 
-// Verification run karo
-verifyResults([1, 2, 3], subsets([1, 2, 3]));
-verifyResults([0], subsets([0]));
-verifyResults([1, 2], subsets([1, 2]));
-verifyResults([-1, 0, 1], subsets([-1, 0, 1]));
+const subsets = SubsetsRecursion.subsets;
 
-export { subsets };
+SubsetsRecursion.runTests();
+
+export { subsets, SubsetsRecursion };
