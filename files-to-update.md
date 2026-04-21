@@ -162,7 +162,7 @@ Going forward, every file updated from this tracker should include this `Algorit
 - [x] src/questions/recursion/medium/generate-binary-strings/solution.ts
 - [x] src/questions/recursion/medium/generate-parentheses/solution.ts
 - [x] src/questions/recursion/medium/letter-combinations-phone-number/solution.ts
-- [ ] src/questions/recursion/medium/palindrome-partitioning/solution.ts
+- [x] src/questions/recursion/medium/palindrome-partitioning/solution.ts
 - [ ] src/questions/recursion/medium/pow-x-n/brute-force.ts
 - [ ] src/questions/recursion/medium/pow-x-n/optimal-iterative.ts
 - [ ] src/questions/recursion/medium/pow-x-n/optimal-recursive.ts
