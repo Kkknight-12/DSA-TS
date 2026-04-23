@@ -1,493 +1,258 @@
 /**
- * Reverse a Stack using Recursion
- * =================================
+ * REVERSE STACK USING RECURSION
+ * =============================
  *
- * Problem: Reverse a stack in-place using ONLY recursion
- *          (no loops, no extra arrays)
+ * Problem:
+ * Array form me stack diya hai.
+ * Yahan:
  *
- * Approach: Two Recursive Functions
- * 1. reverseStack(): Removes top, reverses rest, inserts at bottom
- * 2. insertAtBottom(): Inserts element at the bottom of stack
+ *   stack[0]             -> bottom
+ *   stack[stack.length - 1] -> top
  *
- * Time Complexity: O(n²)
- * - Reversing n elements with O(n) insertion each
+ * Hume isi stack ko recursion se reverse karna hai.
+ * Core logic me loop aur extra stack use nahi karna.
  *
- * Space Complexity: O(n)
- * - Recursion depth: O(n)
+ * Example:
+ *   [4, 1, 3, 2] -> [2, 3, 1, 4]
  *
- * Key Pattern: COMBINER
- * - Work happens during UNWINDING phase
- * - Recursion stack acts as temporary storage
+ * Intuition:
+ * Normal stack me hum bottom directly access nahi kar sakte.
+ * Sirf top se hi pop / push hota hai.
+ *
+ * Isliye recursion do kaam karti hai:
+ *
+ * 1. reverseStack
+ *    top hata kar smaller stack reverse karti hai
+ *
+ * 2. insertAtBottom
+ *    removed element ko bottom me place karti hai
+ *
+ * Algorithm:
+ * 1. Agar stack empty hai, return karo.
+ * 2. Top element pop karke current frame me hold karo.
+ * 3. Remaining stack ko recursively reverse karo.
+ * 4. Held element ko helper se bottom me insert karo.
+ * 5. Helper me agar stack empty hai toh value push karo.
+ * 6. Warna top pop karo, value ko bottom me insert karo, aur popped top ko wapas push karo.
+ *
+ * Time Complexity:
+ *   O(n^2)
+ *   reverseStack ke har frame par insertAtBottom worst case O(n) le sakta hai.
+ *
+ * Space Complexity:
+ *   O(n)
+ *   recursion call stack depth ki wajah se.
  */
 
-namespace ReverseStack {
-  /**
-   * Simple Stack implementation for this problem
-   */
-  class Stack<T> {
-    private items: T[] = [];
-
-    push(element: T): void {
-      this.items.push(element);
-    }
-
-    pop(): T | undefined {
-      return this.items.pop();
-    }
-
-    peek(): T | undefined {
-      return this.items[this.items.length - 1];
-    }
-
-    isEmpty(): boolean {
-      return this.items.length === 0;
-    }
-
-    size(): number {
-      return this.items.length;
-    }
-
-    // For visualization
-    toArray(): T[] {
-      return [...this.items]; // Copy for display
-    }
-
-    // Create from array (bottom to top)
-    static fromArray<T>(arr: T[]): Stack<T> {
-      const stack = new Stack<T>();
-      for (const item of arr) {
-        stack.push(item);
-      }
-      return stack;
-    }
-  }
-
-  /**
-   * Reverse a stack in-place using recursion
-   *
-   * @param stack - Stack to reverse (modified in-place)
-   *
-   * @complexity
-   * Time: O(n²) - For each element, insertAtBottom takes O(n)
-   * Space: O(n) - Recursion stack depth
-   *
-   * Algorithm:
-   * 1. BASE CASE: Empty stack is already reversed
-   * 2. RECURSIVE CASE:
-   *    a) Pop top element
-   *    b) Recursively reverse remaining stack
-   *    c) Insert popped element at bottom
-   *
-   * Pattern: COMBINER (work during unwinding)
-   */
-  function reverseStack(stack: Stack<number>): void {
-    // ═══════════════════════════════════════════════════════════
-    // BASE CASE: Empty stack
-    // ═══════════════════════════════════════════════════════════
-    // WHY: Empty stack is already reversed
-    // EXAMPLE: [] → reversed is [] ✓
-    if (stack.isEmpty()) {
+namespace ReverseStackRecursion {
+  export function reverseStack(stack: number[]): void {
+    if (stack.length === 0) {
+      // Empty stack already reversed hota hai.
+      // Yahan aur koi work pending nahi hai.
       return;
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // STEP 1: Remove top element
-    // ═══════════════════════════════════════════════════════════
-    // WHY: Hold it in recursion stack while we reverse the rest
-    //
-    // EXAMPLE: [4, 1, 3, 2]
-    //          Pop 2 (top) → Stack: [4, 1, 3]
-    //          2 is held in this function's local variable
-    const top = stack.pop()!;
+    const topElement = stack.pop()!;
 
-    // ═══════════════════════════════════════════════════════════
-    // STEP 2: Recursively reverse the remaining stack
-    // ═══════════════════════════════════════════════════════════
-    // DIVIDE: Split into smaller problem (stack without top)
-    // CONQUER: Recursively solve (reverse remaining stack)
-    //
-    // This goes deep until stack is empty
+    // topElement current frame ka removed top hai.
+    // Ab remaining stack chhoti problem ban gayi jise same logic se reverse kar sakte hain.
     reverseStack(stack);
-    // At this point, `stack` is now REVERSED!
 
-    // ═══════════════════════════════════════════════════════════
-    // STEP 3: Insert the element at the BOTTOM
-    // ═══════════════════════════════════════════════════════════
-    // COMBINE: Insert `top` at bottom of reversed stack
-    // WHY: To reverse, what was at top should go to bottom
-    //
-    // EXAMPLE: If reversed stack = [3, 1, 4] and top = 2
-    //          insertAtBottom will place 2 at bottom
-    //          Result: [2, 3, 1, 4] (2 now at bottom!)
-    insertAtBottom(stack, top);
+    // Recursive call ke baad `stack` ka remaining part reverse ho chuka hota hai.
+    // Ab jo element humne is frame me hataya tha usko bottom me rakhna hai.
+    insertAtBottom(stack, topElement);
   }
 
-  /**
-   * Insert an element at the BOTTOM of the stack
-   *
-   * @param stack - Stack to insert into
-   * @param element - Element to insert at bottom
-   *
-   * @complexity
-   * Time: O(n) - Worst case traverse entire stack
-   * Space: O(n) - Recursion depth in worst case
-   *
-   * Algorithm:
-   * 1. BASE CASE: Stack empty → push element
-   * 2. RECURSIVE CASE: Stack has elements
-   *    a) Pop top element (temporarily)
-   *    b) Recursively insert element at bottom
-   *    c) Push top back (restore)
-   */
-  function insertAtBottom(stack: Stack<number>, element: number): void {
-    // ═══════════════════════════════════════════════════════════
-    // BASE CASE: Stack is empty
-    // ═══════════════════════════════════════════════════════════
-    // WHY: If empty, this IS the bottom - just push!
-    // EXAMPLE: Insert 5 into [] → [5]
-    if (stack.isEmpty()) {
-      stack.push(element);
+  function insertAtBottom(stack: number[], valueToInsert: number): void {
+    if (stack.length === 0) {
+      // Empty stack ka matlab yahi bottom position hai.
+      // Isliye value ko yahin push karna hi "insert at bottom" hai.
+      stack.push(valueToInsert);
       return;
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // RECURSIVE CASE: Stack has elements
-    // ═══════════════════════════════════════════════════════════
-    // STRATEGY: Remove top, insert at bottom recursively, restore top
-    //
-    // EXAMPLE: Insert 2 at bottom of [3, 1, 4]
-    //   1. Pop 4 (top)
-    //   2. insertAtBottom([3, 1], 2) recursively
-    //   3. Push 4 back
-    //
-    // This continues until we reach empty stack (bottom)
+    const topElement = stack.pop()!;
 
-    // STEP 1: Remove top element (temporarily)
-    const top = stack.pop()!;
+    // Ye topElement temporarily side me rakha gaya hai
+    // taaki hum neeche wali position tak pahunch sakein.
+    insertAtBottom(stack, valueToInsert);
 
-    // STEP 2: Recursively insert element at bottom of remaining stack
-    insertAtBottom(stack, element);
-
-    // STEP 3: Restore the top element
-    // Now that element is at bottom, put top back on top
-    stack.push(top);
+    // value bottom me place ho chuki hai.
+    // Ab current frame ka removed top apni original relative position preserve karte hue wapas push hota hai.
+    stack.push(topElement);
   }
 
   /**
-   * ═══════════════════════════════════════════════════════════
-   * DRY RUN - COMPLETE VISUALIZATION
-   * ═══════════════════════════════════════════════════════════
+   * ==========================================================
+   * STACK MENTAL MODEL
+   * ==========================================================
    *
-   * ARRAY CONVENTION (VERY IMPORTANT!)
-   * ═══════════════════════════════════════════════════════════
-   * Array: [4, 1, 3, 2]
-   *         ↑        ↑
-   *      index 0  last index
-   *      BOTTOM     TOP
+   * Array ko stack ki tarah treat kar rahe hain:
    *
-   * Stack visualization:
-   *   2 ← TOP (last element, index 3)
-   *   3
-   *   1
-   *   4 ← BOTTOM (first element, index 0)
+   *   push(x) -> array ke end me x add hota hai
+   *   pop()   -> array ke end se top remove hota hai
    *
-   * Operations:
-   *   push(10) → adds to END → [4, 1, 3, 2, 10]
-   *   pop() → removes from END → removes 2 → [4, 1, 3]
-   *   peek() → returns last element → 2
+   * Example:
    *
-   * ═══════════════════════════════════════════════════════════
+   *   [4, 1, 3, 2]
+   *    ^        ^
+   * bottom     top
    *
-   * Example: Reverse [4, 1, 3, 2]
+   * top = 2, because last index hi stack ka top hai.
    *
-   * Initial Stack: [4, 1, 3, 2]
-   *                 ↑        ↑
-   *              bottom    top
+   * ==========================================================
+   * HIGH-LEVEL RECURSION TREE
+   * ==========================================================
    *
-   * Goal: [2, 3, 1, 4] (completely reversed)
-   *        ↑        ↑
-   *     bottom    top
+   * reverseStack([4,1,3,2])
+   * │
+   * ├── pop 2, recurse on [4,1,3]
+   * │   ├── pop 3, recurse on [4,1]
+   * │   │   ├── pop 1, recurse on [4]
+   * │   │   │   ├── pop 4, recurse on []
+   * │   │   │   │   └── base case
+   * │   │   │   └── insert 4 at bottom -> [4]
+   * │   │   └── insert 1 at bottom -> [1,4]
+   * │   └── insert 3 at bottom -> [3,1,4]
+   * └── insert 2 at bottom -> [2,3,1,4]
    *
-   * ───────────────────────────────────────────────────────────
-   * PHASE 1: RECURSIVE EXPANSION (Popping all elements)
-   * ───────────────────────────────────────────────────────────
+   * Key pattern:
    *
-   * ┌──────────────────────────────────────────────────────────┐
-   * │ CALL 1: reverseStack([4, 1, 3, 2])                      │
-   * ├──────────────────────────────────────────────────────────┤
-   * │ Not empty                                                │
-   * │ pop() removes 2 (top, last element)                      │
-   * │ Stack: [4, 1, 3]                                        │
-   * │ Held: 2                                                  │
-   * │ Recursive call: reverseStack([4, 1, 3])                │
-   * │                                                          │
-   * │   ┌────────────────────────────────────────────────────┐ │
-   * │   │ CALL 2: reverseStack([4, 1, 3])                   │ │
-   * │   ├────────────────────────────────────────────────────┤ │
-   * │   │ Not empty                                          │ │
-   * │   │ pop() removes 3                                    │ │
-   * │   │ Stack: [4, 1]                                     │ │
-   * │   │ Held: 3                                            │ │
-   * │   │ Recursive call: reverseStack([4, 1])             │ │
-   * │   │                                                    │ │
-   * │   │   ┌──────────────────────────────────────────────┐ │ │
-   * │   │   │ CALL 3: reverseStack([4, 1])                │ │ │
-   * │   │   ├──────────────────────────────────────────────┤ │ │
-   * │   │   │ Not empty                                    │ │ │
-   * │   │   │ pop() removes 1                              │ │ │
-   * │   │   │ Stack: [4]                                  │ │ │
-   * │   │   │ Held: 1                                      │ │ │
-   * │   │   │ Recursive call: reverseStack([4])          │ │ │
-   * │   │   │                                              │ │ │
-   * │   │   │   ┌────────────────────────────────────────┐ │ │ │
-   * │   │   │   │ CALL 4: reverseStack([4])             │ │ │ │
-   * │   │   │   ├────────────────────────────────────────┤ │ │ │
-   * │   │   │   │ Not empty                              │ │ │ │
-   * │   │   │   │ pop() removes 4                        │ │ │ │
-   * │   │   │   │ Stack: []                             │ │ │ │
-   * │   │   │   │ Held: 4                                │ │ │ │
-   * │   │   │   │ Recursive call: reverseStack([])     │ │ │ │
-   * │   │   │   │                                        │ │ │ │
-   * │   │   │   │   ┌──────────────────────────────────┐ │ │ │ │
-   * │   │   │   │   │ CALL 5: reverseStack([])        │ │ │ │ │
-   * │   │   │   │   ├──────────────────────────────────┤ │ │ │ │
-   * │   │   │   │   │ Empty stack!                     │ │ │ │ │
-   * │   │   │   │   │ BASE CASE: Return                │ │ │ │ │
-   * │   │   │   │   └──────────────────────────────────┘ │ │ │ │
+   *   expansion phase  -> sirf pop hota hai
+   *   unwinding phase  -> actual reverse visible hota hai
    *
-   * ───────────────────────────────────────────────────────────
-   * PHASE 2: UNWINDING (Inserting at bottom)
-   * ───────────────────────────────────────────────────────────
+   * ==========================================================
+   * DECISION TREE
+   * ==========================================================
    *
-   * │   │   │   │   │                                  │ │ │ │
-   * │   │   │   │   Back in CALL 4:                    │ │ │ │
-   * │   │   │   │   Stack after reverse: []            │ │ │ │
-   * │   │   │   │   insertAtBottom([], 4)             │ │ │ │
-   * │   │   │   │     Empty → push(4)                  │ │ │ │
-   * │   │   │   │     Stack: [4]                       │ │ │ │
-   * │   │   │   │            ↑                          │ │ │ │
-   * │   │   │   │        bottom/top                     │ │ │ │
-   * │   │   │   │   Return                              │ │ │ │
-   * │   │   │   └────────────────────────────────────────┘ │ │ │
-   * │   │   │                                              │ │ │
-   * │   │   │   Back in CALL 3:                            │ │ │
-   * │   │   │   Stack after reverse: [4]                   │ │ │
-   * │   │   │   insertAtBottom([4], 1)                    │ │ │
-   * │   │   │     Not empty                                │ │ │
-   * │   │   │     pop() → removes 4 → Stack: []           │ │ │
-   * │   │   │     insertAtBottom([], 1)                   │ │ │
-   * │   │   │       Empty → push(1)                        │ │ │
-   * │   │   │       Stack: [1]                             │ │ │
-   * │   │   │     push(4) back                             │ │ │
-   * │   │   │     Stack: [1, 4]                            │ │ │
-   * │   │   │            ↑   ↑                              │ │ │
-   * │   │   │        bottom top                             │ │ │
-   * │   │   │   Return                                      │ │ │
-   * │   │   └──────────────────────────────────────────────┘ │ │
-   * │   │                                                    │ │
-   * │   │   Back in CALL 2:                                  │ │
-   * │   │   Stack after reverse: [1, 4]                      │ │
-   * │   │   insertAtBottom([1, 4], 3)                       │ │
-   * │   │     Not empty                                      │ │
-   * │   │     pop() → removes 4 → Stack: [1]                │ │
-   * │   │     insertAtBottom([1], 3)                        │ │
-   * │   │       Not empty                                    │ │
-   * │   │       pop() → removes 1 → Stack: []               │ │
-   * │   │       insertAtBottom([], 3)                       │ │
-   * │   │         Empty → push(3)                            │ │
-   * │   │         Stack: [3]                                 │ │
-   * │   │       push(1) back                                 │ │
-   * │   │       Stack: [3, 1]                                │ │
-   * │   │     push(4) back                                   │ │
-   * │   │     Stack: [3, 1, 4]                               │ │
-   * │   │            ↑      ↑                                 │ │
-   * │   │        bottom   top                                 │ │
-   * │   │   Return                                            │ │
-   * │   └────────────────────────────────────────────────────┘ │
-   * │                                                          │
-   * │   Back in CALL 1:                                        │
-   * │   Stack after reverse: [3, 1, 4]                         │
-   * │   insertAtBottom([3, 1, 4], 2)                          │
-   * │     Not empty                                            │
-   * │     pop() → removes 4 → Stack: [3, 1]                   │
-   * │     insertAtBottom([3, 1], 2)                           │
-   * │       Not empty                                          │
-   * │       pop() → removes 1 → Stack: [3]                    │
-   * │       insertAtBottom([3], 2)                            │
-   * │         Not empty                                        │
-   * │         pop() → removes 3 → Stack: []                   │
-   * │         insertAtBottom([], 2)                           │
-   * │           Empty → push(2)                                │
-   * │           Stack: [2]                                     │
-   * │         push(3) back                                     │
-   * │         Stack: [2, 3]                                    │
-   * │       push(1) back                                       │
-   * │       Stack: [2, 3, 1]                                   │
-   * │     push(4) back                                         │
-   * │     Stack: [2, 3, 1, 4]                                  │
-   * │            ↑         ↑                                    │
-   * │        bottom      top                                    │
-   * │   Return                                                  │
-   * └──────────────────────────────────────────────────────────┘
+   * Har frame me decision ye nahi hai ki "pick or not pick".
+   * Yahan fixed work hota hai:
    *
-   * ───────────────────────────────────────────────────────────
-   * FINAL RESULT
-   * ───────────────────────────────────────────────────────────
+   *   1. top hatao
+   *   2. rest reverse karo
+   *   3. removed top ko bottom me rakho
    *
-   * Original: [4, 1, 3, 2]
-   * Reversed: [2, 3, 1, 4]
+   * Helper me bhi fixed work hota hai:
    *
-   * Visualization:
-   * Before:        After:
-   *   2 ← top       4 ← top (was at bottom!)
-   *   3             1
-   *   1             3
-   *   4 ← bottom    2 ← bottom (was at top!)
+   *   1. agar empty ho gaye -> value push
+   *   2. warna top hatao
+   *   3. neeche recurse karo
+   *   4. top wapas rakho
    *
-   * Completely reversed! ✓
-   * Bottom became top, top became bottom!
+   * ==========================================================
+   * NESTED BOX-HEAVY CALL FRAME DRY RUN
+   * ==========================================================
+   *
+   * Initial Call: reverseStack([4, 1, 3, 2])
+   *
+   * ┌────────────────────────────────────────────────────────────────────────┐
+   * │ CALL 1: reverseStack([4, 1, 3, 2])                                    │
+   * ├────────────────────────────────────────────────────────────────────────┤
+   * │ stack = [4, 1, 3, 2]                                                  │
+   * │ Base case? stack.length === 0 -> Nahi                                 │
+   * │ pop() -> topElement = 2                                                │
+   * │ remaining stack = [4, 1, 3]                                           │
+   * │ recurse: reverseStack([4, 1, 3])                                      │
+   * │                                                                        │
+   * │   ┌──────────────────────────────────────────────────────────────┐     │
+   * │   │ CALL 2: reverseStack([4, 1, 3])                              │     │
+   * │   ├──────────────────────────────────────────────────────────────┤     │
+   * │   │ stack = [4, 1, 3]                                            │     │
+   * │   │ pop() -> topElement = 3                                      │     │
+   * │   │ remaining stack = [4, 1]                                     │     │
+   * │   │ recurse: reverseStack([4, 1])                                │     │
+   * │   │                                                              │     │
+   * │   │   ┌────────────────────────────────────────────────────┐     │     │
+   * │   │   │ CALL 3: reverseStack([4, 1])                        │     │     │
+   * │   │   ├────────────────────────────────────────────────────┤     │     │
+   * │   │   │ stack = [4, 1]                                      │     │     │
+   * │   │   │ pop() -> topElement = 1                             │     │     │
+   * │   │   │ remaining stack = [4]                               │     │     │
+   * │   │   │ recurse: reverseStack([4])                          │     │     │
+   * │   │   │                                                    │     │     │
+   * │   │   │   ┌──────────────────────────────────────────┐     │     │     │
+   * │   │   │   │ CALL 4: reverseStack([4])                │     │     │     │
+   * │   │   │   ├──────────────────────────────────────────┤     │     │     │
+   * │   │   │   │ stack = [4]                              │     │     │     │
+   * │   │   │   │ pop() -> topElement = 4                  │     │     │     │
+   * │   │   │   │ remaining stack = []                     │     │     │     │
+   * │   │   │   │ recurse: reverseStack([])                │     │     │     │
+   * │   │   │   │                                          │     │     │     │
+   * │   │   │   │   ┌────────────────────────────────┐     │     │     │     │
+   * │   │   │   │   │ CALL 5: reverseStack([])       │     │     │     │     │
+   * │   │   │   │   ├────────────────────────────────┤     │     │     │     │
+   * │   │   │   │   │ stack = []                     │     │     │     │     │
+   * │   │   │   │   │ Base case -> return            │     │     │     │     │
+   * │   │   │   │   └────────────────────────────────┘     │     │     │     │
+   * │   │   │   │                                          │     │     │     │
+   * │   │   │   │ ab insertAtBottom([], 4) chalega         │     │     │     │
+   * │   │   │   │ result stack = [4]                       │     │     │     │
+   * │   │   │   │ return                                   │     │     │     │
+   * │   │   │   └──────────────────────────────────────────┘     │     │     │
+   * │   │   │                                                    │     │     │
+   * │   │   │ ab stack = [4] reverse ho chuka hai               │     │     │
+   * │   │   │ insertAtBottom([4], 1)                            │     │     │
+   * │   │   │ pop 4, recurse empty, push 1, push 4 back         │     │     │
+   * │   │   │ result stack = [1, 4]                             │     │     │
+   * │   │   │ return                                             │     │     │
+   * │   │   └────────────────────────────────────────────────────┘     │     │
+   * │   │                                                              │     │
+   * │   │ ab stack = [1, 4] reverse ho chuka hai                      │     │
+   * │   │ insertAtBottom([1, 4], 3)                                   │     │
+   * │   │ pop 4, pop 1, recurse empty, push 3, push 1, push 4 back    │     │
+   * │   │ result stack = [3, 1, 4]                                    │     │
+   * │   │ return                                                        │     │
+   * │   └──────────────────────────────────────────────────────────────┘     │
+   * │                                                                        │
+   * │ ab stack = [3, 1, 4] reverse ho chuka hai                              │
+   * │ insertAtBottom([3, 1, 4], 2)                                           │
+   * │ pop 4, pop 1, pop 3, recurse empty, push 2, restore 3,1,4             │
+   * │ final stack = [2, 3, 1, 4]                                             │
+   * │ return                                                                  │
+   * └────────────────────────────────────────────────────────────────────────┘
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. []          -> already reversed
+   * 2. [5]         -> same stack
+   * 3. [1, 2]      -> [2, 1]
+   * 4. duplicate values bhi same logic se handle hote hain
    */
 
-  // ==================== TEST CASES ====================
+  function expectStackAfterReverse(input: number[], expected: number[]): void {
+    const stack = [...input];
+    reverseStack(stack);
 
-  /**
-   * Helper: Print stack in visual format
-   */
-  function visualizeStack(stack: Stack<number>, label: string): void {
-    const arr = stack.toArray();
-    console.log(label);
-    if (arr.length === 0) {
-      console.log("  (empty)");
-    } else {
-      for (let i = arr.length - 1; i >= 0; i--) {
-        const marker =
-          i === arr.length - 1 ? " ← top" : i === 0 ? " ← bottom" : "";
-        console.log(`  ${arr[i]}${marker}`);
-      }
+    const actual = JSON.stringify(stack);
+    const wanted = JSON.stringify(expected);
+
+    if (actual !== wanted) {
+      throw new Error(
+        `For input ${JSON.stringify(input)}, expected ${wanted} but got ${actual}`
+      );
     }
   }
 
-  /**
-   * Run comprehensive test cases
-   */
   export function runTests(): void {
-    console.log("═══════════════════════════════════════════════════════════");
-    console.log("Testing Reverse Stack using Recursion");
-    console.log("═══════════════════════════════════════════════════════════\n");
+    const tests: Array<{ input: number[]; expected: number[] }> = [
+      { input: [4, 1, 3, 2], expected: [2, 3, 1, 4] },
+      { input: [10, 20, -5, 7, 15], expected: [15, 7, -5, 20, 10] },
+      { input: [5], expected: [5] },
+      { input: [], expected: [] },
+      { input: [1, 2], expected: [2, 1] },
+      { input: [7, 7, 7, 7], expected: [7, 7, 7, 7] },
+      { input: [-5, 10, -3, 2], expected: [2, -3, 10, -5] },
+      { input: [9, 0, 4, 0], expected: [0, 4, 0, 9] },
+    ];
 
-    // Test 1: Standard case
-    console.log("Test 1: Standard Stack");
-    console.log("  Input: [4, 1, 3, 2]");
-    const stack1 = Stack.fromArray([4, 1, 3, 2]);
-    visualizeStack(stack1, "  Before:");
-    reverseStack(stack1);
-    visualizeStack(stack1, "  After:");
-    const result1 = stack1.toArray();
-    const expected1 = [2, 3, 1, 4];
-    console.log(
-      "  Result:",
-      JSON.stringify(result1) === JSON.stringify(expected1) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
+    tests.forEach(({ input, expected }) => {
+      expectStackAfterReverse(input, expected);
+    });
 
-    // Test 2: Another example
-    console.log("Test 2: Five Elements");
-    console.log("  Input: [10, 20, -5, 7, 15]");
-    const stack2 = Stack.fromArray([10, 20, -5, 7, 15]);
-    reverseStack(stack2);
-    const result2 = stack2.toArray();
-    const expected2 = [15, 7, -5, 20, 10];
-    console.log(
-      "  Result:",
-      JSON.stringify(result2) === JSON.stringify(expected2) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 3: Single element
-    console.log("Test 3: Single Element");
-    console.log("  Input: [5]");
-    const stack3 = Stack.fromArray([5]);
-    reverseStack(stack3);
-    const result3 = stack3.toArray();
-    const expected3 = [5];
-    console.log(
-      "  Result:",
-      JSON.stringify(result3) === JSON.stringify(expected3) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 4: Empty stack
-    console.log("Test 4: Empty Stack");
-    console.log("  Input: []");
-    const stack4 = Stack.fromArray([]);
-    reverseStack(stack4);
-    const result4 = stack4.toArray();
-    const expected4: number[] = [];
-    console.log(
-      "  Result:",
-      JSON.stringify(result4) === JSON.stringify(expected4) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 5: Two elements
-    console.log("Test 5: Two Elements");
-    console.log("  Input: [1, 2]");
-    const stack5 = Stack.fromArray([1, 2]);
-    visualizeStack(stack5, "  Before:");
-    reverseStack(stack5);
-    visualizeStack(stack5, "  After:");
-    const result5 = stack5.toArray();
-    const expected5 = [2, 1];
-    console.log(
-      "  Result:",
-      JSON.stringify(result5) === JSON.stringify(expected5) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 6: All same elements
-    console.log("Test 6: All Same Elements");
-    console.log("  Input: [7, 7, 7, 7]");
-    const stack6 = Stack.fromArray([7, 7, 7, 7]);
-    reverseStack(stack6);
-    const result6 = stack6.toArray();
-    const expected6 = [7, 7, 7, 7];
-    console.log(
-      "  Result:",
-      JSON.stringify(result6) === JSON.stringify(expected6) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 7: Negative numbers
-    console.log("Test 7: Negative Numbers");
-    console.log("  Input: [-5, 10, -3, 2]");
-    const stack7 = Stack.fromArray([-5, 10, -3, 2]);
-    reverseStack(stack7);
-    const result7 = stack7.toArray();
-    const expected7 = [2, -3, 10, -5];
-    console.log(
-      "  Result:",
-      JSON.stringify(result7) === JSON.stringify(expected7) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Complexity Note
-    console.log("═══════════════════════════════════════════════════════════");
-    console.log("COMPLEXITY ANALYSIS:");
-    console.log("═══════════════════════════════════════════════════════════");
-    console.log("Time Complexity: O(n²)");
-    console.log("  - Reverse n elements");
-    console.log("  - Each insertAtBottom can take O(n)");
-    console.log("  - Total: O(n) × O(n) = O(n²)");
-    console.log("");
-    console.log("Space Complexity: O(n)");
-    console.log("  - Recursion depth: O(n)");
-    console.log("  - Each call holds one element");
-    console.log("");
-    console.log("Pattern: COMBINER (work during unwinding phase)");
-    console.log("Key: Recursion call stack holds elements temporarily!");
-    console.log("═══════════════════════════════════════════════════════════\n");
+    console.log(`Passed ${tests.length}/${tests.length} tests`);
   }
 }
 
-// Run tests
-ReverseStack.runTests();
+ReverseStackRecursion.runTests();

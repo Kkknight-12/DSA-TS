@@ -166,7 +166,7 @@ Going forward, every file updated from this tracker should include this `Algorit
 - [x] src/questions/recursion/medium/pow-x-n/brute-force.ts
 - [x] src/questions/recursion/medium/pow-x-n/optimal-iterative.ts
 - [x] src/questions/recursion/medium/pow-x-n/optimal-recursive.ts
-- [ ] src/questions/recursion/medium/reverse-stack/solution.ts
+- [x] src/questions/recursion/medium/reverse-stack/solution.ts
 - [ ] src/questions/recursion/medium/sort-stack/solution.ts
 - [ ] src/questions/recursion/medium/string-to-integer-atoi/recursive.ts
 - [x] src/questions/recursion/medium/subsequences/check-subsequence-sum-k/solution.ts
