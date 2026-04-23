@@ -158,7 +158,7 @@ Going forward, every file updated from this tracker should include this `Algorit
 - [x] src/questions/recursion/medium/combination-sum/solution.ts
 - [x] src/questions/recursion/medium/combination-sum-ii/solution.ts
 - [x] src/questions/recursion/medium/combination-sum-iii/solution.ts
-- [ ] src/questions/recursion/medium/count-good-numbers/solution.ts
+- [x] src/questions/recursion/medium/count-good-numbers/solution.ts
 - [x] src/questions/recursion/medium/generate-binary-strings/solution.ts
 - [x] src/questions/recursion/medium/generate-parentheses/solution.ts
 - [x] src/questions/recursion/medium/letter-combinations-phone-number/solution.ts

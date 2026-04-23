@@ -62,7 +62,35 @@ namespace CombinationSumIIIBacktracking {
       return n === 0 ? [[]] : [];
     }
 
+    // Minimum possible sum tab milega jab hum smallest k unique numbers choose karein:
+    //   1 + 2 + 3 + ... + k
+    //
+    // Is arithmetic series ka closed form hota hai:
+    //   k * (first + last) / 2
+    // = k * (1 + k) / 2
+    //
+    // Example:
+    //   k = 4
+    //   minimum sum = 1 + 2 + 3 + 4 = 10
     const minimumPossible = (k * (k + 1)) / 2;
+
+    // Maximum possible sum tab milega jab hum largest k unique numbers choose karein:
+    //   9 + 8 + 7 + ... + (10 - k)
+    //
+    // Yahan:
+    //   first term = 10 - k
+    //   last term = 9
+    //   total terms = k
+    //
+    // Arithmetic series formula:
+    //   k * (first + last) / 2
+    // = k * ((10 - k) + 9) / 2
+    // = k * (19 - k) / 2
+    //
+    // Example:
+    //   k = 4
+    //   largest 4 numbers = 6 + 7 + 8 + 9 = 30
+    //   formula = 4 * (19 - 4) / 2 = 4 * 15 / 2 = 30
     const maximumPossible = (k * (19 - k)) / 2;
 
     if (n < minimumPossible || n > maximumPossible) {
