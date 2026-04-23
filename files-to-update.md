@@ -155,17 +155,17 @@ Going forward, every file updated from this tracker should include this `Algorit
 
 ### Recursion - Medium (20 files)
 
-- [ ] src/questions/recursion/medium/combination-sum/solution.ts
-- [ ] src/questions/recursion/medium/combination-sum-ii/solution.ts
-- [ ] src/questions/recursion/medium/combination-sum-iii/solution.ts
+- [x] src/questions/recursion/medium/combination-sum/solution.ts
+- [x] src/questions/recursion/medium/combination-sum-ii/solution.ts
+- [x] src/questions/recursion/medium/combination-sum-iii/solution.ts
 - [ ] src/questions/recursion/medium/count-good-numbers/solution.ts
 - [x] src/questions/recursion/medium/generate-binary-strings/solution.ts
 - [x] src/questions/recursion/medium/generate-parentheses/solution.ts
 - [x] src/questions/recursion/medium/letter-combinations-phone-number/solution.ts
 - [x] src/questions/recursion/medium/palindrome-partitioning/solution.ts
-- [ ] src/questions/recursion/medium/pow-x-n/brute-force.ts
-- [ ] src/questions/recursion/medium/pow-x-n/optimal-iterative.ts
-- [ ] src/questions/recursion/medium/pow-x-n/optimal-recursive.ts
+- [x] src/questions/recursion/medium/pow-x-n/brute-force.ts
+- [x] src/questions/recursion/medium/pow-x-n/optimal-iterative.ts
+- [x] src/questions/recursion/medium/pow-x-n/optimal-recursive.ts
 - [ ] src/questions/recursion/medium/reverse-stack/solution.ts
 - [ ] src/questions/recursion/medium/sort-stack/solution.ts
 - [ ] src/questions/recursion/medium/string-to-integer-atoi/recursive.ts

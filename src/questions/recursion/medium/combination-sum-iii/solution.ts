@@ -1,542 +1,354 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════════
- * LEETCODE - COMBINATION SUM III (Medium)
- * ═══════════════════════════════════════════════════════════════════════════
+ * COMBINATION SUM III - BACKTRACKING WITH EXACT COUNT AND EXACT SUM
+ * =================================================================
  *
- * Problem: Find all valid combinations of k numbers that sum up to n where:
- *          - Only numbers 1 through 9 are used
- *          - Each number is used at most once
+ * PROBLEM:
+ * Numbers `1` to `9` me se combinations choose karni hain.
+ *
+ * Conditions:
+ * - exactly `k` numbers hone chahiye
+ * - unka sum exactly `n` hona chahiye
+ * - har number sirf ek baar use ho sakta hai
  *
  * Example:
- *   Input: k = 3, n = 9
- *   Output: [[1,2,6],[1,3,5],[2,3,4]]
+ *   k = 3, n = 9
+ *   answer = [[1,2,6], [1,3,5], [2,3,4]]
  *
- * Approach: Backtracking with Two-Condition Checking
- * Time Complexity: O(C(9,k)) where C(9,k) = 9!/(k!×(9-k)!)
- * Space Complexity: O(k) - recursion depth
+ * INTUITION (Soch):
+ * -----------------
+ * Is problem me do constraints ek saath chal rahi hain:
  *
- * Key Points:
- * - Fixed range: 1 to 9 only
- * - Each number used at most once
- * - Must have exactly k numbers
- * - Must sum to exactly n
- * - Prune when sum > n or size > k
+ *   1. aur kitne numbers chahiye?
+ *   2. aur kitna sum banana baaki hai?
  *
- * ═══════════════════════════════════════════════════════════════════════════
+ * Isliye `remainingCount` aur `remainingSum` track karna natural lagta hai.
+ *
+ * If we choose number `i`:
+ *
+ *   remainingCount decreases by 1
+ *   remainingSum decreases by i
+ *
+ * Aur next recursion `i + 1` se start hoti hai because same number dobara use nahi kar sakte.
+ *
+ * Algorithm:
+ * ----------
+ * 1. Agar `k` invalid hai, empty answer return karo.
+ * 2. Minimum possible sum aur maximum possible sum check karo.
+ * 3. `result` aur `current` initialize karo.
+ * 4. Recursion `start = 1`, `remainingCount = k`, `remainingSum = n` se start karo.
+ * 5. Base case: `remainingCount === 0` and `remainingSum === 0`, current ka copy result me push karo.
+ * 6. Agar `remainingCount === 0` but sum baaki hai, branch invalid hai.
+ * 7. Agar `remainingSum <= 0`, branch invalid hai.
+ * 8. Agar `start > 9`, no more numbers left, return karo.
+ * 9. Loop `i = start` se `9` tak chalao.
+ * 10. Agar `i > remainingSum`, break karo because larger values aur bhi useless honge.
+ * 11. Pick `i`, recurse with `i + 1`, `remainingCount - 1`, `remainingSum - i`.
+ * 12. Return ke baad `pop()` karke choice undo karo.
+ *
+ * TIME: O(C(9, k))
+ * SPACE: O(k) excluding output
  */
 
-namespace CombinationSumIII {
-  /**
-   * Main function to find all valid k-number combinations that sum to n
-   * @param k - Number of elements in combination (exactly)
-   * @param n - Target sum
-   * @returns All valid combinations
-   */
-  function combinationSum3(k: number, n: number): number[][] {
-    // Edge Case 1: Sum too large
-    // WHY: Maximum possible sum with 9 numbers = 1+2+...+9 = 45
-    // EXAMPLE: If n = 100, impossible! Max is 45
-    if (n > 45) {
+namespace CombinationSumIIIBacktracking {
+  export function combinationSum3(k: number, n: number): number[][] {
+    if (k < 0 || k > 9) {
+      // Sirf 1..9 numbers available hain.
+      // 9 se zyada slots bhare hi nahi ja sakte.
       return [];
     }
 
-    // Edge Case 2: Sum too small for k numbers
-    // WHY: Minimum sum with k numbers = 1+2+...+k = k*(k+1)/2
-    // EXAMPLE: k=4, minimum sum = 1+2+3+4 = 10
-    //          If n=5, impossible! We need at least 10
-    const minSum = (k * (k + 1)) / 2;
-    if (n < minSum) {
+    if (k === 0) {
+      // Zero numbers tabhi valid hain jab required sum bhi zero ho.
+      return n === 0 ? [[]] : [];
+    }
+
+    const minimumPossible = (k * (k + 1)) / 2;
+    const maximumPossible = (k * (19 - k)) / 2;
+
+    if (n < minimumPossible || n > maximumPossible) {
+      // Even best possible smallest/largest k-number sums se target cover nahi hota.
+      // Isliye recursion start karna bhi waste hai.
       return [];
     }
 
-    // Edge Case 3: k is larger than 9
-    // WHY: Only 9 numbers available (1-9)
-    // EXAMPLE: k=10, impossible! Can't pick 10 numbers
-    if (k > 9) {
-      return [];
-    }
-
-    // STEP 1: Initialize result array
     const result: number[][] = [];
-
-    // STEP 2: Initialize current combination array
     const current: number[] = [];
 
-    // STEP 3: Start backtracking from 1 with sum = 0
-    // WHY: Numbers start from 1 (not 0), initial sum is 0
-    backtrack(1, 0, current, k, n, result);
+    explore(1, k, n, current, result);
 
-    // STEP 4: Return all valid combinations
     return result;
   }
 
-  /**
-   * Recursive backtracking function
-   *
-   * @param start - Starting number to consider (1-9)
-   * @param currentSum - Current sum of numbers in combination
-   * @param current - Current combination being built
-   * @param k - Target size of combination
-   * @param n - Target sum
-   * @param result - All valid combinations collected
-   *
-   * Pattern: Try each number 1-9, check both conditions (size + sum)
-   */
-  function backtrack(
+  function explore(
     start: number,
-    currentSum: number,
+    remainingCount: number,
+    remainingSum: number,
     current: number[],
-    k: number,
-    n: number,
     result: number[][]
   ): void {
-    // BASE CASE 1: Success - Both conditions satisfied! ✓
-    // WHY: We need EXACTLY k numbers AND sum must equal n
-    // EXAMPLE: k=3, n=9, current=[1,2,6]
-    //          current.length = 3 = k ✓
-    //          currentSum = 9 = n ✓
-    //          Valid combination!
-    if (current.length === k && currentSum === n) {
-      result.push([...current]); // Copy array to avoid reference issues
-      return; // Stop this path, we found a valid combination
-    }
-
-    // PRUNING 1: Too many numbers
-    // WHY: If we already have more than k numbers, invalid!
-    // EXAMPLE: k=3, but current = [1,2,3,4] (4 numbers)
-    //          No point continuing
-    if (current.length > k) {
+    if (remainingCount === 0 && remainingSum === 0) {
+      // Exact number of slots fill ho gaye aur exact sum bhi ban gaya.
+      // Current ek valid combination hai.
+      result.push([...current]);
       return;
     }
 
-    // PRUNING 2: Sum exceeded
-    // WHY: If sum already > n, adding more will only increase it
-    // EXAMPLE: n=9, currentSum=10
-    //          Even if we add nothing, sum is too large
-    //          Can't reduce sum by adding positive numbers!
-    if (currentSum > n) {
+    if (remainingCount === 0) {
+      // Numbers ki required count complete ho gayi, but sum exact nahi bana.
+      // Ab aur numbers add nahi kar sakte, so branch invalid hai.
       return;
     }
 
-    // PRUNING 3: Reached k numbers but wrong sum
-    // WHY: We have exactly k numbers but sum ≠ n, invalid!
-    // EXAMPLE: k=3, n=9, current=[1,2,3]
-    //          size=3✓ but sum=6≠9
-    //          No point continuing (we can't change current combo)
-    if (current.length === k && currentSum !== n) {
+    if (remainingSum <= 0) {
+      // Sum already exact zero nahi tha, ya negative ho gaya.
+      // Positive numbers add karke is branch ko valid nahi bana sakte.
       return;
     }
 
-    // RECURSIVE CASE: Try each number from start to 9
-    // WHY: We explore all possibilities
-    // EXAMPLE: If start=2, try 2,3,4,5,6,7,8,9
-    for (let i = start; i <= 9; i++) {
-      // PICK: Add current number i to combination
-      // WHY: We're exploring the path with this number
-      // EXAMPLE: If current=[1,2], add 6 → current=[1,2,6]
-      current.push(i);
+    if (start > 9) {
+      // 1..9 range finish ho gayi.
+      return;
+    }
 
-      // Update sum
-      // EXAMPLE: currentSum=3, i=6 → newSum=9
-      const newSum = currentSum + i;
+    if (10 - start < remainingCount) {
+      // `start..9` range me jitne numbers bache hain, woh required slots se kam hain.
+      // Example: start=8, remainingCount=3 -> only [8,9] bache, impossible.
+      return;
+    }
 
-      // RECURSE: Try next numbers (i+1 to 9)
-      // WHY: Each number used at most once, so start from i+1
-      // IMPORTANT: We pass i+1 (not i) to avoid reusing same number
-      // EXAMPLE: After picking 6, next try starts from 7
-      backtrack(i + 1, newSum, current, k, n, result);
+    for (let number = start; number <= 9; number++) {
+      if (number > remainingSum) {
+        // Numbers increasing order me try ho rahe hain.
+        // Current number hi remainingSum se bada hai, so next numbers bhi bade honge.
+        break;
+      }
 
-      // BACKTRACK: Remove the number we just added
-      // WHY: To try other numbers at this position
-      // EXAMPLE: After exploring [1,2,6] path, remove 6
-      //          current becomes [1,2] again
-      //          Next iteration: try 7 → [1,2,7]
+      current.push(number);
+
+      // `number + 1` because same value dobara use nahi karna.
+      // One slot fill ho gaya, aur required sum me se current number consume ho gaya.
+      explore(
+        number + 1,
+        remainingCount - 1,
+        remainingSum - number,
+        current,
+        result
+      );
+
+      // Current frame ki choice undo karte hain taaki next number try ho sake.
       current.pop();
     }
-
-    // After loop, we've tried all numbers from start to 9
-    // Return to previous recursion level
   }
 
   /**
-   * ═══════════════════════════════════════════════════════════════════════
-   * DRY RUN - COMPLETE VISUALIZATION
-   * ═══════════════════════════════════════════════════════════════════════
+   * ==========================================================
+   * DRY RUN - TWO REMAINING VALUES MODEL
+   * ==========================================================
    *
-   * Example Input: k = 3, n = 9
+   * Example:
+   * k = 3, n = 7
    *
-   * ═══════════════════════════════════════════════════════════════════════
-   * INITIAL SETUP
-   * ═══════════════════════════════════════════════════════════════════════
+   * Expected:
+   * [[1,2,4]]
    *
-   * Input: k = 3, n = 9
+   * ==========================================================
+   * HIGH-LEVEL RECURSION TREE
+   * ==========================================================
    *
-   * Edge cases check:
-   * - n > 45? 9 > 45? NO ✓
-   * - minSum = 3*(3+1)/2 = 6
-   * - n < minSum? 9 < 6? NO ✓
-   * - k > 9? 3 > 9? NO ✓
+   * root  start=1, remainingCount=3, remainingSum=7, current=[]
+   * │
+   * ├── choose 1 -> start=2, remainingCount=2, remainingSum=6, current=[1]
+   * │   │
+   * │   ├── choose 2 -> start=3, remainingCount=1, remainingSum=4, current=[1,2]
+   * │   │   ├── choose 3 -> remainingCount=0, remainingSum=1 -> invalid
+   * │   │   ├── choose 4 -> remainingCount=0, remainingSum=0 -> push [1,2,4]
+   * │   │   └── choose 5 -> number > remainingSum 4, break
+   * │   │
+   * │   ├── choose 3 -> start=4, remainingCount=1, remainingSum=3, current=[1,3]
+   * │   │   └── choose 4 -> number > remainingSum 3, break
+   * │   │
+   * │   └── choose 4 -> start=5, remainingCount=1, remainingSum=2, current=[1,4]
+   * │       └── choose 5 -> number > remainingSum 2, break
+   * │
+   * ├── choose 2 -> start=3, remainingCount=2, remainingSum=5, current=[2]
+   * │   ├── choose 3 -> start=4, remainingCount=1, remainingSum=2
+   * │   │   └── choose 4 -> number > remainingSum 2, break
+   * │   └── choose 4 -> start=5, remainingCount=1, remainingSum=1
+   * │       └── choose 5 -> number > remainingSum 1, break
+   * │
+   * └── choose 3 and above
+   *     no valid 3-number path can make 7
    *
-   * Variables:
+   * Output:
+   * [[1,2,4]]
+   *
+   * ==========================================================
+   * NESTED BOX-HEAVY CALL FRAME
+   * ==========================================================
+   *
+   * Initial Call: combinationSum3(3, 7)
    * - result = []
    * - current = []
-   * - start = 1
-   * - currentSum = 0
+   * - Start: explore(1, 3, 7, current, result)
    *
-   * Start: backtrack(1, 0, [], 3, 9, result)
+   * ┌──────────────────────────────────────────────────────────────────────┐
+   * │ CALL 1: explore(start=1, remainingCount=3, remainingSum=7, current=[]) │
+   * ├──────────────────────────────────────────────────────────────────────┤
+   * │ Need 3 numbers more, need total 7 more                                 │
+   * │ Base case? remainingCount===0 && remainingSum===0 -> Nahi              │
+   * │ Invalid? No                                                             │
+   * │                                                                          │
+   * │ Try number 1: pick 1                                                     │
+   * │ current = [1]                                                            │
+   * │                                                                          │
+   * │   ┌────────────────────────────────────────────────────────────┐       │
+   * │   │ CALL 2: explore(start=2, remainingCount=2,                  │       │
+   * │   │                 remainingSum=6, current=[1])                │       │
+   * │   ├────────────────────────────────────────────────────────────┤       │
+   * │   │ Need 2 numbers more, need total 6 more                     │       │
+   * │   │                                                            │       │
+   * │   │ Try number 2: pick 2                                       │       │
+   * │   │ current = [1,2]                                            │       │
+   * │   │                                                            │       │
+   * │   │   ┌──────────────────────────────────────────────────┐   │       │
+   * │   │   │ CALL 3: explore(start=3, remainingCount=1,        │   │       │
+   * │   │   │                 remainingSum=4, current=[1,2])    │   │       │
+   * │   │   ├──────────────────────────────────────────────────┤   │       │
+   * │   │   │ Need 1 number more, need total 4 more             │   │       │
+   * │   │   │                                                  │   │       │
+   * │   │   │ Try number 3: pick 3                              │   │       │
+   * │   │   │ current = [1,2,3]                                 │   │       │
+   * │   │   │                                                  │   │       │
+   * │   │   │   ┌────────────────────────────────────────┐   │   │       │
+   * │   │   │   │ CALL 4: explore(start=4, remainingCount=0, │   │       │
+   * │   │   │   │                 remainingSum=1,            │   │       │
+   * │   │   │   │                 current=[1,2,3])           │   │       │
+   * │   │   │   ├────────────────────────────────────────┤   │   │       │
+   * │   │   │   │ remainingCount === 0 but remainingSum=1     │   │       │
+   * │   │   │   │ Invalid branch, return                      │   │       │
+   * │   │   │   └────────────────────────────────────────┘   │   │       │
+   * │   │   │                                                  │   │       │
+   * │   │   │ Backtrack: pop 3 -> current=[1,2]                │   │       │
+   * │   │   │                                                  │   │       │
+   * │   │   │ Try number 4: pick 4                              │   │       │
+   * │   │   │ current = [1,2,4]                                 │   │       │
+   * │   │   │                                                  │   │       │
+   * │   │   │   ┌────────────────────────────────────────┐   │   │       │
+   * │   │   │   │ CALL 5: explore(start=5, remainingCount=0, │   │       │
+   * │   │   │   │                 remainingSum=0,            │   │       │
+   * │   │   │   │                 current=[1,2,4])           │   │       │
+   * │   │   │   ├────────────────────────────────────────┤   │   │       │
+   * │   │   │   │ remainingCount === 0 and remainingSum === 0 │   │       │
+   * │   │   │   │ result.push([1,2,4])                        │   │       │
+   * │   │   │   │ result = [[1,2,4]]                          │   │       │
+   * │   │   │   │ Return                                      │   │       │
+   * │   │   │   └────────────────────────────────────────┘   │   │       │
+   * │   │   │                                                  │   │       │
+   * │   │   │ Backtrack: pop 4 -> current=[1,2]                │   │       │
+   * │   │   │                                                  │   │       │
+   * │   │   │ Try number 5: 5 > remainingSum 4 -> break        │   │       │
+   * │   │   └──────────────────────────────────────────────────┘   │       │
+   * │   │                                                            │       │
+   * │   │ Backtrack: pop 2 -> current=[1]                            │       │
+   * │   │                                                            │       │
+   * │   │ Try number 3: pick 3 -> current=[1,3], remainingSum=3      │       │
+   * │   │ Next start=4, but 4 > remainingSum 3, so no valid branch   │       │
+   * │   │                                                            │       │
+   * │   │ Try number 4: pick 4 -> current=[1,4], remainingSum=2      │       │
+   * │   │ Next start=5, but 5 > remainingSum 2, so no valid branch   │       │
+   * │   └────────────────────────────────────────────────────────────┘       │
+   * │                                                                          │
+   * │ Backtrack: pop 1 -> current=[]                                           │
+   * │                                                                          │
+   * │ Try number 2: current=[2], need 2 numbers more, need sum 5               │
+   * │ No valid path                                                              │
+   * │                                                                          │
+   * │ Try number 3 and above                                                    │
+   * │ No valid path                                                              │
+   * │ Return                                                                    │
+   * └──────────────────────────────────────────────────────────────────────┘
    *
-   * ═══════════════════════════════════════════════════════════════════════
-   * CALL 1: backtrack(start=1, sum=0, current=[])
-   * ═══════════════════════════════════════════════════════════════════════
+   * Final result:
+   * [[1,2,4]]
    *
-   * Base cases:
-   * - length === k && sum === n? 0 === 3 && 0 === 9? NO
-   * - length > k? 0 > 3? NO
-   * - sum > n? 0 > 9? NO
-   * - length === k && sum ≠ n? 0 === 3? NO
-   *
-   * Loop from i=1 to 9
-   *
-   * ┌────────────────────────────────────────────────────────────────────
-   * │ Iteration i=1: Pick number 1
-   * ├────────────────────────────────────────────────────────────────────
-   * │ current.push(1) → current = [1]
-   * │ newSum = 0 + 1 = 1
-   * │ Recurse: backtrack(2, 1, [1], 3, 9, result)
-   * │   ↓
-   * │   ┌────────────────────────────────────────────────────────────────
-   * │   │ CALL 2: backtrack(start=2, sum=1, current=[1])
-   * │   ├────────────────────────────────────────────────────────────────
-   * │   │ Base cases: All NO
-   * │   │
-   * │   │ Loop from i=2 to 9
-   * │   │
-   * │   │ ┌──────────────────────────────────────────────────────────
-   * │   │ │ Iteration i=2: Pick number 2
-   * │   │ ├──────────────────────────────────────────────────────────
-   * │   │ │ current.push(2) → current = [1, 2]
-   * │   │ │ newSum = 1 + 2 = 3
-   * │   │ │ Recurse: backtrack(3, 3, [1,2], 3, 9, result)
-   * │   │ │   ↓
-   * │   │ │   ┌──────────────────────────────────────────────────
-   * │   │ │   │ CALL 3: backtrack(start=3, sum=3, current=[1,2])
-   * │   │ │   ├──────────────────────────────────────────────────
-   * │   │ │   │ Base cases: All NO
-   * │   │ │   │
-   * │   │ │   │ Loop from i=3 to 9
-   * │   │ │   │
-   * │   │ │   │ ┌── i=3: Pick 3 ────────────────────────┐
-   * │   │ │   │ │ current = [1,2,3], sum = 6           │
-   * │   │ │   │ │ Recurse: backtrack(4, 6, [1,2,3])   │
-   * │   │ │   │ │   Base case check:                    │
-   * │   │ │   │ │   length===k && sum===n? 3===3 && 6===9? NO
-   * │   │ │   │ │   length===k && sum≠n? 3===3 && 6≠9? YES!
-   * │   │ │   │ │   → PRUNE! Return ❌                  │
-   * │   │ │   │ │ Back to CALL 3                        │
-   * │   │ │   │ │ current.pop() → [1, 2]               │
-   * │   │ │   │ └───────────────────────────────────────┘
-   * │   │ │   │
-   * │   │ │   │ ┌── i=4: Pick 4 ────────────────────────┐
-   * │   │ │   │ │ current = [1,2,4], sum = 7           │
-   * │   │ │   │ │ Recurse: backtrack(5, 7, [1,2,4])   │
-   * │   │ │   │ │   length===k && sum≠n? 3===3 && 7≠9? YES!
-   * │   │ │   │ │   → PRUNE! Return ❌                  │
-   * │   │ │   │ │ current.pop() → [1, 2]               │
-   * │   │ │   │ └───────────────────────────────────────┘
-   * │   │ │   │
-   * │   │ │   │ ┌── i=5: Pick 5 ────────────────────────┐
-   * │   │ │   │ │ current = [1,2,5], sum = 8           │
-   * │   │ │   │ │ Recurse: backtrack(6, 8, [1,2,5])   │
-   * │   │ │   │ │   length===k && sum≠n? 3===3 && 8≠9? YES!
-   * │   │ │   │ │   → PRUNE! Return ❌                  │
-   * │   │ │   │ │ current.pop() → [1, 2]               │
-   * │   │ │   │ └───────────────────────────────────────┘
-   * │   │ │   │
-   * │   │ │   │ ┌── i=6: Pick 6 ────────────────────────┐
-   * │   │ │   │ │ current = [1,2,6], sum = 9           │
-   * │   │ │   │ │ Recurse: backtrack(7, 9, [1,2,6])   │
-   * │   │ │   │ │   Base case check:                    │
-   * │   │ │   │ │   length===k && sum===n?             │
-   * │   │ │   │ │   3===3 && 9===9? YES! ✓             │
-   * │   │ │   │ │   result.push([1,2,6])               │
-   * │   │ │   │ │   result = [[1,2,6]]  ✓              │
-   * │   │ │   │ │   Return                              │
-   * │   │ │   │ │ Back to CALL 3                        │
-   * │   │ │   │ │ current.pop() → [1, 2]               │
-   * │   │ │   │ └───────────────────────────────────────┘
-   * │   │ │   │
-   * │   │ │   │ ┌── i=7: Pick 7 ────────────────────────┐
-   * │   │ │   │ │ current = [1,2,7], sum = 10          │
-   * │   │ │   │ │ Recurse: backtrack(8, 10, [1,2,7])  │
-   * │   │ │   │ │   sum > n? 10 > 9? YES!              │
-   * │   │ │   │ │   → PRUNE! Return ❌                  │
-   * │   │ │   │ │ current.pop() → [1, 2]               │
-   * │   │ │   │ └───────────────────────────────────────┘
-   * │   │ │   │
-   * │   │ │   │ i=8, i=9: sum will be even larger
-   * │   │ │   │           → All pruned ❌
-   * │   │ │   │
-   * │   │ │   │ Loop done, return to CALL 2
-   * │   │ │   └──────────────────────────────────────────────────
-   * │   │ │
-   * │   │ │ Back to CALL 2
-   * │   │ │ current.pop() → current = [1]
-   * │   │ └──────────────────────────────────────────────────────────
-   * │   │
-   * │   │ ┌──────────────────────────────────────────────────────────
-   * │   │ │ Iteration i=3: Pick number 3
-   * │   │ ├──────────────────────────────────────────────────────────
-   * │   │ │ current.push(3) → current = [1, 3]
-   * │   │ │ newSum = 1 + 3 = 4
-   * │   │ │ Recurse: backtrack(4, 4, [1,3], 3, 9, result)
-   * │   │ │   ↓
-   * │   │ │   Loop from i=4 to 9
-   * │   │ │
-   * │   │ │   i=4: [1,3,4] sum=8, length=3
-   * │   │ │         length===k && sum≠n? YES → PRUNE ❌
-   * │   │ │
-   * │   │ │   i=5: [1,3,5] sum=9, length=3
-   * │   │ │         length===k && sum===n? YES! ✓
-   * │   │ │         result.push([1,3,5])
-   * │   │ │         result = [[1,2,6], [1,3,5]]  ✓
-   * │   │ │
-   * │   │ │   i=6: [1,3,6] sum=10 > 9 → PRUNE ❌
-   * │   │ │   i=7,8,9: All sums > 9 → PRUNE ❌
-   * │   │ │
-   * │   │ │ current.pop() → [1]
-   * │   │ └──────────────────────────────────────────────────────────
-   * │   │
-   * │   │ i=4,5,6,7,8,9: Similar process
-   * │   │               But sums will be larger, won't find k=3
-   * │   │
-   * │   │ Loop done, return to CALL 1
-   * │   └────────────────────────────────────────────────────────────────
-   * │
-   * │ Back to CALL 1
-   * │ current.pop() → current = []
-   * └────────────────────────────────────────────────────────────────────
-   *
-   * ┌────────────────────────────────────────────────────────────────────
-   * │ Iteration i=2: Pick number 2
-   * ├────────────────────────────────────────────────────────────────────
-   * │ current.push(2) → current = [2]
-   * │ newSum = 0 + 2 = 2
-   * │ Recurse: backtrack(3, 2, [2], 3, 9, result)
-   * │   ↓
-   * │   CALL: backtrack(start=3, sum=2, current=[2])
-   * │   Loop from i=3 to 9
-   * │
-   * │   i=3: current=[2,3], sum=5
-   * │         Recurse from 4 to 9
-   * │
-   * │         i=4: [2,3,4] sum=9, length=3 ✓
-   * │              result.push([2,3,4])
-   * │              result = [[1,2,6],[1,3,5],[2,3,4]]  ✓
-   * │
-   * │         i=5: [2,3,5] sum=10 > 9 → PRUNE ❌
-   * │         i=6,7,8,9: All > 9 → PRUNE ❌
-   * │
-   * │   i=4,5,6...: Sums too large, no valid k=3 found
-   * │
-   * │ current.pop() → []
-   * └────────────────────────────────────────────────────────────────────
-   *
-   * ┌────────────────────────────────────────────────────────────────────
-   * │ Iteration i=3 onwards
-   * ├────────────────────────────────────────────────────────────────────
-   * │ i=3: [3], need 2 more with sum=6
-   * │      Min sum from [4,5] = 9, already > 6
-   * │      No valid combinations
-   * │
-   * │ i=4 onwards: Even larger, no valid k=3 with sum=9
-   * └────────────────────────────────────────────────────────────────────
-   *
-   * ═══════════════════════════════════════════════════════════════════════
-   * FINAL RESULT
-   * ═══════════════════════════════════════════════════════════════════════
-   *
-   * result = [[1,2,6], [1,3,5], [2,3,4]]
-   *
-   * Total: 3 valid combinations
-   *
-   * Verification:
-   * ✓ [1,2,6]: 1+2+6 = 9, length = 3
-   * ✓ [1,3,5]: 1+3+5 = 9, length = 3
-   * ✓ [2,3,4]: 2+3+4 = 9, length = 3
-   *
-   * Key Observations:
-   * ✓ Two conditions checked: size = k AND sum = n
-   * ✓ Pruning saved many calls (sum > n stopped early)
-   * ✓ No duplicates (each number used once, start from i+1)
-   * ✓ Ordered combinations ([1,2,6] not [6,2,1])
-   *
-   * ═══════════════════════════════════════════════════════════════════════
-   * PRUNING EFFECTIVENESS
-   * ═══════════════════════════════════════════════════════════════════════
-   *
-   * Without pruning: Would check ALL paths
-   * With pruning: Stop early when:
-   *   - sum > n (can't reduce by adding positive numbers)
-   *   - size > k (already too many numbers)
-   *   - size = k but sum ≠ n (can't change this combo)
-   *
-   * Example pruning saves:
-   *   [1,2,7]: sum=10 > 9 → Stopped! ✓
-   *   [1,2,8]: Would be checked without pruning ❌
-   *   [1,2,9]: Would be checked without pruning ❌
-   *   Saved 2 unnecessary calls!
-   *
-   * ═══════════════════════════════════════════════════════════════════════
+   * ==========================================================
    * EDGE CASES
-   * ═══════════════════════════════════════════════════════════════════════
+   * ==========================================================
    *
-   * Case 1: Impossible - sum too large
-   *   k=2, n=100
-   *   Max sum = 8+9 = 17 < 100
-   *   Edge case caught at start! Return []
-   *
-   * Case 2: Impossible - sum too small
-   *   k=4, n=1
-   *   Min sum = 1+2+3+4 = 10 > 1
-   *   Edge case caught at start! Return []
-   *
-   * Case 3: Only one solution
-   *   k=9, n=45
-   *   Only way: [1,2,3,4,5,6,7,8,9]
-   *   Sum = 45, all numbers used
-   *
-   * Case 4: No solution
-   *   k=3, n=6
-   *   Min sum = 1+2+3 = 6 ✓
-   *   Only combination: [1,2,3] sum=6 ✓
-   *   Output: [[1,2,3]]
+   * 1. k=4, n=1 -> []
+   * 2. k=1, n=5 -> [[5]]
+   * 3. k=9, n=45 -> [[1,2,3,4,5,6,7,8,9]]
+   * 4. k=2, n=100 -> []
+   * 5. k=0, n=0 -> [[]]
    */
 
-  /**
-   * Test runner with comprehensive test cases
-   */
+  type TestCase = {
+    k: number;
+    n: number;
+    expected: number[][];
+    label: string;
+  };
+
+  function canonicalize(combinations: number[][]): string {
+    return JSON.stringify(
+      combinations
+        .map((combination) => [...combination].sort((a, b) => a - b))
+        .sort((a, b) => {
+          const left = a.join(",");
+          const right = b.join(",");
+          return left.localeCompare(right);
+        })
+    );
+  }
+
   export function runTests(): void {
-    console.log('🧪 Testing Combination Sum III - Backtracking\n');
+    const tests: TestCase[] = [
+      { k: 3, n: 7, expected: [[1, 2, 4]], label: "basic example" },
+      {
+        k: 3,
+        n: 9,
+        expected: [[1, 2, 6], [1, 3, 5], [2, 3, 4]],
+        label: "multiple valid combinations",
+      },
+      { k: 4, n: 1, expected: [], label: "target smaller than minimum possible sum" },
+      { k: 1, n: 5, expected: [[5]], label: "single number answer" },
+      {
+        k: 9,
+        n: 45,
+        expected: [[1, 2, 3, 4, 5, 6, 7, 8, 9]],
+        label: "all numbers used",
+      },
+      { k: 2, n: 5, expected: [[1, 4], [2, 3]], label: "two-number combinations" },
+      { k: 2, n: 100, expected: [], label: "target larger than maximum possible sum" },
+      { k: 3, n: 6, expected: [[1, 2, 3]], label: "minimum valid 3-number sum" },
+      { k: 4, n: 10, expected: [[1, 2, 3, 4]], label: "minimum valid 4-number sum" },
+      { k: 0, n: 0, expected: [[]], label: "zero slots zero sum edge case" },
+    ];
 
-    // Test Case 1: Basic example from problem
-    console.log('Test 1: Basic example k=3, n=7');
-    const test1 = combinationSum3(3, 7);
-    console.log('Input: k=3, n=7');
-    console.log('Output:', test1);
-    console.log('Expected: [[1,2,4]]');
-    console.log(
-      'Result:',
-      test1.length === 1 &&
-        JSON.stringify(test1[0]) === JSON.stringify([1, 2, 4])
-        ? '✅ PASS'
-        : '❌ FAIL'
-    );
-    console.log();
+    let passed = 0;
 
-    // Test Case 2: Multiple solutions
-    console.log('Test 2: Multiple solutions k=3, n=9');
-    const test2 = combinationSum3(3, 9);
-    console.log('Input: k=3, n=9');
-    console.log('Output:', test2);
-    console.log('Expected: [[1,2,6],[1,3,5],[2,3,4]]');
-    console.log('Result:', test2.length === 3 ? '✅ PASS' : '❌ FAIL');
-    console.log();
+    console.log("Combination Sum III - Backtracking");
+    console.log("====================================");
 
-    // Test Case 3: Impossible - sum too small
-    console.log('Test 3: Impossible k=4, n=1');
-    const test3 = combinationSum3(4, 1);
-    console.log('Input: k=4, n=1');
-    console.log('Output:', test3);
-    console.log('Expected: []');
-    console.log('Result:', test3.length === 0 ? '✅ PASS' : '❌ FAIL');
-    console.log();
+    for (const test of tests) {
+      const actual = combinationSum3(test.k, test.n);
+      const ok = canonicalize(actual) === canonicalize(test.expected);
 
-    // Test Case 4: Single number
-    console.log('Test 4: Single number k=1, n=5');
-    const test4 = combinationSum3(1, 5);
-    console.log('Input: k=1, n=5');
-    console.log('Output:', test4);
-    console.log('Expected: [[5]]');
-    console.log(
-      'Result:',
-      test4.length === 1 && test4[0][0] === 5 ? '✅ PASS' : '❌ FAIL'
-    );
-    console.log();
+      if (ok) {
+        passed++;
+      }
 
-    // Test Case 5: Use all numbers
-    console.log('Test 5: Use all numbers k=9, n=45');
-    const test5 = combinationSum3(9, 45);
-    console.log('Input: k=9, n=45');
-    console.log('Output:', test5);
-    console.log('Expected: [[1,2,3,4,5,6,7,8,9]]');
-    console.log(
-      'Result:',
-      test5.length === 1 && test5[0].length === 9 ? '✅ PASS' : '❌ FAIL'
-    );
-    console.log();
+      console.log(`${ok ? "PASS" : "FAIL"} | ${test.label}`);
+      console.log(`  input: k=${test.k}, n=${test.n}`);
+      console.log(`  expected: ${JSON.stringify(test.expected)}`);
+      console.log(`  actual:   ${JSON.stringify(actual)}`);
+    }
 
-    // Test Case 6: Two numbers
-    console.log('Test 6: Two numbers k=2, n=5');
-    const test6 = combinationSum3(2, 5);
-    console.log('Input: k=2, n=5');
-    console.log('Output:', test6);
-    console.log('Expected: [[1,4],[2,3]]');
-    console.log('Result:', test6.length === 2 ? '✅ PASS' : '❌ FAIL');
-    console.log();
-
-    // Test Case 7: Impossible - sum too large
-    console.log('Test 7: Impossible k=2, n=100');
-    const test7 = combinationSum3(2, 100);
-    console.log('Input: k=2, n=100');
-    console.log('Output:', test7);
-    console.log('Expected: []');
-    console.log('Result:', test7.length === 0 ? '✅ PASS' : '❌ FAIL');
-    console.log();
-
-    // Test Case 8: Minimum sum for k
-    console.log('Test 8: Minimum sum k=3, n=6');
-    const test8 = combinationSum3(3, 6);
-    console.log('Input: k=3, n=6');
-    console.log('Output:', test8);
-    console.log('Expected: [[1,2,3]]');
-    console.log(
-      'Result:',
-      test8.length === 1 &&
-        JSON.stringify(test8[0]) === JSON.stringify([1, 2, 3])
-        ? '✅ PASS'
-        : '❌ FAIL'
-    );
-    console.log();
-
-    // Test Case 9: Larger k
-    console.log('Test 9: Larger k k=4, n=10');
-    const test9 = combinationSum3(4, 10);
-    console.log('Input: k=4, n=10');
-    console.log('Output:', test9);
-    console.log('Expected: [[1,2,3,4]]');
-    console.log(
-      'Result:',
-      test9.length === 1 &&
-        JSON.stringify(test9[0]) === JSON.stringify([1, 2, 3, 4])
-        ? '✅ PASS'
-        : '❌ FAIL'
-    );
-    console.log();
-
-    // Test Case 10: Multiple solutions with k=2
-    console.log('Test 10: Multiple k=2, n=10');
-    const test10 = combinationSum3(2, 10);
-    console.log('Input: k=2, n=10');
-    console.log('Output:', test10);
-    console.log('Expected: [[1,9],[2,8],[3,7],[4,6]]');
-    console.log('Result:', test10.length === 4 ? '✅ PASS' : '❌ FAIL');
-    console.log();
-
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('✨ All tests completed!');
-    console.log('═══════════════════════════════════════════════════════════');
+    console.log("====================================");
+    console.log(`Passed ${passed}/${tests.length} tests`);
   }
 }
 
-// Execute all tests
-CombinationSumIII.runTests();
+CombinationSumIIIBacktracking.runTests();
+
+export { CombinationSumIIIBacktracking };

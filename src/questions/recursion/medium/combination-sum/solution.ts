@@ -1,483 +1,377 @@
 /**
  * COMBINATION SUM - BACKTRACKING WITH UNLIMITED REPETITION
+ * ========================================================
  *
- * Problem: Array se aise combinations find karo jo target sum banate hain
- *          Same element ko UNLIMITED times use kar sakte ho!
+ * PROBLEM:
+ * `candidates` array aur `target` diya hai.
+ * Saare unique combinations return karne hain jinka sum target ke equal ho.
  *
- * Approach: Backtracking with Pick/Skip Pattern
- * - Pick: Element ko include karo, SAME index pe raho (unlimited repetition)
- * - Skip: Element ko skip karo, NEXT index pe jao (ab ye element nahi lenge)
- * - Backtrack: Undo karo to explore alternate paths
+ * Important:
+ * Same candidate ko unlimited times use kar sakte hain.
  *
- * Time Complexity: O(2^t) where t = target/min_element
- * - Worst case: Sabse chhota element repeatedly pick karna
- * - Example: [1], target=10 → depth=10, combinations ≈ 2^10
+ * Example:
+ *   candidates = [2, 3, 6, 7], target = 7
+ *   answer = [[2, 2, 3], [7]]
  *
- * Space Complexity: O(target/min)
- * - Recursion depth: O(target/min)
- * - Current array: O(target/min)
+ * INTUITION (Soch):
+ * -----------------
+ * Har candidate ke paas two choices hain:
+ *
+ *   1. PICK current candidate
+ *   2. SKIP current candidate
+ *
+ * Main trick:
+ *
+ *   PICK -> same index par raho
+ *   SKIP -> next index par jao
+ *
+ * Why same index after pick?
+ *
+ *   Same element unlimited times use allowed hai.
+ *   Agar 2 pick kiya, toh next call me 2 dobara pick kar sakte hain.
+ *
+ * Why next index after skip?
+ *
+ *   Agar 2 ko skip kar diya, toh current path me 2 wapas nahi aayega.
+ *   Isse [2,3] and [3,2] jaise duplicate permutations avoid hote hain.
+ *
+ * Algorithm:
+ * ----------
+ * 1. Agar target `0` hai, empty combination `[[]]` return karo.
+ * 2. Agar candidates empty hain, `[]` return karo.
+ * 3. `result` aur `current` arrays initialize karo.
+ * 4. Recursion `index = 0` and `remaining = target` se start karo.
+ * 5. Base case: `remaining === 0`, current ka copy result me push karo.
+ * 6. Invalid case: `remaining < 0`, path target se aage nikal gaya, return karo.
+ * 7. Invalid case: `index === candidates.length`, no candidates left, return karo.
+ * 8. Pick branch: candidates[index] ko current me push karo.
+ * 9. Pick ke baad same `index` par recurse karo, because same value reuse allowed hai.
+ * 10. Recursive call return kare toh `pop()` karke pick choice undo karo.
+ * 11. Skip branch: current candidate ko chhod kar `index + 1` par recurse karo.
+ * 12. Final result me saare valid unique combinations mil jayenge.
+ *
+ * TIME: O(2^t), where t = target / min(candidates)
+ * SPACE: O(t) excluding output
  */
 
-namespace CombinationSum {
-  /**
-   * Main function: Find all combinations that sum to target
-   *
-   * @param candidates - Array of distinct positive integers
-   * @param target - Target sum
-   * @returns Array of all unique combinations
-   *
-   * Example:
-   * Input: candidates = [2,3,6,7], target = 7
-   * Output: [[2,2,3], [7]]
-   *
-   * Explanation:
-   * - 2 ko 2 baar pick kiya, phir 3 pick kiya → 2+2+3=7 ✓
-   * - 7 ko directly pick kiya → 7=7 ✓
-   */
-  function combinationSum(candidates: number[], target: number): number[][] {
-    // EDGE CASE 1: Empty array
-    // WHY: Koi candidate nahi toh koi combination nahi ban sakta
-    if (candidates.length === 0) {
-      return [];
-    }
-
-    // EDGE CASE 2: Target = 0
-    // WHY: Sum 0 chahiye? Empty combination return karo
-    // NOTE: Problem constraints say target >= 1, but good to handle
+namespace CombinationSumBacktracking {
+  export function combinationSum(
+    candidates: number[],
+    target: number
+  ): number[][] {
     if (target === 0) {
+      // Zero target ka matlab kuch bhi pick karne ki zaroorat nahi.
+      // Empty combination already target 0 banati hai.
       return [[]];
     }
 
-    // Result array: Sabhi valid combinations store karenge
-    const result: number[][] = [];
+    if (candidates.length === 0) {
+      // Koi candidate hi nahi hai, so positive target ban nahi sakta.
+      return [];
+    }
 
-    // Current combination: Jo abhi explore kar rahe hain
+    const result: number[][] = [];
     const current: number[] = [];
 
-    // Start backtracking from index 0, sum 0
-    backtrack(0, 0, current, candidates, target, result);
+    explore(0, target, current, candidates, result);
 
     return result;
   }
 
-  /**
-   * Recursive backtracking function
-   *
-   * @param index - Current position in candidates array
-   * @param currentSum - Sum of elements picked so far
-   * @param current - Current combination being built
-   * @param candidates - Original array
-   * @param target - Target sum
-   * @param result - Result array to store valid combinations
-   *
-   * Decision Tree for each call:
-   *
-   *          backtrack(index, sum)
-   *          /                    \
-   *     PICK element           SKIP element
-   *     (stay at index)        (move to index+1)
-   *         /                        \
-   *   backtrack(index, ...)    backtrack(index+1, ...)
-   *
-   * Key Insight:
-   * - PICK: index same → element ko dobara pick kar sakte ho
-   * - SKIP: index aage → is element ko ab kabhi nahi lenge
-   */
-  function backtrack(
+  function explore(
     index: number,
-    currentSum: number,
+    remaining: number,
     current: number[],
     candidates: number[],
-    target: number,
     result: number[][]
   ): void {
-    // ═══════════════════════════════════════════════════════════════
-    // BASE CASES
-    // ═══════════════════════════════════════════════════════════════
-
-    // BASE CASE 1: Sum mil gaya! ✓✓✓
-    // WHY: Exactly target sum ban gaya, valid combination hai
-    if (currentSum === target) {
-      // IMPORTANT: Array ka COPY banao, reference nahi!
-      // WHY: current array modify hoti rahegi backtracking mein
-      //      Reference store kiya toh result mein wrong values aayenge
+    if (remaining === 0) {
+      // Remaining zero means current path ka sum exactly target ban gaya.
+      // Copy push karna zaroori hai because current array future branches me mutate hogi.
       result.push([...current]);
-      return; // Is path se aage nahi jana
-    }
-
-    // BASE CASE 2: Sum exceed ho gaya ❌
-    // WHY: Sum already target se zyada hai
-    //      Aur candidates positive hain, toh aage sum aur badhega
-    //      Isliye ye path invalid hai (PRUNING optimization!)
-    if (currentSum > target) {
-      return; // Early termination
-    }
-
-    // BASE CASE 3: Saare candidates process ho gaye
-    // WHY: Array khatam ho gaya, aur sum != target
-    //      Matlab is path se valid combination nahi mila
-    if (index === candidates.length) {
-      return; // No more elements to explore
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // RECURSIVE CASES
-    // ═══════════════════════════════════════════════════════════════
-
-    // CHOICE 1: PICK current element (UNLIMITED REPETITION!)
-    // WHY: Element ko include karte hain current combination mein
-    // NOTE: Index SAME rahega, matlab dobara pick kar sakte hain
-
-    // Step 1: Current mein element add karo
-    current.push(candidates[index]);
-
-    // Step 2: Recurse with SAME index
-    // WHY: Same index → is element ko dobara pick kar sakte hain
-    // Sum update: currentSum + element
-    backtrack(
-      index, // ← SAME index! (Unlimited repetition ka secret!)
-      currentSum + candidates[index],
-      current,
-      candidates,
-      target,
-      result
-    );
-
-    // Step 3: BACKTRACK - Element remove karo
-    // WHY: Explore karne ke baad undo karo taaki dusra path try kar saken
-    // Example: [2,2] se [2] bana ke [2,3] explore kar sakte hain
-    current.pop();
-
-    // CHOICE 2: SKIP current element
-    // WHY: Is element ko include nahi karna, next element try karo
-    // NOTE: Index AAGE badh jayega, matlab ab ye element kabhi nahi lenge
-
-    // Recurse with NEXT index
-    // WHY: Next index → is element ko chhod diya, ab aage dekho
-    // Sum same: current ko skip kiya toh sum nahi badha
-    backtrack(
-      index + 1, // ← NEXT index! (Skip kar rahe hain)
-      currentSum, // Sum same rahega
-      current,
-      candidates,
-      target,
-      result
-    );
-
-    // NOTE: Yahan backtrack nahi karna kyunki current modify nahi kiya
-  }
-
-  /**
-   * ═══════════════════════════════════════════════════════════════════════
-   * DRY RUN: combinationSum([2, 3, 5], 8)
-   * ═══════════════════════════════════════════════════════════════════════
-   *
-   * Initial Call: combinationSum([2,3,5], 8)
-   * - result = []
-   * - current = []
-   * - backtrack(0, 0, [], [2,3,5], 8, result)
-   *
-   * ┌──────────────────────────────────────────────────────────────────────┐
-   * │ CALL 1: backtrack(0, 0, [], [2,3,5], 8, result)                     │
-   * ├──────────────────────────────────────────────────────────────────────┤
-   * │ index = 0 (element = 2)                                              │
-   * │ currentSum = 0, target = 8                                           │
-   * │ current = []                                                         │
-   * │                                                                      │
-   * │ Base checks:                                                         │
-   * │   sum == target? → 0 == 8 → NO                                      │
-   * │   sum > target? → 0 > 8 → NO                                        │
-   * │   index >= length? → 0 >= 3 → NO                                    │
-   * │                                                                      │
-   * │ ┌──────────────────────────────────────────────────────────────┐   │
-   * │ │ CHOICE 1: PICK element 2                                    │   │
-   * │ ├──────────────────────────────────────────────────────────────┤   │
-   * │ │ current.push(2) → current = [2]                             │   │
-   * │ │ backtrack(0, 2, [2], ...) ← index SAME! ─────────┐          │   │
-   * │ │                                                    ↓          │   │
-   * │ │   ┌────────────────────────────────────────────────────────┐│   │
-   * │ │   │ CALL 2: backtrack(0, 2, [2], [2,3,5], 8, result)      ││   │
-   * │ │   │ index = 0, sum = 2, current = [2]                     ││   │
-   * │ │   │                                                         ││   │
-   * │ │   │ CHOICE 1: PICK 2 (again!)                             ││   │
-   * │ │   │   current.push(2) → [2,2]                             ││   │
-   * │ │   │   backtrack(0, 4, [2,2], ...) ────────┐               ││   │
-   * │ │   │                                         ↓               ││   │
-   * │ │   │   ┌───────────────────────────────────────────────┐   ││   │
-   * │ │   │   │ CALL 3: backtrack(0, 4, [2,2], ...)          │   ││   │
-   * │ │   │   │ sum = 4, current = [2,2]                     │   ││   │
-   * │ │   │   │                                               │   ││   │
-   * │ │   │   │ CHOICE 1: PICK 2 (third time!)               │   ││   │
-   * │ │   │   │   current.push(2) → [2,2,2]                  │   ││   │
-   * │ │   │   │   backtrack(0, 6, [2,2,2], ...) ────┐        │   ││   │
-   * │ │   │   │                                      ↓        │   ││   │
-   * │ │   │   │   CALL 4: backtrack(0, 6, [2,2,2], ...)      │   ││   │
-   * │ │   │   │   sum = 6, current = [2,2,2]                 │   ││   │
-   * │ │   │   │                                               │   ││   │
-   * │ │   │   │   CHOICE 1: PICK 2 (fourth time!)            │   ││   │
-   * │ │   │   │     current.push(2) → [2,2,2,2]              │   ││   │
-   * │ │   │   │     backtrack(0, 8, [2,2,2,2], ...)          │   ││   │
-   * │ │   │   │       sum == target! ✓✓✓                     │   ││   │
-   * │ │   │   │       result.push([2,2,2,2])                 │   ││   │
-   * │ │   │   │       return                                  │   ││   │
-   * │ │   │   │     current.pop() → [2,2,2] (BACKTRACK)      │   ││   │
-   * │ │   │   │                                               │   ││   │
-   * │ │   │   │   CHOICE 2: SKIP 2 (move to index 1)         │   ││   │
-   * │ │   │   │     backtrack(1, 6, [2,2,2], ...)            │   ││   │
-   * │ │   │   │       PICK 3: sum=9 > 8 → return ❌          │   ││   │
-   * │ │   │   │       (pruning!)                              │   ││   │
-   * │ │   │   │     return                                    │   ││   │
-   * │ │   │   │                                               │   ││   │
-   * │ │   │   │   current.pop() → [2,2] (BACKTRACK)          │   ││   │
-   * │ │   │   │                                               │   ││   │
-   * │ │   │   │ CHOICE 2: SKIP 2 (move to index 1)           │   ││   │
-   * │ │   │   │   current = [2,2]                             │   ││   │
-   * │ │   │   │   backtrack(1, 4, [2,2], ...) ────┐          │   ││   │
-   * │ │   │   │                                    ↓          │   ││   │
-   * │ │   │   │   CALL: backtrack(1, 4, [2,2], ...)          │   ││   │
-   * │ │   │   │   index = 1 (element = 3), sum = 4           │   ││   │
-   * │ │   │   │                                               │   ││   │
-   * │ │   │   │   CHOICE 1: PICK 3                           │   ││   │
-   * │ │   │   │     current.push(3) → [2,2,3]                │   ││   │
-   * │ │   │   │     backtrack(1, 7, [2,2,3], ...)            │   ││   │
-   * │ │   │   │       PICK 3: sum=10 > 8 → return ❌         │   ││   │
-   * │ │   │   │       SKIP 3: backtrack(2, 7, [2,2,3], ...)  │   ││   │
-   * │ │   │   │         PICK 5: sum=12 > 8 → return ❌       │   ││   │
-   * │ │   │   │         SKIP 5: index=3 → return             │   ││   │
-   * │ │   │   │     current.pop() → [2,2] (BACKTRACK)        │   ││   │
-   * │ │   │   │                                               │   ││   │
-   * │ │   │   │   CHOICE 2: SKIP 3 (move to index 2)         │   ││   │
-   * │ │   │   │     backtrack(2, 4, [2,2], ...)              │   ││   │
-   * │ │   │   │       PICK 5: sum=9 > 8 → return ❌          │   ││   │
-   * │ │   │   │       SKIP 5: index=3 → return               │   ││   │
-   * │ │   │   └───────────────────────────────────────────────┘   ││   │
-   * │ │   │                                                         ││   │
-   * │ │   │   current.pop() → [2] (BACKTRACK)                      ││   │
-   * │ │   │                                                         ││   │
-   * │ │   │ CHOICE 2: SKIP 2 (move to index 1)                     ││   │
-   * │ │   │   current = [2]                                         ││   │
-   * │ │   │   backtrack(1, 2, [2], ...) ──────────┐                ││   │
-   * │ │   │                                         ↓                ││   │
-   * │ │   │   CALL: backtrack(1, 2, [2], ...)                      ││   │
-   * │ │   │   index = 1 (element = 3), sum = 2                     ││   │
-   * │ │   │                                                         ││   │
-   * │ │   │   CHOICE 1: PICK 3                                     ││   │
-   * │ │   │     current.push(3) → [2,3]                            ││   │
-   * │ │   │     backtrack(1, 5, [2,3], ...)                        ││   │
-   * │ │   │       CHOICE 1: PICK 3                                 ││   │
-   * │ │   │         current.push(3) → [2,3,3]                      ││   │
-   * │ │   │         backtrack(1, 8, [2,3,3], ...)                  ││   │
-   * │ │   │           sum == target! ✓✓✓                           ││   │
-   * │ │   │           result.push([2,3,3])                          ││   │
-   * │ │   │           return                                        ││   │
-   * │ │   │         current.pop() → [2,3] (BACKTRACK)              ││   │
-   * │ │   │                                                         ││   │
-   * │ │   │       CHOICE 2: SKIP 3                                 ││   │
-   * │ │   │         backtrack(2, 5, [2,3], ...)                    ││   │
-   * │ │   │           PICK 5: sum=10 > 8 → return ❌               ││   │
-   * │ │   │           SKIP 5: index=3 → return                     ││   │
-   * │ │   │     current.pop() → [2] (BACKTRACK)                    ││   │
-   * │ │   │                                                         ││   │
-   * │ │   │   CHOICE 2: SKIP 3                                     ││   │
-   * │ │   │     backtrack(2, 2, [2], ...)                          ││   │
-   * │ │   │       (continues exploring [2,5] paths...)             ││   │
-   * │ │   └────────────────────────────────────────────────────────┘│   │
-   * │ │                                                              │   │
-   * │ │   current.pop() → [] (BACKTRACK)                            │   │
-   * │ └──────────────────────────────────────────────────────────────┘   │
-   * │                                                                      │
-   * │ ┌──────────────────────────────────────────────────────────────┐   │
-   * │ │ CHOICE 2: SKIP element 2 (move to index 1)                 │   │
-   * │ ├──────────────────────────────────────────────────────────────┤   │
-   * │ │ current = [] (unchanged)                                    │   │
-   * │ │ backtrack(1, 0, [], ...) ────────────────┐                  │   │
-   * │ │                                            ↓                  │   │
-   * │ │   CALL: backtrack(1, 0, [], [2,3,5], 8, result)            │   │
-   * │ │   index = 1 (element = 3), sum = 0                         │   │
-   * │ │                                                              │   │
-   * │ │   CHOICE 1: PICK 3                                          │   │
-   * │ │     current.push(3) → [3]                                   │   │
-   * │ │     backtrack(1, 3, [3], ...)                               │   │
-   * │ │       (explores [3,3], [3,3,3], [3,5] paths...)             │   │
-   * │ │       Will find: [3,5] with sum=8 ✓✓✓                      │   │
-   * │ │     current.pop() → []                                      │   │
-   * │ │                                                              │   │
-   * │ │   CHOICE 2: SKIP 3                                          │   │
-   * │ │     backtrack(2, 0, [], ...)                                │   │
-   * │ │       (explores paths starting with 5...)                   │   │
-   * │ └──────────────────────────────────────────────────────────────┘   │
-   * └──────────────────────────────────────────────────────────────────────┘
-   *
-   * Final Result: result = [[2,2,2,2], [2,3,3], [3,5]]
-   *
-   * ═══════════════════════════════════════════════════════════════════════
-   * KEY OBSERVATIONS FROM DRY RUN
-   * ═══════════════════════════════════════════════════════════════════════
-   *
-   * 1. UNLIMITED REPETITION:
-   *    - Element 2 ko 4 baar pick kiya → [2,2,2,2]
-   *    - Element 3 ko 2 baar pick kiya → [2,3,3] aur [3,3] (jo invalid tha)
-   *    - Ye possible hai kyunki PICK mein index SAME rahta hai
-   *
-   * 2. NO DUPLICATES:
-   *    - [2,3,3] mila but [3,2,3] ya [3,3,2] NAHI mila
-   *    - WHY? Kyunki hum left→right process karte hain
-   *    - Agar 2 ko skip kiya (index 1 pe gaye), toh wapas 2 nahi lenge
-   *
-   * 3. BACKTRACKING IS CRUCIAL:
-   *    - [2,2] bana → explored
-   *    - pop() kiya → [2] wapas aaya
-   *    - Ab [2,3] explore kar sakte hain
-   *    - Agar pop() nahi karte toh current = [2,2,3] ho jata galat!
-   *
-   * 4. PRUNING OPTIMIZATION:
-   *    - sum > target → turant return
-   *    - Example: sum=9 when target=8 → no point continuing
-   *    - Saves many recursive calls!
-   *
-   * 5. ARRAY COPY IS IMPORTANT:
-   *    - result.push([...current]) ← Spread operator
-   *    - Agar result.push(current) karte toh reference copy hota
-   *    - Baad mein current modify hoga toh result mein bhi change!
-   */
-
-  /**
-   * Helper: Verify that all combinations sum to target
-   */
-  function verifyCombinations(
-    candidates: number[],
-    target: number,
-    result: number[][]
-  ): void {
-    console.log(`\n═══ Verification for target=${target} ═══`);
-
-    if (result.length === 0) {
-      console.log("✓ No combinations found (as expected if no solution exists)");
       return;
     }
 
-    let allValid = true;
-
-    for (let i = 0; i < result.length; i++) {
-      const combination = result[i];
-      const sum = combination.reduce((acc, val) => acc + val, 0);
-
-      if (sum !== target) {
-        console.log(
-          `❌ Combination ${i}: [${combination}] sum=${sum} ≠ ${target}`
-        );
-        allValid = false;
-      } else {
-        // Check if all elements are from candidates
-        const allFromCandidates = combination.every((val) =>
-          candidates.includes(val)
-        );
-        if (!allFromCandidates) {
-          console.log(
-            `❌ Combination ${i}: [${combination}] contains elements not in candidates`
-          );
-          allValid = false;
-        }
-      }
+    if (remaining < 0) {
+      // Candidates positive hain.
+      // Remaining negative hone ka matlab sum target se aage nikal gaya.
+      return;
     }
 
-    if (allValid) {
-      console.log(`✅ All ${result.length} combinations are VALID!`);
-      console.log(`   Each sums to ${target}`);
-      console.log(`   All elements from candidates`);
-    } else {
-      console.log("❌ Some combinations are INVALID!");
+    if (index === candidates.length) {
+      // Saare candidates decide ho chuke hain.
+      // Remaining zero nahi hai, so ye path valid combination nahi bana sakta.
+      return;
     }
+
+    const candidate = candidates[index];
+
+    // PICK branch:
+    // Current candidate answer ka part ban raha hai, so path me add karte hain.
+    current.push(candidate);
+
+    // Same index par rukte hain because candidate unlimited times pick ho sakta hai.
+    // Remaining target candidate value se reduce hota hai.
+    explore(index, remaining - candidate, current, candidates, result);
+
+    // Pick branch complete ho gayi.
+    // Sirf iss frame ki choice undo hoti hai, parent choices current me preserved rehti hain.
+    current.pop();
+
+    // SKIP branch:
+    // Current candidate ko is path ke liye permanently chhod rahe hain.
+    // Isliye next index par move karte hain, sum/remaining same rehta hai.
+    explore(index + 1, remaining, current, candidates, result);
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // TEST CASES
-  // ═══════════════════════════════════════════════════════════════════════
+  /**
+   * ==========================================================
+   * DRY RUN - DECISION TREE + CALL FRAMES
+   * ==========================================================
+   *
+   * Example:
+   * candidates = [2, 3], target = 5
+   *
+   * Expected:
+   * [[2, 3]]
+   *
+   * ==========================================================
+   * HIGH-LEVEL DECISION TREE
+   * ==========================================================
+   *
+   * root  (index=0, remaining=5, current=[])
+   * │
+   * ├── PICK 2 -> stay index=0, remaining=3, current=[2]
+   * │   │
+   * │   ├── PICK 2 -> stay index=0, remaining=1, current=[2,2]
+   * │   │   │
+   * │   │   ├── PICK 2 -> remaining=-1, current=[2,2,2]
+   * │   │   │   INVALID: remaining < 0, return
+   * │   │   │
+   * │   │   └── SKIP 2 -> index=1, remaining=1, current=[2,2]
+   * │   │       ├── PICK 3 -> remaining=-2, invalid
+   * │   │       └── SKIP 3 -> index=2, no candidates left
+   * │   │
+   * │   └── SKIP 2 -> index=1, remaining=3, current=[2]
+   * │       │
+   * │       ├── PICK 3 -> stay index=1, remaining=0, current=[2,3]
+   * │       │   BASE CASE: push [2,3]
+   * │       │
+   * │       └── SKIP 3 -> index=2, remaining=3, no candidates left
+   * │
+   * └── SKIP 2 -> index=1, remaining=5, current=[]
+   *     │
+   *     ├── PICK 3 -> stay index=1, remaining=2, current=[3]
+   *     │   ├── PICK 3 -> remaining=-1, invalid
+   *     │   └── SKIP 3 -> index=2, no candidates left
+   *     │
+   *     └── SKIP 3 -> index=2, no candidates left
+   *
+   * Output:
+   * [[2,3]]
+   *
+   * ==========================================================
+   * NESTED BOX-HEAVY CALL FRAME
+   * ==========================================================
+   *
+   * Initial Call: combinationSum([2, 3], 5)
+   * - result = []
+   * - current = []
+   * - Start: explore(0, 5, [], [2,3], result)
+   *
+   * ┌──────────────────────────────────────────────────────────────────────┐
+   * │ CALL 1: explore(index=0, remaining=5, current=[])                   │
+   * ├──────────────────────────────────────────────────────────────────────┤
+   * │ candidate = 2                                                       │
+   * │ Base case? remaining === 0 -> Nahi                                  │
+   * │ Invalid? remaining < 0 or index end -> Nahi                         │
+   * │                                                                      │
+   * │ Try PICK 2: push 2, same index because reuse allowed                 │
+   * │ current = [2]                                                        │
+   * │                                                                      │
+   * │   ┌────────────────────────────────────────────────────────────┐   │
+   * │   │ CALL 2: explore(index=0, remaining=3, current=[2])         │   │
+   * │   ├────────────────────────────────────────────────────────────┤   │
+   * │   │ candidate = 2                                              │   │
+   * │   │                                                            │   │
+   * │   │ Try PICK 2 again: same index                               │   │
+   * │   │ current = [2, 2]                                           │   │
+   * │   │                                                            │   │
+   * │   │   ┌──────────────────────────────────────────────────┐   │   │
+   * │   │   │ CALL 3: explore(index=0, remaining=1,             │   │   │
+   * │   │   │                 current=[2,2])                    │   │   │
+   * │   │   ├──────────────────────────────────────────────────┤   │   │
+   * │   │   │ candidate = 2                                     │   │   │
+   * │   │   │                                                  │   │   │
+   * │   │   │ Try PICK 2 -> remaining becomes -1               │   │   │
+   * │   │   │ Return because remaining < 0                     │   │   │
+   * │   │   │ Backtrack: pop 2 -> current=[2,2]                │   │   │
+   * │   │   │                                                  │   │   │
+   * │   │   │ Try SKIP 2 -> move index to 1                    │   │   │
+   * │   │   │ explore(index=1, remaining=1, current=[2,2])     │   │   │
+   * │   │   │ No valid path, return                            │   │   │
+   * │   │   └──────────────────────────────────────────────────┘   │   │
+   * │   │                                                            │   │
+   * │   │ Backtrack: pop 2 -> current=[2]                            │   │
+   * │   │                                                            │   │
+   * │   │ Try SKIP 2 -> move index to 1                              │   │
+   * │   │                                                            │   │
+   * │   │   ┌──────────────────────────────────────────────────┐   │   │
+   * │   │   │ CALL 4: explore(index=1, remaining=3,             │   │   │
+   * │   │   │                 current=[2])                      │   │   │
+   * │   │   ├──────────────────────────────────────────────────┤   │   │
+   * │   │   │ candidate = 3                                     │   │   │
+   * │   │   │                                                  │   │   │
+   * │   │   │ Try PICK 3 -> current=[2,3], remaining=0         │   │   │
+   * │   │   │                                                  │   │   │
+   * │   │   │   ┌────────────────────────────────────────┐   │   │   │
+   * │   │   │   │ CALL 5: explore(index=1, remaining=0,  │   │   │   │
+   * │   │   │   │                 current=[2,3])         │   │   │   │
+   * │   │   │   ├────────────────────────────────────────┤   │   │   │
+   * │   │   │   │ remaining === 0 -> Haan                │   │   │   │
+   * │   │   │   │ result.push([2,3])                     │   │   │   │
+   * │   │   │   │ result = [[2,3]]                       │   │   │   │
+   * │   │   │   │ Return                                 │   │   │   │
+   * │   │   │   └────────────────────────────────────────┘   │   │   │
+   * │   │   │                                                  │   │   │
+   * │   │   │ Backtrack: pop 3 -> current=[2]                 │   │   │
+   * │   │   │ Try SKIP 3 -> index=2, no candidates left       │   │   │
+   * │   │   │ Return                                          │   │   │
+   * │   │   └──────────────────────────────────────────────────┘   │   │
+   * │   │                                                            │   │
+   * │   │ Return to CALL 1                                           │   │
+   * │   └────────────────────────────────────────────────────────────┘   │
+   * │                                                                      │
+   * │ Backtrack: pop 2 -> current=[]                                       │
+   * │                                                                      │
+   * │ Try SKIP 2 -> move index to 1                                        │
+   * │ Branch cannot make 5 using only 3s, so no new result                 │
+   * │ Return                                                               │
+   * └──────────────────────────────────────────────────────────────────────┘
+   *
+   * Final result:
+   * [[2,3]]
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. candidates = [2], target = 1 -> []
+   * 2. candidates = [7], target = 7 -> [[7]]
+   * 3. candidates = [3], target = 12 -> [[3,3,3,3]]
+   * 4. candidates = [], target = 7 -> []
+   * 5. candidates = [1], target = 0 -> [[]]
+   */
+
+  type TestCase = {
+    candidates: number[];
+    target: number;
+    expected: number[][];
+    label: string;
+  };
+
+  function canonicalize(combinations: number[][]): string {
+    return JSON.stringify(
+      combinations
+        .map((combination) => [...combination].sort((a, b) => a - b))
+        .sort((a, b) => {
+          const left = a.join(",");
+          const right = b.join(",");
+          return left.localeCompare(right);
+        })
+    );
+  }
 
   export function runTests(): void {
-    console.log("🧪 Testing COMBINATION SUM - Backtracking\n");
+    const tests: TestCase[] = [
+      {
+        candidates: [2, 3, 6, 7],
+        target: 7,
+        expected: [[2, 2, 3], [7]],
+        label: "LeetCode example with direct candidate",
+      },
+      {
+        candidates: [2, 3, 5],
+        target: 8,
+        expected: [[2, 2, 2, 2], [2, 3, 3], [3, 5]],
+        label: "multiple valid combinations",
+      },
+      {
+        candidates: [2],
+        target: 1,
+        expected: [],
+        label: "no solution",
+      },
+      {
+        candidates: [7],
+        target: 7,
+        expected: [[7]],
+        label: "single candidate exact match",
+      },
+      {
+        candidates: [3],
+        target: 12,
+        expected: [[3, 3, 3, 3]],
+        label: "single candidate repeated",
+      },
+      {
+        candidates: [2, 5],
+        target: 10,
+        expected: [[2, 2, 2, 2, 2], [5, 5]],
+        label: "two different repetition paths",
+      },
+      {
+        candidates: [1, 2, 3],
+        target: 4,
+        expected: [[1, 1, 1, 1], [1, 1, 2], [1, 3], [2, 2]],
+        label: "candidate one creates deeper recursion",
+      },
+      {
+        candidates: [],
+        target: 7,
+        expected: [],
+        label: "empty candidates",
+      },
+      {
+        candidates: [1],
+        target: 0,
+        expected: [[]],
+        label: "zero target edge case",
+      },
+      {
+        candidates: [3, 2],
+        target: 5,
+        expected: [[3, 2]],
+        label: "input order does not affect validity",
+      },
+    ];
 
-    // Test 1: Example from problem
-    console.log("Test 1: candidates = [2,3,6,7], target = 7");
-    const result1 = combinationSum([2, 3, 6, 7], 7);
-    console.log("Expected: [[2,2,3], [7]]");
-    console.log("Got:     ", JSON.stringify(result1));
-    console.log("Explanation: 2+2+3=7 aur 7=7");
-    console.log();
+    let passed = 0;
 
-    // Test 2: Example from problem
-    console.log("Test 2: candidates = [2,3,5], target = 8");
-    const result2 = combinationSum([2, 3, 5], 8);
-    console.log("Expected: [[2,2,2,2], [2,3,3], [3,5]]");
-    console.log("Got:     ", JSON.stringify(result2));
-    console.log("Explanation: Multiple combinations possible");
-    console.log();
+    console.log("Combination Sum - Backtracking");
+    console.log("====================================");
 
-    // Test 3: No solution
-    console.log("Test 3: candidates = [2], target = 1");
-    const result3 = combinationSum([2], 1);
-    console.log("Expected: []");
-    console.log("Got:     ", JSON.stringify(result3));
-    console.log("Explanation: 2 se 1 nahi ban sakta");
-    console.log();
+    for (const test of tests) {
+      const actual = combinationSum(test.candidates, test.target);
+      const ok = canonicalize(actual) === canonicalize(test.expected);
 
-    // Test 4: Single element exact match
-    console.log("Test 4: candidates = [7], target = 7");
-    const result4 = combinationSum([7], 7);
-    console.log("Expected: [[7]]");
-    console.log("Got:     ", JSON.stringify(result4));
-    console.log("Explanation: Direct match");
-    console.log();
+      if (ok) {
+        passed++;
+      }
 
-    // Test 5: Single element multiple times
-    console.log("Test 5: candidates = [3], target = 12");
-    const result5 = combinationSum([3], 12);
-    console.log("Expected: [[3,3,3,3]]");
-    console.log("Got:     ", JSON.stringify(result5));
-    console.log("Explanation: 3 ko 4 baar use karo");
-    console.log();
+      console.log(`${ok ? "PASS" : "FAIL"} | ${test.label}`);
+      console.log(
+        `  input: candidates=${JSON.stringify(test.candidates)}, target=${test.target}`
+      );
+      console.log(`  expected: ${JSON.stringify(test.expected)}`);
+      console.log(`  actual:   ${JSON.stringify(actual)}`);
+    }
 
-    // Test 6: Multiple valid paths
-    console.log("Test 6: candidates = [2,5], target = 10");
-    const result6 = combinationSum([2, 5], 10);
-    console.log(
-      "Expected: [[2,2,2,2,2], [5,5]] (order may vary)"
-    );
-    console.log("Got:     ", JSON.stringify(result6));
-    console.log("Explanation: 5 twos ya 2 fives");
-    console.log();
-
-    // Test 7: Larger example
-    console.log("Test 7: candidates = [1,2,3], target = 4");
-    const result7 = combinationSum([1, 2, 3], 4);
-    console.log("Expected: Multiple combinations");
-    console.log("Got:     ", JSON.stringify(result7));
-    console.log(
-      "Explanation: [1,1,1,1], [1,1,2], [1,3], [2,2] sab valid hain"
-    );
-    console.log();
-
-    // Test 8: Edge case - minimum target
-    console.log("Test 8: candidates = [2,3,5], target = 2");
-    const result8 = combinationSum([2, 3, 5], 2);
-    console.log("Expected: [[2]]");
-    console.log("Got:     ", JSON.stringify(result8));
-    console.log("Explanation: Sirf 2 hi minimum hai jo target match karta");
-    console.log();
-
-    // Run verifications
-    console.log("\n" + "═".repeat(70));
-    console.log("VERIFICATION TESTS");
-    console.log("═".repeat(70));
-
-    verifyCombinations([2, 3, 6, 7], 7, result1);
-    verifyCombinations([2, 3, 5], 8, result2);
-    verifyCombinations([2], 1, result3);
-    verifyCombinations([7], 7, result4);
-    verifyCombinations([3], 12, result5);
-    verifyCombinations([2, 5], 10, result6);
+    console.log("====================================");
+    console.log(`Passed ${passed}/${tests.length} tests`);
   }
 }
 
-// Execute tests
-CombinationSum.runTests();
+CombinationSumBacktracking.runTests();
+
+export { CombinationSumBacktracking };

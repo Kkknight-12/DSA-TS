@@ -187,11 +187,22 @@ d / e / f
 Decision tree:
 
 ```txt
-              ""
-       /      |      \
-      a       b       c
-    / | \   / | \   / | \
-   d  e  f d  e  f d  e  f
+root current=""
+│
+├── choose 'a' from digit '2' -> current="a"
+│   ├── choose 'd' from digit '3' -> current="ad" -> BASE, push "ad"
+│   ├── choose 'e' from digit '3' -> current="ae" -> BASE, push "ae"
+│   └── choose 'f' from digit '3' -> current="af" -> BASE, push "af"
+│
+├── choose 'b' from digit '2' -> current="b"
+│   ├── choose 'd' from digit '3' -> current="bd" -> BASE, push "bd"
+│   ├── choose 'e' from digit '3' -> current="be" -> BASE, push "be"
+│   └── choose 'f' from digit '3' -> current="bf" -> BASE, push "bf"
+│
+└── choose 'c' from digit '2' -> current="c"
+    ├── choose 'd' from digit '3' -> current="cd" -> BASE, push "cd"
+    ├── choose 'e' from digit '3' -> current="ce" -> BASE, push "ce"
+    └── choose 'f' from digit '3' -> current="cf" -> BASE, push "cf"
 ```
 
 Leaves:
@@ -316,6 +327,31 @@ Why `* n`?
 Each final combination string length n hoti hai.
 ```
 
+Space excluding output:
+
+```txt
+O(n)
+```
+
+Why?
+
+```txt
+Recursion depth digits.length tak ja sakti hai.
+```
+
+Output space:
+
+```txt
+O(4^n * n)
+```
+
+Why?
+
+```txt
+Worst case me 4^n combinations ho sakte hain,
+aur har combination length n ki string hoti hai.
+```
+
 ---
 
 ## 11. Full Dry Run
@@ -343,8 +379,20 @@ Execution table:
 | `4` | base case, push `"ad"` | `"ad"` | `["ad"]` |
 | `5` | back to `"a"`, choose `e`, push `"ae"` | `"ae"` | `["ad","ae"]` |
 | `6` | back to `"a"`, choose `f`, push `"af"` | `"af"` | `["ad","ae","af"]` |
-| `7` | back to root, choose `b`, push `bd/be/bf` | `"b..."` | `["ad","ae","af","bd","be","bf"]` |
-| `8` | back to root, choose `c`, push `cd/ce/cf` | `"c..."` | `["ad","ae","af","bd","be","bf","cd","ce","cf"]` |
+| `7` | back to root, choose `b`, call `backtrack(1, "b")` | `"b"` | `["ad","ae","af"]` |
+| `8` | digit `3`, choose `d`, call `backtrack(2, "bd")` | `"bd"` | `["ad","ae","af"]` |
+| `9` | base case, push `"bd"` | `"bd"` | `["ad","ae","af","bd"]` |
+| `10` | back to `"b"`, choose `e`, call `backtrack(2, "be")` | `"be"` | `["ad","ae","af","bd"]` |
+| `11` | base case, push `"be"` | `"be"` | `["ad","ae","af","bd","be"]` |
+| `12` | back to `"b"`, choose `f`, call `backtrack(2, "bf")` | `"bf"` | `["ad","ae","af","bd","be"]` |
+| `13` | base case, push `"bf"` | `"bf"` | `["ad","ae","af","bd","be","bf"]` |
+| `14` | back to root, choose `c`, call `backtrack(1, "c")` | `"c"` | `["ad","ae","af","bd","be","bf"]` |
+| `15` | digit `3`, choose `d`, call `backtrack(2, "cd")` | `"cd"` | `["ad","ae","af","bd","be","bf"]` |
+| `16` | base case, push `"cd"` | `"cd"` | `["ad","ae","af","bd","be","bf","cd"]` |
+| `17` | back to `"c"`, choose `e`, call `backtrack(2, "ce")` | `"ce"` | `["ad","ae","af","bd","be","bf","cd"]` |
+| `18` | base case, push `"ce"` | `"ce"` | `["ad","ae","af","bd","be","bf","cd","ce"]` |
+| `19` | back to `"c"`, choose `f`, call `backtrack(2, "cf")` | `"cf"` | `["ad","ae","af","bd","be","bf","cd","ce"]` |
+| `20` | base case, push `"cf"` | `"cf"` | `["ad","ae","af","bd","be","bf","cd","ce","cf"]` |
 
 Final:
 
