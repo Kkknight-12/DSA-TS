@@ -167,14 +167,14 @@ Going forward, every file updated from this tracker should include this `Algorit
 - [x] src/questions/recursion/medium/pow-x-n/optimal-iterative.ts
 - [x] src/questions/recursion/medium/pow-x-n/optimal-recursive.ts
 - [x] src/questions/recursion/medium/reverse-stack/solution.ts
-- [ ] src/questions/recursion/medium/sort-stack/solution.ts
-- [ ] src/questions/recursion/medium/string-to-integer-atoi/recursive.ts
+- [x] src/questions/recursion/medium/sort-stack/solution.ts
+- [x] src/questions/recursion/medium/string-to-integer-atoi/recursive.ts
 - [x] src/questions/recursion/medium/subsequences/check-subsequence-sum-k/solution.ts
 - [x] src/questions/recursion/medium/subsequences/count-subsequences-sum-k/solution.ts
 - [x] src/questions/recursion/medium/subsequences/subsets/solution.ts
-- [ ] src/questions/recursion/medium/subsets-ii/solution.ts
-- [ ] src/questions/recursion/medium/word-break/solution.ts
-- [ ] src/questions/recursion/medium/word-search/solution.ts
+- [x] src/questions/recursion/medium/subsets-ii/solution.ts
+- [x] src/questions/recursion/medium/word-break/solution.ts
+- [x] src/questions/recursion/medium/word-search/solution.ts
 
 ### Recursion - Hard (3 files)
 

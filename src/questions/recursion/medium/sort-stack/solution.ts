@@ -1,535 +1,276 @@
 /**
- * Sort a Stack using Recursion
- * ==============================
+ * SORT STACK USING RECURSION
+ * ==========================
  *
- * Problem: Sort a stack in ascending order (smallest at bottom, largest at top)
- *          using ONLY recursion (no loops, no extra arrays)
+ * Problem:
+ * Array form me stack diya hai jahan:
  *
- * Approach: Two Recursive Functions
- * 1. sortStack(): Removes top, sorts rest, inserts back in position
- * 2. insertSorted(): Inserts element in correct position in sorted stack
+ *   stack[0] -> bottom
+ *   stack[stack.length - 1] -> top
  *
- * Time Complexity: O(n²)
- * - Sorting n elements with O(n) insertion each
+ * Hume stack ko in-place sort karna hai such that:
  *
- * Space Complexity: O(n)
- * - Recursion depth: O(n)
+ *   smallest element bottom par ho
+ *   largest element top par ho
  *
- * Key Pattern: COMBINER
- * - Work happens during UNWINDING phase
- * - Recursion stack acts as temporary storage
+ * Example:
+ *   [4, 1, 3, 2] -> [1, 2, 3, 4]
+ *
+ * Intuition:
+ * Stack me hum sirf top se hi kaam kar sakte hain.
+ * Isliye recursion ka use karke top elements temporarily call stack me rakhte hain.
+ *
+ * Pehle smaller stack ko sort karte hain.
+ * Phir current removed top ko helper ki help se sorted position me wapas insert karte hain.
+ *
+ * Algorithm:
+ * 1. Agar stack empty ya single element hai, return karo.
+ * 2. Top element pop karke current frame me hold karo.
+ * 3. Remaining stack ko recursively sort karo.
+ * 4. Held element ko already-sorted stack me correct position par insert karo.
+ * 5. Helper me agar stack empty hai, value push karo.
+ * 6. Agar current top valueToInsert se chhota ya equal hai, value ko top par push karo.
+ * 7. Warna current top ko temporarily hatao, neeche recurse karo, aur phir removed top ko wapas push karo.
+ *
+ * Time Complexity:
+ *   O(n^2)
+ *   Har element ke liye insertion worst case O(n) ja sakta hai.
+ *
+ * Space Complexity:
+ *   O(n)
+ *   Recursion call stack depth ki wajah se.
  */
 
-namespace SortStack {
-  /**
-   * Simple Stack implementation for this problem
-   */
-  class Stack<T> {
-    private items: T[] = [];
-
-    push(element: T): void {
-      this.items.push(element);
-    }
-
-    pop(): T | undefined {
-      return this.items.pop();
-    }
-
-    peek(): T | undefined {
-      return this.items[this.items.length - 1];
-    }
-
-    isEmpty(): boolean {
-      return this.items.length === 0;
-    }
-
-    size(): number {
-      return this.items.length;
-    }
-
-    // For visualization
-    toArray(): T[] {
-      return [...this.items]; // Copy for display
-    }
-
-    // Create from array (bottom to top)
-    static fromArray<T>(arr: T[]): Stack<T> {
-      const stack = new Stack<T>();
-      for (const item of arr) {
-        stack.push(item);
-      }
-      return stack;
-    }
-  }
-
-  /**
-   * Sort a stack in ascending order using recursion
-   *
-   * @param stack - Stack to sort (modified in-place)
-   *
-   * @complexity
-   * Time: O(n²) - For each element, insert takes O(n)
-   * Space: O(n) - Recursion stack depth
-   *
-   * Algorithm:
-   * 1. BASE CASE: Empty stack is sorted
-   * 2. RECURSIVE CASE:
-   *    a) Pop top element
-   *    b) Recursively sort remaining stack
-   *    c) Insert popped element back in correct position
-   *
-   * Pattern: COMBINER (work during unwinding)
-   */
-  function sortStack(stack: Stack<number>): void {
-    // ═══════════════════════════════════════════════════════════
-    // BASE CASE: Empty stack or single element
-    // ═══════════════════════════════════════════════════════════
-    // WHY: Empty or single-element stack is already sorted
-    // EXAMPLE: [] → sorted ✓
-    //          [5] → sorted ✓
-    if (stack.isEmpty()) {
+namespace SortStackRecursion {
+  export function sortStack(stack: number[]): void {
+    if (stack.length <= 1) {
+      // Empty ya single-element stack already sorted hota hai.
+      // Yahan compare karne ya reorder karne ke liye kuch bacha hi nahi.
       return;
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // STEP 1: Remove top element
-    // ═══════════════════════════════════════════════════════════
-    // WHY: We'll hold it in the recursion stack (call stack)
-    //      while we sort the rest
-    //
-    // EXAMPLE: [41, 3, 32, 2, 11]
-    //          Pop 11 → Stack: [41, 3, 32, 2]
-    //          11 is held in this function's local variable
-    const top = stack.pop()!;
+    const topElement = stack.pop()!;
 
-    // ═══════════════════════════════════════════════════════════
-    // STEP 2: Recursively sort the remaining stack
-    // ═══════════════════════════════════════════════════════════
-    // DIVIDE: Split into smaller problem (stack without top)
-    // CONQUER: Recursively solve (sort remaining stack)
-    //
-    // RECURSION TREE: This goes deep until stack is empty
-    // [41, 3, 32, 2] → [41, 3, 32] → [41, 3] → [41] → []
+    // topElement current frame ka removed top hai.
+    // Ab remaining stack chhoti problem ban gayi hai jise same recursion se sort kar sakte hain.
     sortStack(stack);
-    // At this point, `stack` is now SORTED!
 
-    // ═══════════════════════════════════════════════════════════
-    // STEP 3: Insert the element back in correct position
-    // ═══════════════════════════════════════════════════════════
-    // COMBINE: Insert `top` into sorted stack
-    // WHY: After recursion, stack is sorted, so we just need to
-    //      insert our held element in the right place
-    //
-    // EXAMPLE: If stack = [41, 32, 3, 2] (sorted) and top = 11
-    //          insertSorted will place 11 between 32 and 3
-    //          Result: [41, 32, 11, 3, 2]
-    insertSorted(stack, top);
+    // Recursive call ke baad current `stack` sorted guarantee hoti hai.
+    // Ab sirf removed top ko sorted order break kiye bina sahi jagah insert karna hai.
+    insertSorted(stack, topElement);
   }
 
-  /**
-   * Insert an element into a sorted stack at the correct position
-   *
-   * @param stack - Already sorted stack (largest at top)
-   * @param element - Element to insert
-   *
-   * @complexity
-   * Time: O(n) - Worst case traverse entire stack
-   * Space: O(n) - Recursion depth in worst case
-   *
-   * Algorithm:
-   * 1. BASE CASE 1: Stack empty → push element
-   * 2. BASE CASE 2: Element >= top → belongs on top, push it
-   * 3. RECURSIVE CASE: Element < top
-   *    a) Pop top (it's larger, should stay above)
-   *    b) Recursively insert element into remaining stack
-   *    c) Push top back (restore larger element on top)
-   */
-  function insertSorted(stack: Stack<number>, element: number): void {
-    // ═══════════════════════════════════════════════════════════
-    // BASE CASE 1: Stack is empty
-    // ═══════════════════════════════════════════════════════════
-    // WHY: No comparison needed, just push
-    // EXAMPLE: Insert 5 into [] → [5]
-    if (stack.isEmpty()) {
-      stack.push(element);
+  function insertSorted(stack: number[], valueToInsert: number): void {
+    if (stack.length === 0) {
+      // Empty stack me value ko push karna hi correct insertion hai,
+      // kyunki compare karne ke liye koi existing top bacha hi nahi.
+      stack.push(valueToInsert);
       return;
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // BASE CASE 2: Element >= top (found correct position!)
-    // ═══════════════════════════════════════════════════════════
-    // WHY: In ascending order (largest at top), if element >= top,
-    //      it belongs ON TOP of the stack
-    //
-    // EXAMPLE: Insert 50 into [41, 32, 11] where top = 41
-    //          50 >= 41 → push 50 on top → [50, 41, 32, 11]
-    //
-    // NOTE: >= handles duplicates correctly
-    //       Insert 32 into [41, 32, 11] → [41, 32, 32, 11] ✓
-    const top = stack.peek()!;
-    if (element >= top) {
-      stack.push(element);
+    const currentTop = stack[stack.length - 1];
+
+    if (currentTop <= valueToInsert) {
+      // currentTop stack ka abhi ka largest visible top side element hai.
+      // Agar woh valueToInsert se chhota ya equal hai, toh value ko uske upar rakhne se
+      // bottom-se-top ascending order preserve rahega.
+      stack.push(valueToInsert);
       return;
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // RECURSIVE CASE: Element < top (need to go deeper)
-    // ═══════════════════════════════════════════════════════════
-    // WHY: Element should be below current top
-    // STRATEGY: Remove top, insert element recursively, restore top
-    //
-    // EXAMPLE: Insert 11 into [41, 32, 3]
-    //   top = 41, element = 11
-    //   11 < 41 → need to go deeper
-    //   1. Pop 41
-    //   2. insertSorted([32, 3], 11) recursively
-    //   3. Push 41 back
+    const removedTop = stack.pop()!;
 
-    // STEP 1: Remove top element (temporarily)
-    // It's larger than our element, so it should stay ABOVE
-    stack.pop();
+    // removedTop valueToInsert se bada hai.
+    // Isliye valueToInsert ko iske neeche kahin place karna hoga.
+    insertSorted(stack, valueToInsert);
 
-    // STEP 2: Recursively insert element into remaining stack
-    // This continues until we find the right position
-    insertSorted(stack, element);
-
-    // STEP 3: Restore the top element
-    // Now that element is inserted below, put top back on top
-    stack.push(top);
+    // Neeche insertion complete ho chuki hai.
+    // Ab removedTop ko wapas push karna zaroori hai taaki bigger elements top side par rahein.
+    stack.push(removedTop);
   }
 
   /**
-   * ═══════════════════════════════════════════════════════════
-   * DRY RUN - COMPLETE VISUALIZATION
-   * ═══════════════════════════════════════════════════════════
+   * ==========================================================
+   * STACK MENTAL MODEL
+   * ==========================================================
    *
-   * ARRAY CONVENTION (VERY IMPORTANT!)
-   * ═══════════════════════════════════════════════════════════
-   * Array: [41, 3, 32, 2, 11]
-   *         ↑            ↑
-   *      index 0     last index
-   *      BOTTOM        TOP
+   * Array ko stack ki tarah treat kar rahe hain:
    *
-   * Stack visualization:
-   *   11 ← TOP (last element, index 4)
-   *    2
-   *   32
-   *    3
-   *   41 ← BOTTOM (first element, index 0)
+   *   push(x) -> array ke end me x add hota hai
+   *   pop()   -> array ke end se top remove hota hai
    *
-   * Operations:
-   *   push(10) → adds to END → [41, 3, 32, 2, 11, 10]
-   *   pop() → removes from END → removes 11 → [41, 3, 32, 2]
-   *   peek() → returns last element → 11
+   * Example:
    *
-   * ═══════════════════════════════════════════════════════════
+   *   [4, 1, 3, 2]
+   *    ^        ^
+   * bottom     top
    *
-   * Example: Sort [41, 3, 32, 2, 11]
+   * Sorted stack ka meaning:
    *
-   * Initial Stack: [41, 3, 32, 2, 11]
-   *                 ↑              ↑
-   *              bottom          top
+   *   [1, 2, 3, 4]
+   *    ^        ^
+   * bottom     top
    *
-   * ───────────────────────────────────────────────────────────
-   * PHASE 1: RECURSIVE EXPANSION (Popping all elements)
-   * ───────────────────────────────────────────────────────────
+   * Yani left se right tak values ascending honi chahiye.
    *
-   * ┌──────────────────────────────────────────────────────────┐
-   * │ CALL 1: sortStack([41, 3, 32, 2, 11])                   │
-   * ├──────────────────────────────────────────────────────────┤
-   * │ pop() removes 11 (last element)                          │
-   * │ Stack: [41, 3, 32, 2]                                   │
-   * │ Held: 11                                                 │
-   * │ Recursive call →                                         │
-   * │                                                          │
-   * │   ┌────────────────────────────────────────────────────┐ │
-   * │   │ CALL 2: sortStack([41, 3, 32, 2])                 │ │
-   * │   ├────────────────────────────────────────────────────┤ │
-   * │   │ pop() removes 2                                    │ │
-   * │   │ Stack: [41, 3, 32]                                │ │
-   * │   │ Held: 2                                            │ │
-   * │   │ Recursive call →                                   │ │
-   * │   │                                                    │ │
-   * │   │   ┌──────────────────────────────────────────────┐ │ │
-   * │   │   │ CALL 3: sortStack([41, 3, 32])              │ │ │
-   * │   │   ├──────────────────────────────────────────────┤ │ │
-   * │   │   │ pop() removes 32                             │ │ │
-   * │   │   │ Stack: [41, 3]                              │ │ │
-   * │   │   │ Held: 32                                     │ │ │
-   * │   │   │ Recursive call →                             │ │ │
-   * │   │   │                                              │ │ │
-   * │   │   │   ┌────────────────────────────────────────┐ │ │ │
-   * │   │   │   │ CALL 4: sortStack([41, 3])            │ │ │ │
-   * │   │   │   ├────────────────────────────────────────┤ │ │ │
-   * │   │   │   │ pop() removes 3                        │ │ │ │
-   * │   │   │   │ Stack: [41]                           │ │ │ │
-   * │   │   │   │ Held: 3                                │ │ │ │
-   * │   │   │   │ Recursive call →                       │ │ │ │
-   * │   │   │   │                                        │ │ │ │
-   * │   │   │   │   ┌──────────────────────────────────┐ │ │ │ │
-   * │   │   │   │   │ CALL 5: sortStack([41])         │ │ │ │ │
-   * │   │   │   │   ├──────────────────────────────────┤ │ │ │ │
-   * │   │   │   │   │ pop() removes 41                 │ │ │ │ │
-   * │   │   │   │   │ Stack: []                       │ │ │ │ │
-   * │   │   │   │   │ Held: 41                         │ │ │ │ │
-   * │   │   │   │   │ Recursive call →                 │ │ │ │ │
-   * │   │   │   │   │                                  │ │ │ │ │
-   * │   │   │   │   │   ┌────────────────────────────┐ │ │ │ │ │
-   * │   │   │   │   │   │ CALL 6: sortStack([])     │ │ │ │ │ │
-   * │   │   │   │   │   ├────────────────────────────┤ │ │ │ │ │
-   * │   │   │   │   │   │ Empty stack!               │ │ │ │ │ │
-   * │   │   │   │   │   │ BASE CASE: Return          │ │ │ │ │ │
-   * │   │   │   │   │   └────────────────────────────┘ │ │ │ │ │
+   * ==========================================================
+   * HIGH-LEVEL RECURSION TREE
+   * ==========================================================
    *
-   * ───────────────────────────────────────────────────────────
-   * PHASE 2: UNWINDING (Inserting elements back in sorted order)
-   * ───────────────────────────────────────────────────────────
+   * sortStack([4,1,3,2])
+   * │
+   * ├── pop 2, recurse on [4,1,3]
+   * │   ├── pop 3, recurse on [4,1]
+   * │   │   ├── pop 1, recurse on [4]
+   * │   │   │   └── base case: [4] already sorted
+   * │   │   └── insert 1 into [4] -> [1,4]
+   * │   └── insert 3 into [1,4] -> [1,3,4]
+   * └── insert 2 into [1,3,4] -> [1,2,3,4]
    *
-   * │   │   │   │   │   │                                  │ │ │ │ │
-   * │   │   │   │   │   Back in CALL 5:                   │ │ │ │ │
-   * │   │   │   │   │   insertSorted([], 41)             │ │ │ │ │
-   * │   │   │   │   │     Empty → push(41)                │ │ │ │ │
-   * │   │   │   │   │     Stack: [41]                     │ │ │ │ │
-   * │   │   │   │   │             ↑                        │ │ │ │ │
-   * │   │   │   │   │         bottom/top                   │ │ │ │ │
-   * │   │   │   │   │   Return                             │ │ │ │ │
-   * │   │   │   │   └──────────────────────────────────┘ │ │ │ │
-   * │   │   │   │                                        │ │ │ │
-   * │   │   │   │   Back in CALL 4:                      │ │ │ │
-   * │   │   │   │   insertSorted([41], 3)               │ │ │ │
-   * │   │   │   │     peek() = 41 (top element)          │ │ │ │
-   * │   │   │   │     3 < 41? YES → need to go below     │ │ │ │
-   * │   │   │   │     pop() → removes 41 → Stack: []     │ │ │ │
-   * │   │   │   │     insertSorted([], 3)               │ │ │ │
-   * │   │   │   │       Empty → push(3)                  │ │ │ │
-   * │   │   │   │       Stack: [3]                       │ │ │ │
-   * │   │   │   │     push(41) back                      │ │ │ │
-   * │   │   │   │     Stack: [3, 41]                     │ │ │ │
-   * │   │   │   │            ↑   ↑                        │ │ │ │
-   * │   │   │   │        bottom top                       │ │ │ │
-   * │   │   │   │   Return                                │ │ │ │
-   * │   │   │   └────────────────────────────────────────┘ │ │ │
-   * │   │   │                                              │ │ │
-   * │   │   │   Back in CALL 3:                            │ │ │
-   * │   │   │   insertSorted([3, 41], 32)                 │ │ │
-   * │   │   │     peek() = 41                              │ │ │
-   * │   │   │     32 < 41? YES → need to go below         │ │ │
-   * │   │   │     pop() → removes 41 → Stack: [3]         │ │ │
-   * │   │   │     insertSorted([3], 32)                   │ │ │
-   * │   │   │       peek() = 3                             │ │ │
-   * │   │   │       32 < 3? NO → 32 >= 3, found position! │ │ │
-   * │   │   │       push(32)                               │ │ │
-   * │   │   │       Stack: [3, 32]                         │ │ │
-   * │   │   │     push(41) back                            │ │ │
-   * │   │   │     Stack: [3, 32, 41]                       │ │ │
-   * │   │   │            ↑       ↑                          │ │ │
-   * │   │   │         bottom    top                         │ │ │
-   * │   │   │   Return                                      │ │ │
-   * │   │   └──────────────────────────────────────────────┘ │ │
-   * │   │                                                    │ │
-   * │   │   Back in CALL 2:                                  │ │
-   * │   │   insertSorted([3, 32, 41], 2)                    │ │
-   * │   │     peek() = 41                                    │ │
-   * │   │     2 < 41? YES → go deeper                        │ │
-   * │   │     pop() → removes 41 → Stack: [3, 32]           │ │
-   * │   │     insertSorted([3, 32], 2)                      │ │
-   * │   │       peek() = 32                                  │ │
-   * │   │       2 < 32? YES → go deeper                      │ │
-   * │   │       pop() → removes 32 → Stack: [3]             │ │
-   * │   │       insertSorted([3], 2)                        │ │
-   * │   │         peek() = 3                                 │ │
-   * │   │         2 < 3? YES → go deeper                     │ │
-   * │   │         pop() → removes 3 → Stack: []             │ │
-   * │   │         insertSorted([], 2)                       │ │
-   * │   │           Empty → push(2)                          │ │
-   * │   │           Stack: [2]                               │ │
-   * │   │         push(3) back                               │ │
-   * │   │         Stack: [2, 3]                              │ │
-   * │   │       push(32) back                                │ │
-   * │   │       Stack: [2, 3, 32]                            │ │
-   * │   │     push(41) back                                  │ │
-   * │   │     Stack: [2, 3, 32, 41]                          │ │
-   * │   │            ↑           ↑                            │ │
-   * │   │         bottom        top                           │ │
-   * │   │   Return                                            │ │
-   * │   └────────────────────────────────────────────────────┘ │
-   * │                                                          │
-   * │   Back in CALL 1:                                        │
-   * │   insertSorted([2, 3, 32, 41], 11)                      │
-   * │     peek() = 41                                          │
-   * │     11 < 41? YES → go deeper                            │
-   * │     pop() → removes 41 → Stack: [2, 3, 32]             │
-   * │     insertSorted([2, 3, 32], 11)                       │
-   * │       peek() = 32                                        │
-   * │       11 < 32? YES → go deeper                          │
-   * │       pop() → removes 32 → Stack: [2, 3]               │
-   * │       insertSorted([2, 3], 11)                         │
-   * │         peek() = 3                                       │
-   * │         11 < 3? NO → 11 >= 3, found position!          │
-   * │         push(11)                                         │
-   * │         Stack: [2, 3, 11]                                │
-   * │       push(32) back                                      │
-   * │       Stack: [2, 3, 11, 32]                              │
-   * │     push(41) back                                        │
-   * │     Stack: [2, 3, 11, 32, 41]                            │
-   * │            ↑               ↑                              │
-   * │         bottom            top                             │
-   * │   Return                                                  │
-   * └──────────────────────────────────────────────────────────┘
+   * Key pattern:
    *
-   * ───────────────────────────────────────────────────────────
-   * FINAL RESULT
-   * ───────────────────────────────────────────────────────────
+   *   expansion phase -> top elements remove hote hain
+   *   unwinding phase -> actual sorted order build hota hai
    *
-   * Stack: [2, 3, 11, 32, 41]
+   * ==========================================================
+   * DECISION TREE
+   * ==========================================================
    *
-   * Visualization:
-   *   41 ← TOP (largest)
-   *   32
-   *   11
-   *    3
-   *    2 ← BOTTOM (smallest)
+   * sortStack frame fixed kaam karta hai:
    *
-   * Sorted in ASCENDING order! ✓
-   * (Smallest at bottom, largest at top)
+   *   1. top hatao
+   *   2. remaining stack sort karo
+   *   3. removed top ko correct position par insert karo
+   *
+   * insertSorted frame fixed decision leta hai:
+   *
+   *   1. empty? -> push
+   *   2. top <= value? -> push on top
+   *   3. otherwise top hatao, deeper recurse karo, phir top wapas rakho
+   *
+   * ==========================================================
+   * NESTED BOX-HEAVY CALL FRAME DRY RUN
+   * ==========================================================
+   *
+   * Initial Call: sortStack([4, 1, 3, 2])
+   *
+   * ┌────────────────────────────────────────────────────────────────────────┐
+   * │ CALL 1: sortStack([4, 1, 3, 2])                                        │
+   * ├────────────────────────────────────────────────────────────────────────┤
+   * │ stack = [4, 1, 3, 2]                                                   │
+   * │ Base case? stack.length <= 1 -> Nahi                                   │
+   * │ pop() -> topElement = 2                                                 │
+   * │ remaining stack = [4, 1, 3]                                            │
+   * │ recurse: sortStack([4, 1, 3])                                          │
+   * │                                                                        │
+   * │   ┌──────────────────────────────────────────────────────────────┐     │
+   * │   │ CALL 2: sortStack([4, 1, 3])                                 │     │
+   * │   ├──────────────────────────────────────────────────────────────┤     │
+   * │   │ stack = [4, 1, 3]                                             │     │
+   * │   │ pop() -> topElement = 3                                       │     │
+   * │   │ remaining stack = [4, 1]                                      │     │
+   * │   │ recurse: sortStack([4, 1])                                    │     │
+   * │   │                                                                │     │
+   * │   │   ┌────────────────────────────────────────────────────┐       │     │
+   * │   │   │ CALL 3: sortStack([4, 1])                           │       │     │
+   * │   │   ├────────────────────────────────────────────────────┤       │     │
+   * │   │   │ stack = [4, 1]                                      │       │     │
+   * │   │   │ pop() -> topElement = 1                             │       │     │
+   * │   │   │ remaining stack = [4]                               │       │     │
+   * │   │   │ recurse: sortStack([4])                             │       │     │
+   * │   │   │                                                      │       │     │
+   * │   │   │   ┌────────────────────────────────────────────┐     │       │     │
+   * │   │   │   │ CALL 4: sortStack([4])                     │     │       │     │
+   * │   │   │   ├────────────────────────────────────────────┤     │       │     │
+   * │   │   │   │ stack = [4]                                │     │       │     │
+   * │   │   │   │ Base case? 1 <= 1 -> Haan                  │     │       │     │
+   * │   │   │   │ [4] already sorted, return                 │     │       │     │
+   * │   │   │   └────────────────────────────────────────────┘     │       │     │
+   * │   │   │                                                      │       │     │
+   * │   │   │ ab remaining stack [4] sorted hai                   │       │     │
+   * │   │   │ insertSorted([4], 1)                                │       │     │
+   * │   │   │ currentTop = 4                                       │       │     │
+   * │   │   │ 4 <= 1 ? Nahi                                        │       │     │
+   * │   │   │ pop 4, recurse empty, push 1, push 4 back            │       │     │
+   * │   │   │ result stack = [1, 4]                                │       │     │
+   * │   │   │ return                                                │       │     │
+   * │   │   └────────────────────────────────────────────────────┘       │     │
+   * │   │                                                                │     │
+   * │   │ ab remaining stack [1, 4] sorted hai                          │     │
+   * │   │ insertSorted([1, 4], 3)                                       │     │
+   * │   │ currentTop = 4                                                 │     │
+   * │   │ 4 <= 3 ? Nahi                                                  │     │
+   * │   │ pop 4                                                          │     │
+   * │   │ insertSorted([1], 3)                                           │     │
+   * │   │   currentTop = 1                                               │     │
+   * │   │   1 <= 3 ? Haan -> push 3                                      │     │
+   * │   │   stack becomes [1, 3]                                         │     │
+   * │   │ push 4 back                                                    │     │
+   * │   │ result stack = [1, 3, 4]                                       │     │
+   * │   │ return                                                          │     │
+   * │   └──────────────────────────────────────────────────────────────┘     │
+   * │                                                                        │
+   * │ ab remaining stack [1, 3, 4] sorted hai                                │
+   * │ insertSorted([1, 3, 4], 2)                                             │
+   * │ currentTop = 4                                                          │
+   * │ 4 <= 2 ? Nahi                                                           │
+   * │ pop 4                                                                   │
+   * │ insertSorted([1, 3], 2)                                                 │
+   * │   currentTop = 3                                                        │
+   * │   3 <= 2 ? Nahi                                                         │
+   * │   pop 3                                                                 │
+   * │   insertSorted([1], 2)                                                  │
+   * │     currentTop = 1                                                      │
+   * │     1 <= 2 ? Haan -> push 2                                             │
+   * │     stack becomes [1, 2]                                                │
+   * │   push 3 back -> [1, 2, 3]                                              │
+   * │ push 4 back -> [1, 2, 3, 4]                                             │
+   * │ final sorted stack = [1, 2, 3, 4]                                       │
+   * │ return                                                                   │
+   * └────────────────────────────────────────────────────────────────────────┘
+   *
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
+   *
+   * 1. []          -> already sorted
+   * 2. [5]         -> already sorted
+   * 3. [2, 1]      -> [1, 2]
+   * 4. duplicates  -> same comparison logic se sort ho jate hain
    */
 
-  // ==================== TEST CASES ====================
+  function expectSortedStack(input: number[], expected: number[]): void {
+    const stack = [...input];
+    sortStack(stack);
 
-  /**
-   * Helper: Print stack in visual format
-   */
-  function visualizeStack(stack: Stack<number>, label: string): void {
-    const arr = stack.toArray();
-    console.log(label);
-    if (arr.length === 0) {
-      console.log("  (empty)");
-    } else {
-      for (let i = arr.length - 1; i >= 0; i--) {
-        const marker = i === arr.length - 1 ? " ← top" : i === 0 ? " ← bottom" : "";
-        console.log(`  ${arr[i]}${marker}`);
-      }
+    const actual = JSON.stringify(stack);
+    const wanted = JSON.stringify(expected);
+
+    if (actual !== wanted) {
+      throw new Error(
+        `For input ${JSON.stringify(input)}, expected ${wanted} but got ${actual}`
+      );
     }
   }
 
-  /**
-   * Run comprehensive test cases
-   */
   export function runTests(): void {
-    console.log("═══════════════════════════════════════════════════════════");
-    console.log("Testing Sort Stack using Recursion");
-    console.log("═══════════════════════════════════════════════════════════\n");
+    const tests: Array<{ input: number[]; expected: number[] }> = [
+      { input: [4, 1, 3, 2], expected: [1, 2, 3, 4] },
+      { input: [41, 3, 32, 2, 11], expected: [2, 3, 11, 32, 41] },
+      { input: [5], expected: [5] },
+      { input: [], expected: [] },
+      { input: [2, 1], expected: [1, 2] },
+      { input: [7, 7, 7, 7], expected: [7, 7, 7, 7] },
+      { input: [-5, 10, -3, 2], expected: [-5, -3, 2, 10] },
+      { input: [9, 0, 4, 0], expected: [0, 0, 4, 9] },
+    ];
 
-    // Test 1: Standard unsorted stack
-    console.log("Test 1: Standard Unsorted Stack");
-    console.log("  Input: [41, 3, 32, 2, 11]");
-    const stack1 = Stack.fromArray([41, 3, 32, 2, 11]);
-    visualizeStack(stack1, "  Before:");
-    sortStack(stack1);
-    visualizeStack(stack1, "  After:");
-    const result1 = stack1.toArray();
-    const expected1 = [2, 3, 11, 32, 41]; // bottom to top, ascending
-    console.log(
-      "  Result:",
-      JSON.stringify(result1) === JSON.stringify(expected1) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
+    tests.forEach(({ input, expected }) => {
+      expectSortedStack(input, expected);
+    });
 
-    // Test 2: Already sorted
-    console.log("Test 2: Already Sorted (Ascending)");
-    console.log("  Input: [1, 2, 3, 4, 5]");
-    const stack2 = Stack.fromArray([1, 2, 3, 4, 5]);
-    sortStack(stack2);
-    const result2 = stack2.toArray();
-    const expected2 = [1, 2, 3, 4, 5];
-    console.log(
-      "  Result:",
-      JSON.stringify(result2) === JSON.stringify(expected2) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 3: Reverse sorted (worst case)
-    console.log("Test 3: Reverse Sorted (Worst Case)");
-    console.log("  Input: [5, 4, 3, 2, 1]");
-    const stack3 = Stack.fromArray([5, 4, 3, 2, 1]);
-    sortStack(stack3);
-    const result3 = stack3.toArray();
-    const expected3 = [1, 2, 3, 4, 5];
-    console.log(
-      "  Result:",
-      JSON.stringify(result3) === JSON.stringify(expected3) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 4: Single element
-    console.log("Test 4: Single Element");
-    console.log("  Input: [42]");
-    const stack4 = Stack.fromArray([42]);
-    sortStack(stack4);
-    const result4 = stack4.toArray();
-    const expected4 = [42];
-    console.log(
-      "  Result:",
-      JSON.stringify(result4) === JSON.stringify(expected4) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 5: Empty stack
-    console.log("Test 5: Empty Stack");
-    console.log("  Input: []");
-    const stack5 = Stack.fromArray([]);
-    sortStack(stack5);
-    const result5 = stack5.toArray();
-    const expected5: number[] = [];
-    console.log(
-      "  Result:",
-      JSON.stringify(result5) === JSON.stringify(expected5) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 6: Duplicates
-    console.log("Test 6: Stack with Duplicates");
-    console.log("  Input: [3, 1, 3, 2, 1]");
-    const stack6 = Stack.fromArray([3, 1, 3, 2, 1]);
-    sortStack(stack6);
-    const result6 = stack6.toArray();
-    const expected6 = [1, 1, 2, 3, 3];
-    console.log(
-      "  Result:",
-      JSON.stringify(result6) === JSON.stringify(expected6) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Test 7: Two elements
-    console.log("Test 7: Two Elements");
-    console.log("  Input: [5, 3]");
-    const stack7 = Stack.fromArray([5, 3]);
-    sortStack(stack7);
-    const result7 = stack7.toArray();
-    const expected7 = [3, 5];
-    console.log(
-      "  Result:",
-      JSON.stringify(result7) === JSON.stringify(expected7) ? "✓ PASS" : "✗ FAIL"
-    );
-    console.log();
-
-    // Complexity Note
-    console.log("═══════════════════════════════════════════════════════════");
-    console.log("COMPLEXITY ANALYSIS:");
-    console.log("═══════════════════════════════════════════════════════════");
-    console.log("Time Complexity: O(n²)");
-    console.log("  - Sort n elements");
-    console.log("  - Each insertion can take O(n) in worst case");
-    console.log("  - Total: O(n) × O(n) = O(n²)");
-    console.log("");
-    console.log("Space Complexity: O(n)");
-    console.log("  - Recursion depth: O(n)");
-    console.log("  - Each call holds one element");
-    console.log("");
-    console.log("Pattern: COMBINER (work during unwinding phase)");
-    console.log("═══════════════════════════════════════════════════════════\n");
+    console.log(`Passed ${tests.length}/${tests.length} tests`);
   }
 }
 
-// Run tests
-SortStack.runTests();
+SortStackRecursion.runTests();

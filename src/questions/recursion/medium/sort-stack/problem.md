@@ -1,425 +1,243 @@
-# Sort a Stack using Recursion
+# Sort Stack
 
-**Difficulty**: Medium
-**Topics**: Stack, Recursion, Backtracking
-**Source**: GeeksforGeeks
+## Problem Samjho
+
+Hume ek stack diya hai, aur usko recursion ki help se sort karna hai.
+
+Yahan stack ko array form me aise represent karenge:
+
+```txt
+[4, 1, 3, 2]
+ ^        ^
+bottom   top
+```
+
+Matlab:
+
+```txt
+stack[0] = bottom
+stack[stack.length - 1] = top
+```
+
+Sorted stack ka meaning:
+
+```txt
+smallest bottom par ho
+largest top par ho
+```
+
+So sorted form:
+
+```txt
+[1, 2, 3, 4]
+ ^        ^
+bottom   top
+```
+
+Important restriction:
+
+```txt
+1. Core logic me loop use nahi karna
+2. Extra stack / extra array use nahi karna
+3. Sirf recursion aur stack operations use karni hain
+4. Stack ko in-place sort karna hai
+```
 
 ---
 
-## Problem Statement
+## Examples
 
-[sort-stack](https://www.geeksforgeeks.org/dsa/sort-a-stack-using-recursion/)
+### Example 1
 
-Given a stack of integers `st[]`, sort the stack in **ascending order** using **recursion only**.
-
-**Ascending order**: Smallest element at the **bottom**, largest element at the **top**.
-
-**Constraints**:
-- You can only use recursion (no loops allowed!)
-- You can use standard stack operations: `push()`, `pop()`, `peek()`, `isEmpty()`
-- No extra data structures allowed (except the recursion call stack)
-
----
-
-### Examples:
-
-**Example 1:**
-```
-Input: st[] = [1, 2, 3]
-Output: [3, 2, 1]
-
-Visualization:
-Before:     After:
-  3           1  ← bottom (smallest)
-  2           2
-  1  ← top    3  ← top (largest)
+```txt
+Input:  [4, 1, 3, 2]
+Output: [1, 2, 3, 4]
 ```
 
-**Example 2:**
-```
-Input: st[] = [41, 3, 32, 2, 11]
-Output: [41, 32, 11, 3, 2]
+### Example 2
 
-Visualization:
-Before:      After:
-  11           2  ← bottom (smallest)
-  2            3
-  32          11
-  3           32
-  41 ← top    41 ← top (largest)
+```txt
+Input:  [41, 3, 32, 2, 11]
+Output: [2, 3, 11, 32, 41]
 ```
 
-**Example 3:**
-```
-Input: st[] = [5]
+### Example 3
+
+```txt
+Input:  [5]
 Output: [5]
-Explanation: Single element is already sorted
 ```
 
-**Example 4:**
-```
-Input: st[] = []
+### Example 4
+
+```txt
+Input:  []
 Output: []
-Explanation: Empty stack is already sorted
 ```
 
 ---
 
-## Intuition (Soch)
+## Key Insight
 
-### The Challenge
+Stack ka problem yeh hai ki hum bottom ya middle directly access nahi kar sakte.
 
-How do you sort WITHOUT loops and WITHOUT extra arrays?
+Hum sirf top se kaam kar sakte hain:
 
-**Answer**: Use the **recursion call stack** itself as temporary storage!
-
-### The Key Insight
-
-```
-To sort a stack:
-  1. Remove the top element
-  2. Sort the remaining stack (recursive call)
-  3. Insert the removed element back in the correct position
+```txt
+push
+pop
+peek
 ```
 
-**Visual Example**: Sort [41, 3, 32, 2, 11]
+So sorting ke liye bhi recursion do parts me kaam karegi:
 
+```txt
+1. top element hatao
+2. remaining stack ko sort karo
+3. removed element ko sorted stack me correct jagah par wapas insert karo
 ```
-Step 1: Pop 11
-  Stack: [41, 3, 32, 2]
-  Held in recursion: 11
 
-Step 2: Pop 2
-  Stack: [41, 3, 32]
-  Held in recursion: 11, 2
+Iske liye do recursive functions chahiye:
 
-Step 3: Pop 32
-  Stack: [41, 3]
-  Held in recursion: 11, 2, 32
+| function | job |
+|---|---|
+| `sortStack(stack)` | poore stack ko sort karta hai |
+| `insertSorted(stack, value)` | value ko already-sorted stack me correct jagah insert karta hai |
 
-Step 4: Pop 3
-  Stack: [41]
-  Held in recursion: 11, 2, 32, 3
+---
 
-Step 5: Pop 41
-  Stack: []
-  Held in recursion: 11, 2, 32, 3, 41
+## Visual Intuition
 
-BASE CASE: Empty stack is sorted!
+Example:
 
-Now UNWIND and insert each element back in sorted position:
+```txt
+stack = [4, 1, 3, 2]
+```
 
-Insert 41 into []:
-  Stack: [41]
+Expansion phase:
 
-Insert 3 into [41]:
-  3 < 41 → goes to bottom
-  Stack: [41, 3]  (41 at top)
+```txt
+pop 2
+pop 3
+pop 1
+pop 4
+stack empty
+```
 
-Insert 32 into [41, 3]:
-  32 < 41 → continue
-  32 > 3 → found position
-  Stack: [41, 32, 3]
+Ab unwind phase me elements ko sorted order me insert karenge:
 
-Insert 2 into [41, 32, 3]:
-  2 < 41 → continue
-  2 < 32 → continue
-  2 < 3 → goes to bottom
-  Stack: [41, 32, 3, 2]
+```txt
+insert 4 -> [4]
+insert 1 -> [1, 4]
+insert 3 -> [1, 3, 4]
+insert 2 -> [1, 2, 3, 4]
+```
 
-Insert 11 into [41, 32, 3, 2]:
-  11 < 41 → continue
-  11 < 32 → continue
-  11 > 3 → found position
-  Stack: [41, 32, 11, 3, 2]
+Yahi final sorted stack hai.
 
-DONE! ✓
+---
+
+## Approach
+
+### `sortStack(stack)`
+
+Ye poore stack ko sort karta hai.
+
+Algorithm:
+
+```txt
+1. Agar stack empty ya single element hai, return
+2. Top pop karo
+3. Remaining stack ko recursively sort karo
+4. Removed top ko sorted stack me correct position par insert karo
+```
+
+### `insertSorted(stack, value)`
+
+Ye helper function ek value ko already-sorted stack me sahi jagah place karta hai.
+
+Algorithm:
+
+```txt
+1. Agar stack empty hai, value push karo
+2. Agar current top <= value hai, value ko top par push karo
+3. Warna top pop karo
+4. value ko remaining stack me recursively insert karo
+5. Removed top ko wapas push karo
 ```
 
 ---
 
-## Approach: Two Recursive Functions
+## Why This Works
 
-### Function 1: `sortStack(stack)`
+Suppose recursive call hume guarantee deti hai ki:
 
-**Purpose**: Sort the entire stack
-
-**Algorithm**:
-```
-sortStack(stack):
-    // BASE CASE: Empty or single element is already sorted
-    if stack is empty:
-        return
-
-    // RECURSIVE CASE:
-    // 1. Remove top element (hold in recursion stack)
-    top = stack.pop()
-
-    // 2. Recursively sort the remaining stack
-    sortStack(stack)  // Now stack is sorted!
-
-    // 3. Insert top element back in correct position
-    insertSorted(stack, top)
+```txt
+remaining smaller stack already sorted hai
 ```
 
-**Time Complexity**: O(n²)
-- Sorting n elements: T(n) = T(n-1) + O(n)
-- Inserting each element: O(n) in worst case
-- Total: O(n²)
+Then current frame ka kaam simple ho jata hai:
 
-**Space Complexity**: O(n)
-- Recursion depth: O(n)
-- Each level holds one element
+```txt
+removed top ko bas sorted order me insert kar do
+```
+
+Example:
+
+```txt
+remaining sorted stack = [1, 3, 4]
+removed value = 2
+```
+
+`insertSorted` karega:
+
+```txt
+2 < 4 -> 4 hatao
+2 < 3 -> 3 hatao
+2 >= 1 -> 2 ko 1 ke upar rakho
+phir 3 aur 4 wapas rakho
+```
+
+Result:
+
+```txt
+[1, 2, 3, 4]
+```
+
+Isi guarantee ko har frame me apply karne se poora stack sort ho jata hai.
 
 ---
 
-### Function 2: `insertSorted(stack, element)`
+## Complexity
 
-**Purpose**: Insert element into an already-sorted stack in the correct position
+### Time Complexity: `O(n^2)`
 
-**Algorithm**:
-```
-insertSorted(stack, element):
-    // BASE CASE 1: Stack is empty
-    if stack is empty:
-        stack.push(element)
-        return
+Reason:
 
-    // BASE CASE 2: Element is larger than top (belongs on top)
-    if element >= stack.peek():
-        stack.push(element)
-        return
-
-    // RECURSIVE CASE: Element is smaller than top
-    // 1. Remove top element (it's larger, should stay above)
-    top = stack.pop()
-
-    // 2. Insert element into remaining stack
-    insertSorted(stack, element)
-
-    // 3. Put the top back
-    stack.push(top)
+```txt
+sortStack har element ke liye ek baar call hota hai
+aur insertSorted worst case O(n) le sakta hai
 ```
 
-**Time Complexity**: O(n)
-- In worst case, traverse entire stack
+Recurrence intuition:
 
-**Space Complexity**: O(n)
-- Recursion depth in worst case
-
----
-
-## Complete Dry Run
-
-**Input**: `st = [41, 3, 32, 2, 11]`
-
-### Phase 1: Recursive Calls (Expansion)
-
-```
-┌──────────────────────────────────────────────────────────┐
-│ CALL 1: sortStack([41, 3, 32, 2, 11])                   │
-├──────────────────────────────────────────────────────────┤
-│ Not empty → Pop 11                                       │
-│ Stack: [41, 3, 32, 2]                                   │
-│ Held: 11                                                 │
-│ Recursive call: sortStack([41, 3, 32, 2])              │
-│                                                          │
-│   ┌────────────────────────────────────────────────────┐ │
-│   │ CALL 2: sortStack([41, 3, 32, 2])                 │ │
-│   ├────────────────────────────────────────────────────┤ │
-│   │ Not empty → Pop 2                                  │ │
-│   │ Stack: [41, 3, 32]                                │ │
-│   │ Held: 2                                            │ │
-│   │ Recursive call: sortStack([41, 3, 32])           │ │
-│   │                                                    │ │
-│   │   ┌──────────────────────────────────────────────┐ │ │
-│   │   │ CALL 3: sortStack([41, 3, 32])              │ │ │
-│   │   ├──────────────────────────────────────────────┤ │ │
-│   │   │ Not empty → Pop 32                           │ │ │
-│   │   │ Stack: [41, 3]                              │ │ │
-│   │   │ Held: 32                                     │ │ │
-│   │   │ Recursive call: sortStack([41, 3])         │ │ │
-│   │   │                                              │ │ │
-│   │   │   ┌────────────────────────────────────────┐ │ │ │
-│   │   │   │ CALL 4: sortStack([41, 3])            │ │ │ │
-│   │   │   ├────────────────────────────────────────┤ │ │ │
-│   │   │   │ Not empty → Pop 3                      │ │ │ │
-│   │   │   │ Stack: [41]                           │ │ │ │
-│   │   │   │ Held: 3                                │ │ │ │
-│   │   │   │ Recursive call: sortStack([41])       │ │ │ │
-│   │   │   │                                        │ │ │ │
-│   │   │   │   ┌──────────────────────────────────┐ │ │ │ │
-│   │   │   │   │ CALL 5: sortStack([41])         │ │ │ │ │
-│   │   │   │   ├──────────────────────────────────┤ │ │ │ │
-│   │   │   │   │ Not empty → Pop 41               │ │ │ │ │
-│   │   │   │   │ Stack: []                       │ │ │ │ │
-│   │   │   │   │ Held: 41                         │ │ │ │ │
-│   │   │   │   │ Recursive call: sortStack([])   │ │ │ │ │
-│   │   │   │   │                                  │ │ │ │ │
-│   │   │   │   │   ┌────────────────────────────┐ │ │ │ │ │
-│   │   │   │   │   │ CALL 6: sortStack([])     │ │ │ │ │ │
-│   │   │   │   │   ├────────────────────────────┤ │ │ │ │ │
-│   │   │   │   │   │ Empty → BASE CASE!         │ │ │ │ │ │
-│   │   │   │   │   │ Return immediately         │ │ │ │ │ │
-│   │   │   │   │   └────────────────────────────┘ │ │ │ │ │
+```txt
+T(n) = T(n - 1) + O(n)
 ```
 
-### Phase 2: Unwinding with Insertions
+So final:
 
-```
-│   │   │   │   │                                  │ │ │ │ │
-│   │   │   │   │ Back in CALL 5:                  │ │ │ │ │
-│   │   │   │   │ insertSorted([], 41)            │ │ │ │ │
-│   │   │   │   │   Stack empty → push 41          │ │ │ │ │
-│   │   │   │   │   Result: [41]                   │ │ │ │ │
-│   │   │   │   │ Return                           │ │ │ │ │
-│   │   │   │   └──────────────────────────────────┘ │ │ │ │
-│   │   │   │                                        │ │ │ │
-│   │   │   │ Back in CALL 4:                        │ │ │ │
-│   │   │   │ insertSorted([41], 3)                 │ │ │ │
-│   │   │   │   3 < 41 → Need to go deeper          │ │ │ │
-│   │   │   │   Pop 41, insert 3, push 41 back      │ │ │ │
-│   │   │   │   Result: [41, 3]  (41 top, 3 bottom) │ │ │ │
-│   │   │   │ Return                                 │ │ │ │
-│   │   │   └────────────────────────────────────────┘ │ │ │
-│   │   │                                              │ │ │
-│   │   │ Back in CALL 3:                              │ │ │
-│   │   │ insertSorted([41, 3], 32)                   │ │ │
-│   │   │   32 < 41 → continue                         │ │ │
-│   │   │   32 > 3 → found position                    │ │ │
-│   │   │   Result: [41, 32, 3]                        │ │ │
-│   │   │ Return                                        │ │ │
-│   │   └──────────────────────────────────────────────┘ │ │
-│   │                                                    │ │
-│   │ Back in CALL 2:                                    │ │
-│   │ insertSorted([41, 32, 3], 2)                      │ │
-│   │   2 < 41 → continue                               │ │
-│   │   2 < 32 → continue                               │ │
-│   │   2 < 3 → goes to bottom                          │ │
-│   │   Result: [41, 32, 3, 2]                          │ │
-│   │ Return                                             │ │
-│   └────────────────────────────────────────────────────┘ │
-│                                                          │
-│ Back in CALL 1:                                          │
-│ insertSorted([41, 32, 3, 2], 11)                        │
-│   11 < 41 → continue                                    │
-│   11 < 32 → continue                                    │
-│   11 > 3 → found position                               │
-│   Result: [41, 32, 11, 3, 2]                            │
-│ Return                                                   │
-└──────────────────────────────────────────────────────────┘
-
-Final Stack: [41, 32, 11, 3, 2]
-Top to Bottom: 41 → 32 → 11 → 3 → 2 ✓
+```txt
+O(n^2)
 ```
 
----
+### Space Complexity: `O(n)`
 
-## Why This is a Medium Problem
+Reason:
 
-**Challenges**:
-1. **Two recursive functions**: Not just one simple recursion
-2. **Combiner pattern**: Work happens during unwinding (harder to visualize)
-3. **Nested recursion**: `sortStack` calls `insertSorted`, which is also recursive
-4. **No intuitive base case**: Not obvious when to stop
-5. **Space complexity**: Uses O(n) call stack space implicitly
-
-**Key Skills Tested**:
-- Understanding recursion deeply
-- Call stack visualization
-- Helper function design
-- Backtracking concepts
-
----
-
-## Edge Cases
-
-### 1. Empty Stack
-```
-Input: []
-Output: []
-Explanation: Empty stack is already sorted
+```txt
+recursion depth stack size ke proportional hoti hai
 ```
 
-### 2. Single Element
-```
-Input: [5]
-Output: [5]
-Explanation: Single element is already sorted
-```
-
-### 3. Already Sorted (Ascending)
-```
-Input: [5, 4, 3, 2, 1]  (5 at top)
-Output: [5, 4, 3, 2, 1]
-Explanation: No changes needed
-```
-
-### 4. Already Sorted (Descending)
-```
-Input: [1, 2, 3, 4, 5]  (5 at top)
-Output: [5, 4, 3, 2, 1]
-Explanation: Complete reversal needed (worst case)
-```
-
-### 5. Duplicate Elements
-```
-Input: [3, 1, 3, 2, 1]
-Output: [3, 3, 2, 1, 1]
-Explanation: Duplicates should be kept together
-```
-
----
-
-## Common Mistakes to Avoid
-
-❌ **Using loops** - Problem requires recursion only
-❌ **Using extra arrays** - Only recursion stack allowed
-❌ **Not handling empty stack** - Base case is crucial
-❌ **Wrong insertion logic** - Must maintain sorted order
-❌ **Forgetting to push back** - After recursive insert, must restore popped elements
-
-✅ **Two recursive functions** - `sortStack` and `insertSorted`
-✅ **Clear base cases** - Empty stack and element >= top
-✅ **Proper unwinding** - Work happens after recursive calls
-✅ **Handle duplicates** - Use >= not > for comparison
-
----
-
-## Interview Tips
-
-**What to say to interviewer:**
-
-*"This is a classic recursion problem that uses the call stack as temporary storage. The key insight is to remove the top element, recursively sort the rest, then insert it back in the correct position. I'll need two recursive functions: one to sort the stack, and a helper to insert an element in sorted order."*
-
-**Follow-up Questions:**
-
-**Q: Can you do this iteratively?**
-A: Yes, but it would require an extra stack for temporary storage. The recursive solution is more elegant as it uses the call stack implicitly.
-
-**Q: What if the stack is very large?**
-A: Risk of stack overflow with deep recursion. In production, might use iterative approach with explicit stack or use tail-call optimization if the language supports it.
-
-**Q: What's the time complexity?**
-A: O(n²) - for each of n elements, we might traverse the entire stack (n operations) during insertion.
-
-**Q: Can you optimize it to O(n log n)?**
-A: Not with this approach. O(n log n) would require merge sort or quicksort pattern, which needs different stack manipulation strategies.
-
----
-
-## Connection to Divide & Conquer
-
-This problem demonstrates the **Combiner Pattern**:
-- **Divide**: Remove top element
-- **Conquer**: Sort remaining stack
-- **Combine**: Insert element back in sorted position ← Work here!
-
-Unlike Merge Sort (which does minimal work during combine), this problem does O(n) work during the combine phase, making it O(n²) overall.
-
----
-
-Which implementation would you like to see? 🤔
-1. TypeScript solution with detailed comments
-2. Visual step-by-step execution
-3. Both!
+Koi extra stack / array use nahi ho raha.
+Sirf recursion call stack use ho rahi hai.

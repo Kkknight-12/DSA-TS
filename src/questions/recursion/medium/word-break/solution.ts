@@ -1,516 +1,311 @@
 /**
- * https://gemini.google.com/gem/9013c4cd97d5/a8d82d1642f2a5dc
- *
- * https://gemini.google.com/gem/9013c4cd97d5/5a06723361259b84
- *
- * ═══════════════════════════════════════════════════════════════════════════
  * WORD BREAK - RECURSION + MEMOIZATION
- * ═══════════════════════════════════════════════════════════════════════════
+ * ====================================
  *
- * Problem: Given a string s and a dictionary of words, return true if s can
- *          be segmented into a space-separated sequence of dictionary words.
+ * Problem:
+ * String `s` aur dictionary `wordDict` di gayi hai.
+ * Check karna hai kya `s` ko dictionary words me completely tod sakte hain.
  *
- * Pattern: Recursion + Memoization (Top-Down Dynamic Programming)
+ * Example:
+ *   s = "leetcode"
+ *   wordDict = ["leet", "code"]
+ *   answer = true
  *
- * Approach:
- * - Try every word in dictionary at current position
- * - If word matches, recursively check remaining string
- * - Cache results to avoid redundant computation
- * - Return true if any segmentation works
+ * Intuition:
+ * Har recursion frame ek `start` index represent karta hai.
  *
- * Time Complexity: O(n² × m)
- * - n = string length
- * - m = average word length
- * - n positions × n recursive calls × m string comparison
+ * Question:
+ *   Kya suffix `s[start...]` break ho sakta hai?
  *
- * Space Complexity: O(n)
- * - Memoization map: O(n) entries
- * - Recursion depth: O(n)
+ * Har frame me hum dictionary ke saare words try karte hain.
+ * Agar koi word current `start` par match karta hai,
+ * toh next frame `start + word.length` se chalega.
  *
- * ═══════════════════════════════════════════════════════════════════════════
+ * Agar koi bhi matching word remaining suffix ko successfully break kar de,
+ * toh current frame turant true return kar deta hai.
+ *
+ * Problem:
+ *   Same `start` index multiple paths se baar-baar aa sakta hai.
+ *
+ * Fix:
+ *   memo[start] me cache karo ki `s[start...]` break ho sakta hai ya nahi.
+ *
+ * Algorithm:
+ * 1. `memo` array banao jahan har index ka answer cache hoga.
+ * 2. Recursion `canBreakFrom(0)` se start karo.
+ * 3. Base case: agar `start === s.length`, string completely consume ho chuki hai, return true.
+ * 4. Agar `memo[start]` already known hai, cached answer return karo.
+ * 5. Dictionary ke har word ko current `start` par try karo.
+ * 6. Agar current `word` `s` me `start` se match nahi karta, next word par jao.
+ * 7. Match karta hai toh `nextStart = start + word.length` compute karo.
+ * 8. Recursively check karo `canBreakFrom(nextStart)`.
+ * 9. Agar recursive call true de, `memo[start] = true` store karke turant true return karo.
+ * 10. Agar koi bhi word kaam na kare, `memo[start] = false` store karke false return karo.
+ *
+ * Time Complexity:
+ *   O(n * d * L)
+ *   n = string length, d = dictionary size, L = average word length
+ *
+ * Space Complexity:
+ *   O(n)
+ *   memo + recursion stack
  */
 
-namespace WordBreakMemoization {
-  /**
-   * Main function: Check if string can be segmented using dictionary words
-   *
-   * @param s - Input string to segment
-   * @param wordDict - Array of valid words
-   * @returns true if s can be completely segmented, false otherwise
-   */
-  function wordBreak(s: string, wordDict: string[]): boolean {
-    // Edge Case: Empty string
-    // WHY: Empty string is always breakable (base case)
-    if (s.length === 0) return true;
-
-    // Edge Case: Empty dictionary
-    // WHY: Cannot break any string without words
-    // EXAMPLE: s = "a", wordDict = [] → false
-    if (wordDict.length === 0) return false;
-
-    // Step 1: Create memoization map
-    // WHY: Cache results for each starting index to avoid recomputation
-    // KEY: starting index in string
-    // VALUE: boolean (can we break s[index...end]?)
-    // EXAMPLE: memo[4] = true means s[4...end] can be broken
-    const memo = new Map<number, boolean>();
-
-    // Step 2: Convert array to Set for O(1) lookup
-    // WHY: Checking if word exists will be done many times
-    // OPTIMIZATION: Set.has() is O(1) vs Array.includes() is O(n)
-    const wordSet = new Set<string>(wordDict);
-
-    // Step 3: Start recursion from index 0
-    return canBreak(s, wordSet, 0, memo);
-  }
-
-  /**
-   * Helper function: Recursively check if string from 'start' can be broken
-   *
-   * @param s - Input string
-   * @param wordSet - Set of valid words (for O(1) lookup)
-   * @param start - Current starting index in string
-   * @param memo - Memoization map
-   * @returns true if s[start...end] can be segmented
-   */
-  function canBreak(
-    s: string,
-    wordSet: Set<string>,
-    start: number,
-    memo: Map<number, boolean>
-  ): boolean {
-    // BASE CASE 1: Reached end of string
-    // WHY: Successfully segmented entire string
-    // EXAMPLE: s = "leet", after matching "leet", start = 4 = length → success!
-    if (start === s.length) {
+namespace WordBreakRecursionMemoization {
+  export function wordBreak(s: string, wordDict: string[]): boolean {
+    if (s.length === 0) {
+      // Empty string already fully segmented mani jaati hai.
+      // Yahan consume karne ke liye koi character bacha hi nahi.
       return true;
     }
 
-    // MEMOIZATION CHECK: Already computed this subproblem?
-    // WHY: Avoid recomputing same starting index multiple times
-    // EXAMPLE: Both "leet"+"code" and "lee"+"t"+"code" reach index 4
-    //          Second time, use cached result!
-    if (memo.has(start)) {
-      return memo.get(start)!;
+    if (wordDict.length === 0) {
+      // Non-empty string ko break karne ke liye kam se kam ek usable word chahiye.
+      // Empty dictionary ke saath koi positive-length suffix solve nahi ho sakta.
+      return false;
     }
 
-    // RECURSIVE CASE: Try all possible words starting from current position
-    // WHY: Need to explore all possible segmentations
+    const memo: Array<boolean | undefined> = new Array(s.length);
 
-    // Try every possible end position from current start
-    // EXAMPLE: If start=0, try end=1,2,3,...,length
-    //          This creates substrings: s[0:1], s[0:2], s[0:3], etc.
-    for (let end = start + 1; end <= s.length; end++) {
-      // Extract substring from start to end
-      // EXAMPLE: s = "leetcode", start=0, end=4 → word = "leet"
-      const word = s.substring(start, end);
+    function canBreakFrom(start: number): boolean {
+      if (start === s.length) {
+        // `start` end tak pahunch gaya means previous choices ne string ko exactly cover kar diya.
+        return true;
+      }
 
-      // Check 1: Is this substring a valid dictionary word?
-      // WHY: Can only use words that exist in dictionary
-      // OPTIMIZATION: O(1) check using Set
-      if (wordSet.has(word)) {
-        // Check 2: Can we break the remaining string?
-        // WHY: Need to ensure REST of string can also be segmented
-        // RECURSIVE CALL: Move start to end (after current word)
-        // EXAMPLE: After "leet" (0-4), check from index 4 onwards
-        if (canBreak(s, wordSet, end, memo)) {
-          // SUCCESS! Found valid segmentation
-          // Cache TRUE result before returning
-          memo.set(start, true);
+      const cachedAnswer = memo[start];
+      if (cachedAnswer !== undefined) {
+        // Same suffix `s[start...]` ka answer pehle hi nikal chuke hain.
+        // Isliye poori subtree dobara explore karne ki zaroorat nahi.
+        return cachedAnswer;
+      }
+
+      for (const word of wordDict) {
+        if (!s.startsWith(word, start)) {
+          // Current word is position `start` par prefix match nahi karta.
+          // Is branch se segmentation start hi nahi ho sakti, so next word try karo.
+          continue;
+        }
+
+        const nextStart = start + word.length;
+        const remainingCanBreak = canBreakFrom(nextStart);
+
+        if (remainingCanBreak) {
+          // Current word ne prefix cover kar diya,
+          // aur baaki suffix bhi successfully break ho gaya.
+          // Ab dusre words try karna waste hai.
+          memo[start] = true;
           return true;
         }
-        // If remaining can't be broken, try next word (continue loop)
       }
+
+      // Is `start` index se koi bhi dictionary word successful full segmentation nahi bana saka.
+      memo[start] = false;
+      return false;
     }
 
-    // No valid word found from this starting position
-    // Cache FALSE result (IMPORTANT: cache negative results too!)
-    // WHY: Prevents recomputing failures
-    memo.set(start, false);
-    return false;
+    return canBreakFrom(0);
   }
 
   /**
-   * ═══════════════════════════════════════════════════════════════════════
-   * DRY RUN - COMPLETE VISUALIZATION
-   * ═══════════════════════════════════════════════════════════════════════
+   * ==========================================================
+   * MENTAL MODEL
+   * ==========================================================
    *
-   * Example Input:
-   * s = "leetcode"
-   * wordDict = ["leet", "code"]
-   * wordSet = {"leet", "code"}
+   * `start` ka meaning:
+   *   string ka current unresolved index
    *
-   * Initial State:
-   * s = "leetcode" (length 8)
-   * start = 0
-   * memo = {}
+   * `canBreakFrom(start)` ka meaning:
+   *   kya suffix `s[start...]` dictionary se segment ho sakta hai?
    *
-   * ═══════════════════════════════════════════════════════════════════════
-   * MAIN CALL: canBreak(s, wordSet, 0, memo)
-   * ═══════════════════════════════════════════════════════════════════════
+   * Example:
+   *   s = "leetcode"
    *
-   * CALL 1: canBreak("leetcode", wordSet, 0, memo)
-   * ────────────────────────────────────────────────────────────────────
-   * start = 0
-   * Checks:
-   *   start === s.length? 0 === 8? NO
-   *   memo.has(0)? NO (first call)
+   *   canBreakFrom(0)  -> "leetcode" solve karna hai
+   *   canBreakFrom(4)  -> "code" solve karna hai
+   *   canBreakFrom(8)  -> empty suffix, success
    *
-   * Try all end positions from start+1 to length:
+   * ==========================================================
+   * DECISION TREE
+   * ==========================================================
    *
-   * Loop iteration: end = 1
-   *   word = s.substring(0, 1) = "l"
-   *   wordSet.has("l")? NO → skip
-   *
-   * Loop iteration: end = 2
-   *   word = s.substring(0, 2) = "le"
-   *   wordSet.has("le")? NO → skip
-   *
-   * Loop iteration: end = 3
-   *   word = s.substring(0, 3) = "lee"
-   *   wordSet.has("lee")? NO → skip
-   *
-   * Loop iteration: end = 4
-   *   word = s.substring(0, 4) = "leet"
-   *   wordSet.has("leet")? YES ✓
-   *   → Now check if remaining can be broken
-   *   → Call canBreak(s, wordSet, 4, memo)
-   *
-   * ┌─────────────────────────────────────────────────────────────────┐
-   * │ RECURSIVE CALL:                                                 │
-   * │ From: canBreak(start=0)                                         │
-   * │ To: canBreak(start=4)                                           │
-   * │ Reason: Found "leet" at position 0-4                           │
-   * │ Remaining string: "code" (index 4 onwards)                     │
-   * └─────────────────────────────────────────────────────────────────┘
-   *
-   *
-   * CALL 2: canBreak("leetcode", wordSet, 4, memo)
-   * ────────────────────────────────────────────────────────────────────
-   * start = 4
-   * Checks:
-   *   start === s.length? 4 === 8? NO
-   *   memo.has(4)? NO
-   *
-   * Try all end positions from start+1 to length:
-   *
-   * Loop iteration: end = 5
-   *   word = s.substring(4, 5) = "c"
-   *   wordSet.has("c")? NO → skip
-   *
-   * Loop iteration: end = 6
-   *   word = s.substring(4, 6) = "co"
-   *   wordSet.has("co")? NO → skip
-   *
-   * Loop iteration: end = 7
-   *   word = s.substring(4, 7) = "cod"
-   *   wordSet.has("cod")? NO → skip
-   *
-   * Loop iteration: end = 8
-   *   word = s.substring(4, 8) = "code"
-   *   wordSet.has("code")? YES ✓
-   *   → Now check if remaining can be broken
-   *   → Call canBreak(s, wordSet, 8, memo)
-   *
-   * ┌─────────────────────────────────────────────────────────────────┐
-   * │ RECURSIVE CALL:                                                 │
-   * │ From: canBreak(start=4)                                         │
-   * │ To: canBreak(start=8)                                           │
-   * │ Reason: Found "code" at position 4-8                           │
-   * │ Remaining string: "" (empty)                                    │
-   * └─────────────────────────────────────────────────────────────────┘
-   *
-   *
-   * CALL 3: canBreak("leetcode", wordSet, 8, memo)
-   * ────────────────────────────────────────────────────────────────────
-   * start = 8
-   * Checks:
-   *   start === s.length? 8 === 8? YES! ✓
-   *   → BASE CASE: Reached end of string
-   *   → return true
-   *
-   * ┌─────────────────────────────────────────────────────────────────┐
-   * │ BASE CASE HIT!                                                  │
-   * │ Successfully segmented entire string                            │
-   * │ Path: "leet" + "code" ✓                                        │
-   * │ Returning: true                                                 │
-   * └─────────────────────────────────────────────────────────────────┘
-   *
-   *
-   * ═══════════════════════════════════════════════════════════════════════
-   * BACKTRACKING PHASE (UNWINDING RECURSION)
-   * ═══════════════════════════════════════════════════════════════════════
-   *
-   * BACK TO CALL 2: canBreak(start=4)
-   * ────────────────────────────────────────────────────────────────────
-   * Received: true from canBreak(start=8)
-   *
-   * ┌─────────────────────────────────────────────────────────────────┐
-   * │ CONTROL FLOW:                                                   │
-   * │ We're in: for loop trying different end positions              │
-   * │ Current: end = 8, word = "code"                                │
-   * │ canBreak(8) returned: true ✓                                   │
-   * │ Action: Cache result and return                                 │
-   * └─────────────────────────────────────────────────────────────────┘
-   *
-   * Action:
-   *   memo.set(4, true)  // Cache: s[4...8] can be broken
-   *   return true
-   *
-   * memo state: { 4: true }
-   *
-   *
-   * BACK TO CALL 1: canBreak(start=0)
-   * ────────────────────────────────────────────────────────────────────
-   * Received: true from canBreak(start=4)
-   *
-   * ┌─────────────────────────────────────────────────────────────────┐
-   * │ CONTROL FLOW:                                                   │
-   * │ We're in: for loop trying different end positions              │
-   * │ Current: end = 4, word = "leet"                                │
-   * │ canBreak(4) returned: true ✓                                   │
-   * │ Action: Cache result and return                                 │
-   * │ No need to try remaining end positions (5,6,7,8)               │
-   * │ Early termination!                                              │
-   * └─────────────────────────────────────────────────────────────────┘
-   *
-   * Action:
-   *   memo.set(0, true)  // Cache: s[0...8] can be broken
-   *   return true
-   *
-   * Final memo state: { 0: true, 4: true }
-   * Final Result: true ✓
-   *
-   * Segmentation Found: "leet" + "code"
-   *
-   *
-   * ═══════════════════════════════════════════════════════════════════════
-   * EXAMPLE 2: FAILURE CASE (With Memoization Benefits)
-   * ═══════════════════════════════════════════════════════════════════════
-   *
-   * Input:
+   * Example:
    * s = "catsandog"
    * wordDict = ["cats", "dog", "sand", "and", "cat"]
    *
-   * Key Execution Points:
+   * canBreakFrom(0) for "catsandog"
+   * │
+   * ├── choose "cat"  -> canBreakFrom(3) for "sandog"
+   * │   └── choose "sand" -> canBreakFrom(7) for "og"
+   * │       └── no word matches -> false
+   * │
+   * ├── choose "cats" -> canBreakFrom(4) for "andog"
+   * │   └── choose "and" -> canBreakFrom(7) for "og"
+   * │       └── memo hit / already false
+   * │
+   * └── no successful path -> false
    *
-   * CALL 1: canBreak(0)
-   *   Try "cat" (0-3): ✓ in dict
-   *     CALL 2: canBreak(3)
-   *       Try "san" (3-6): ❌ not in dict
-   *       Try "sand" (3-7): ✓ in dict
-   *         CALL 3: canBreak(7)
-   *           Try "o" (7-8): ❌ not in dict
-   *           Try "og" (7-9): ❌ not in dict
-   *           No valid word
-   *           memo.set(7, false)
-   *           return false
+   * Key point:
+   *   Different branches same `start = 7` par mil sakti hain.
+   *   Isi repeated suffix ko memo save karta hai.
    *
-   *       ┌───────────────────────────────────────────────────────────┐
-   *       │ CONTROL FLOW - AFTER canBreak(7) RETURNS false:          │
-   *       │                                                           │
-   *       │ Back in: canBreak(3)                                      │
-   *       │ Loop continues: try next end position                     │
-   *       │ Try "sando" (3-8): ❌ not in dict                        │
-   *       │ Try "sandog" (3-9): ❌ not in dict                       │
-   *       │ All attempts failed                                       │
-   *       │ memo.set(3, false)                                        │
-   *       │ return false                                              │
-   *       └───────────────────────────────────────────────────────────┘
+   * ==========================================================
+   * RECURSION TREE
+   * ==========================================================
    *
-   *   Try "cats" (0-4): ✓ in dict
-   *     CALL 4: canBreak(4)
-   *       Try "and" (4-7): ✓ in dict
-   *         CALL 5: canBreak(7)
-   *           ┌───────────────────────────────────────────────────┐
-   *           │ MEMOIZATION HIT!                                  │
-   *           │ memo.has(7)? YES!                                 │
-   *           │ memo.get(7) = false                               │
-   *           │ Return cached result: false                       │
-   *           │ → Skip recomputation! ✓                          │
-   *           └───────────────────────────────────────────────────┘
-   *         return false (from memo)
-   *       Continue trying other words...
-   *       All fail, memo.set(4, false)
-   *       return false
+   * Example:
+   * s = "leetcode"
+   * wordDict = ["leet", "code", "lee", "to"]
    *
-   * Final Result: false
+   * canBreakFrom(0) for "leetcode"
+   * │
+   * ├── try "leet" -> prefix match
+   * │   └── canBreakFrom(4) for "code"
+   * │       ├── try "code" -> prefix match
+   * │       │   └── canBreakFrom(8) -> true
+   * │       └── return true
+   * │
+   * ├── try "lee" -> prefix match
+   * │   └── canBreakFrom(3) for "tcode"
+   * │       └── no valid completion
+   * │
+   * └── as soon as one path returns true, current frame stops
    *
-   * Memo Benefits:
-   *   Without memo: Would recompute canBreak(7) multiple times
-   *   With memo: Computed once, reused multiple times ✓
+   * ==========================================================
+   * NESTED BOX-HEAVY CALL FRAME DRY RUN
+   * ==========================================================
    *
+   * Input:
+   *   s = "leetcode"
+   *   wordDict = ["leet", "code", "lee", "to"]
    *
-   * ═══════════════════════════════════════════════════════════════════════
+   * Initial Call: canBreakFrom(0)
+   * memo = [undefined, undefined, undefined, undefined, undefined, ...]
+   *
+   * ┌────────────────────────────────────────────────────────────────────────┐
+   * │ CALL 1: canBreakFrom(0)                                                │
+   * ├────────────────────────────────────────────────────────────────────────┤
+   * │ start = 0                                                              │
+   * │ suffix = "leetcode"                                                    │
+   * │ Base case? 0 === 8 -> Nahi                                             │
+   * │ memo[0]? unknown                                                       │
+   * │                                                                        │
+   * │ Try word = "leet"                                                      │
+   * │ startsWith("leet", 0)? Haan                                            │
+   * │ nextStart = 0 + 4 = 4                                                  │
+   * │ recurse: canBreakFrom(4)                                               │
+   * │                                                                        │
+   * │   ┌──────────────────────────────────────────────────────────────┐     │
+   * │   │ CALL 2: canBreakFrom(4)                                      │     │
+   * │   ├──────────────────────────────────────────────────────────────┤     │
+   * │   │ start = 4                                                    │     │
+   * │   │ suffix = "code"                                              │     │
+   * │   │ Base case? 4 === 8 -> Nahi                                   │     │
+   * │   │ memo[4]? unknown                                             │     │
+   * │   │                                                              │     │
+   * │   │ Try word = "leet"                                            │     │
+   * │   │ startsWith("leet", 4)? Nahi                                  │     │
+   * │   │                                                              │     │
+   * │   │ Try word = "code"                                            │     │
+   * │   │ startsWith("code", 4)? Haan                                  │     │
+   * │   │ nextStart = 4 + 4 = 8                                        │     │
+   * │   │ recurse: canBreakFrom(8)                                     │     │
+   * │   │                                                              │     │
+   * │   │   ┌────────────────────────────────────────────────────┐     │     │
+   * │   │   │ CALL 3: canBreakFrom(8)                            │     │     │
+   * │   │   ├────────────────────────────────────────────────────┤     │     │
+   * │   │   │ start = 8                                          │     │     │
+   * │   │   │ suffix = ""                                        │     │     │
+   * │   │   │ Base case? 8 === 8 -> Haan                         │     │     │
+   * │   │   │ return true                                        │     │     │
+   * │   │   └────────────────────────────────────────────────────┘     │     │
+   * │   │                                                              │     │
+   * │   │ remainingCanBreak = true                                    │     │
+   * │   │ memo[4] = true                                              │     │
+   * │   │ return true                                                 │     │
+   * │   └──────────────────────────────────────────────────────────────┘     │
+   * │                                                                        │
+   * │ remainingCanBreak = true                                               │
+   * │ memo[0] = true                                                         │
+   * │ return true                                                            │
+   * └────────────────────────────────────────────────────────────────────────┘
+   *
+   * Final:
+   *   true
+   *
+   * ==========================================================
+   * MEMOIZATION HIT EXAMPLE
+   * ==========================================================
+   *
+   * For "catsandog":
+   *
+   *   canBreakFrom(7) for "og" -> false
+   *
+   * Later when another branch again reaches start=7:
+   *
+   *   memo[7] already false
+   *   return false immediately
+   *
+   * Yahi repeated work ko bachata hai.
+   *
+   * ==========================================================
    * EDGE CASES
-   * ═══════════════════════════════════════════════════════════════════════
+   * ==========================================================
    *
-   * 1. Empty String:
-   *    s = "", wordDict = ["a"]
-   *    → start === s.length → true (base case)
-   *
-   * 2. Empty Dictionary:
-   *    s = "a", wordDict = []
-   *    → Early exit: return false
-   *
-   * 3. Word Reuse:
-   *    s = "aaaa", wordDict = ["a", "aa"]
-   *    canBreak(0): "a" ✓ → canBreak(1)
-   *    canBreak(1): "a" ✓ → canBreak(2)
-   *    canBreak(2): "aa" ✓ → canBreak(4) → true ✓
-   *    Path: "a" + "a" + "aa"
-   *
-   * 4. Multiple Paths (Memoization Saves Work):
-   *    s = "abcd", wordDict = ["a", "abc", "b", "cd"]
-   *
-   *    Path 1: "a" + try remaining "bcd"
-   *      canBreak(1) → try "b" → canBreak(2)
-   *        canBreak(2) → try "cd" → canBreak(4) → true ✓
-   *        memo[2] = true
-   *
-   *    Path 2: "abc" + try remaining "d"
-   *      canBreak(3) → no valid word → false
-   *      But we might revisit canBreak(2) from different path
-   *        → Use memo[2] = true ✓
-   *
-   * 5. No Valid Segmentation:
-   *    s = "ab", wordDict = ["a"]
-   *    canBreak(0): "a" ✓ → canBreak(1)
-   *    canBreak(1): no "b" in dict → false
-   *    memo[1] = false
-   *    memo[0] = false
-   *    return false
-   *
+   * 1. "" with any dictionary -> true
+   * 2. Non-empty string with empty dictionary -> false
+   * 3. Same word reuse allowed: "applepenapple"
+   * 4. Overlapping choices: "cars" with ["car","ca","rs"]
    */
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // TEST CASES
-  // ═══════════════════════════════════════════════════════════════════════
+  function expectWordBreak(
+    s: string,
+    wordDict: string[],
+    expected: boolean
+  ): void {
+    const actual = wordBreak(s, wordDict);
 
-  /**
-   * Run comprehensive test cases
-   */
+    if (actual !== expected) {
+      throw new Error(
+        `For s=${JSON.stringify(s)} and wordDict=${JSON.stringify(
+          wordDict
+        )}, expected ${expected} but got ${actual}`
+      );
+    }
+  }
+
   export function runTests(): void {
-    console.log('🧪 Testing Word Break - Recursion + Memoization\n');
+    const tests: Array<{
+      s: string;
+      wordDict: string[];
+      expected: boolean;
+    }> = [
+      { s: 'leetcode', wordDict: ['leet', 'code'], expected: true },
+      { s: 'applepenapple', wordDict: ['apple', 'pen'], expected: true },
+      {
+        s: 'catsandog',
+        wordDict: ['cats', 'dog', 'sand', 'and', 'cat'],
+        expected: false,
+      },
+      { s: '', wordDict: ['a'], expected: true },
+      { s: 'a', wordDict: [], expected: false },
+      { s: 'cars', wordDict: ['car', 'ca', 'rs'], expected: true },
+      { s: 'aaaaaaa', wordDict: ['aaaa', 'aaa'], expected: true },
+      { s: 'aaaaaaa', wordDict: ['aaaa', 'aa'], expected: false },
+      { s: 'aaaaab', wordDict: ['a', 'aa', 'aaa', 'aaaa'], expected: false },
+      {
+        s: 'goalspecial',
+        wordDict: ['go', 'goal', 'goals', 'special'],
+        expected: true,
+      },
+    ];
 
-    // Test 1: Basic example - single segmentation
-    console.log('Test 1: Basic example');
-    const s1 = 'leetcode';
-    const wordDict1 = ['leet', 'code'];
-    const result1 = wordBreak(s1, wordDict1);
-    console.log(`String: "${s1}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict1)}`);
-    console.log(`Result: ${result1}`);
-    console.log(`Expected: true ("leet" + "code")`);
-    console.log(`✓ ${result1 === true ? 'PASS' : 'FAIL'}\n`);
+    tests.forEach(({ s, wordDict, expected }) => {
+      expectWordBreak(s, wordDict, expected);
+    });
 
-    // Test 2: Word reuse allowed
-    console.log('Test 2: Word reuse');
-    const s2 = 'applepenapple';
-    const wordDict2 = ['apple', 'pen'];
-    const result2 = wordBreak(s2, wordDict2);
-    console.log(`String: "${s2}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict2)}`);
-    console.log(`Result: ${result2}`);
-    console.log(`Expected: true ("apple" + "pen" + "apple")`);
-    console.log(`✓ ${result2 === true ? 'PASS' : 'FAIL'}\n`);
-
-    // Test 3: No valid segmentation
-    console.log('Test 3: No valid segmentation');
-    const s3 = 'catsandog';
-    const wordDict3 = ['cats', 'dog', 'sand', 'and', 'cat'];
-    const result3 = wordBreak(s3, wordDict3);
-    console.log(`String: "${s3}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict3)}`);
-    console.log(`Result: ${result3}`);
-    console.log(`Expected: false ("og" cannot be formed)`);
-    console.log(`✓ ${result3 === false ? 'PASS' : 'FAIL'}\n`);
-
-    // Test 4: Empty string
-    console.log('Test 4: Empty string');
-    const s4 = '';
-    const wordDict4 = ['a', 'b'];
-    const result4 = wordBreak(s4, wordDict4);
-    console.log(`String: "${s4}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict4)}`);
-    console.log(`Result: ${result4}`);
-    console.log(`Expected: true (empty string always breakable)`);
-    console.log(`✓ ${result4 === true ? 'PASS' : 'FAIL'}\n`);
-
-    // Test 5: Single character match
-    console.log('Test 5: Single character');
-    const s5 = 'a';
-    const wordDict5 = ['a'];
-    const result5 = wordBreak(s5, wordDict5);
-    console.log(`String: "${s5}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict5)}`);
-    console.log(`Result: ${result5}`);
-    console.log(`Expected: true`);
-    console.log(`✓ ${result5 === true ? 'PASS' : 'FAIL'}\n`);
-
-    // Test 6: Repeated character with reuse
-    console.log('Test 6: Repeated characters');
-    const s6 = 'aaaaaaa';
-    const wordDict6 = ['aaaa', 'aaa'];
-    const result6 = wordBreak(s6, wordDict6);
-    console.log(`String: "${s6}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict6)}`);
-    console.log(`Result: ${result6}`);
-    console.log(`Expected: true ("aaaa" + "aaa" = 7 chars)`);
-    console.log(`✓ ${result6 === true ? 'PASS' : 'FAIL'}\n`);
-
-    // Test 7: Multiple valid paths
-    console.log('Test 7: Multiple valid segmentations');
-    const s7 = 'catsanddog';
-    const wordDict7 = ['cat', 'cats', 'and', 'sand', 'dog'];
-    const result7 = wordBreak(s7, wordDict7);
-    console.log(`String: "${s7}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict7)}`);
-    console.log(`Result: ${result7}`);
-    console.log(`Expected: true ("cats" + "and" + "dog")`);
-    console.log(`✓ ${result7 === true ? 'PASS' : 'FAIL'}\n`);
-
-    // Test 8: Empty dictionary
-    console.log('Test 8: Empty dictionary');
-    const s8 = 'a';
-    const wordDict8: string[] = [];
-    const result8 = wordBreak(s8, wordDict8);
-    console.log(`String: "${s8}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict8)}`);
-    console.log(`Result: ${result8}`);
-    console.log(`Expected: false (no words available)`);
-    console.log(`✓ ${result8 === false ? 'PASS' : 'FAIL'}\n`);
-
-    // Test 9: Word exists but can't complete
-    console.log('Test 9: Partial match fails');
-    const s9 = 'aaab';
-    const wordDict9 = ['a', 'aa'];
-    const result9 = wordBreak(s9, wordDict9);
-    console.log(`String: "${s9}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict9)}`);
-    console.log(`Result: ${result9}`);
-    console.log(`Expected: false (can't form "b")`);
-    console.log(`✓ ${result9 === false ? 'PASS' : 'FAIL'}\n`);
-
-    // Test 10: Long overlapping possibilities
-    console.log('Test 10: Complex segmentation');
-    const s10 = 'abcd';
-    const wordDict10 = ['a', 'abc', 'b', 'cd'];
-    const result10 = wordBreak(s10, wordDict10);
-    console.log(`String: "${s10}"`);
-    console.log(`Dictionary: ${JSON.stringify(wordDict10)}`);
-    console.log(`Result: ${result10}`);
-    console.log(
-      `Expected: true ("a" + "b" + "cd" or "abc" + "d" if "d" exists)`
-    );
-    console.log(`Note: "abc" + needs "d" but "a" + "b" + "cd" works!`);
-    console.log(`✓ ${result10 === true ? 'PASS' : 'FAIL'}\n`);
-
-    console.log('═══════════════════════════════════════');
-    console.log('All tests completed! ✓');
-    console.log('═══════════════════════════════════════');
+    console.log(`Passed ${tests.length}/${tests.length} tests`);
   }
 }
 
-// Execute tests
-WordBreakMemoization.runTests();
+WordBreakRecursionMemoization.runTests();
