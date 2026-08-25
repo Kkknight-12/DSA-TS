@@ -1,129 +1,86 @@
+/**
+ * REVERSE NODES IN K-GROUP - BRUTE FORCE
+ * ======================================
+ *
+ * Problem:
+ * Singly linked list aur integer `k` diya hai.
+ * Hume list ko k-k size ke groups me reverse karna hai.
+ *
+ * Rule:
+ * - Sirf complete groups reverse honge
+ * - Agar last me `k` se chhota group bacha, usko as-is chhod dena hai
+ *
+ * Intuition:
+ * Linked list me random access nahi hota.
+ * K-group reversal ko directly pointers par karna thoda tricky hota hai.
+ *
+ * Brute force soch:
+ * 1. Saare original nodes ko array me store kar lo
+ * 2. Array me har complete k-sized block ko reverse kar lo
+ * 3. Final array order ke hisaab se `next` pointers dobara jod do
+ *
+ * Example:
+ *   list = 1 -> 2 -> 3 -> 4 -> 5, k = 2
+ *
+ *   stored nodes order: [1, 2, 3, 4, 5]
+ *   reverse groups    : [2, 1, 4, 3, 5]
+ *   rebuilt list      : 2 -> 1 -> 4 -> 3 -> 5
+ *
+ * Algorithm:
+ * 1. Agar list empty hai ya `k <= 1` hai, as-is return karo.
+ * 2. Linked list traverse karke saare original node references array `nodes` me store karo.
+ * 3. Har group start index ke liye check karo ki `groupStart + k <= nodes.length`.
+ * 4. Agar complete group exist karta hai, two pointers se us block ko array me reverse karo.
+ * 5. Saare groups process hone ke baad array order ke hisaab se `nodes[i].next = nodes[i + 1]` set karo.
+ * 6. Last node ka `next = null` karo, kyunki rebuilt list ka tail wahi hoga.
+ * 7. `nodes[0]` new head hoga, usko return karo.
+ *
+ * Time Complexity:
+ *   O(n), storing + group reversal + relinking sab linear hai.
+ *
+ * Space Complexity:
+ *   O(n), array me saare node references store hote hain.
+ */
+
 namespace ReverseKGroupBruteForce {
-  // ListNode class definition
   class ListNode {
     val: number;
     next: ListNode | null;
-    constructor(val?: number, next?: ListNode | null) {
-      this.val = val === undefined ? 0 : val;
-      this.next = next === undefined ? null : next;
+
+    constructor(val = 0, next: ListNode | null = null) {
+      this.val = val;
+      this.next = next;
     }
   }
 
-  /**
-   * BRUTE FORCE APPROACH - USING ARRAY
-   * ===================================
-   *
-   * Intuition (Soch):
-   * ----------------
-   * Sabse simple approach yeh hai ki hum linked list ki complexity ko avoid karein
-   * aur array ka use karein, jo reversal operations ke liye easier hai.
-   *
-   * Soch kya hai? (What's the idea?)
-   * 1. Pehle saari nodes ko array mein store kar lo
-   * 2. Array ko k-size ke groups mein divide karo
-   * 3. Har group ko reverse karo (array reversal bahut easy hai!)
-   * 4. Array se wapas linked list bana do
-   *
-   * Visual Example:
-   * ---------------
-   * Input: 1 → 2 → 3 → 4 → 5 → null, k = 2
-   *
-   * Step 1: Convert to array
-   *   [1, 2, 3, 4, 5]
-   *
-   * Step 2: Identify groups (k=2)
-   *   Group 1: [1, 2]      (indices 0-1)
-   *   Group 2: [3, 4]      (indices 2-3)
-   *   Remaining: [5]       (index 4, don't reverse)
-   *
-   * Step 3: Reverse each complete group
-   *   Before: [1, 2, 3, 4, 5]
-   *           └─┬─┘ └─┬─┘ └
-   *           Group1 Group2 Left
-   *
-   *   After:  [2, 1, 4, 3, 5]
-   *           └─┬─┘ └─┬─┘ └
-   *         Reversed Reversed As-is
-   *
-   * Step 4: Build linked list from array
-   *   2 → 1 → 4 → 3 → 5 → null
-   *
-   * Kya faayda hai? (What's the advantage?)
-   * - Implementation bahut simple hai
-   * - Array reversal easy hai (swap elements)
-   * - No pointer manipulation ki complexity
-   *
-   * Kya nuksan hai? (What's the disadvantage?)
-   * - O(n) extra space use ho raha hai (array storage)
-   * - Follow-up question O(1) space chahta hai
-   * - Linked list ka fayda kho diya (in-place manipulation)
-   *
-   * Algorithm:
-   * ----------
-   * 1. Convert linked list to array:
-   *    - Traverse list and store all nodes in array
-   *
-   * 2. Reverse k-sized groups in array:
-   *    - i = 0
-   *    - while i + k <= array.length:
-   *      - Reverse elements from i to i+k-1
-   *      - i = i + k
-   *    - Remaining elements (if any) stay as is
-   *
-   * 3. Rebuild linked list from array:
-   *    - Create new nodes (or reuse existing)
-   *    - Link them according to array order
-   *
-   * 4. Return new head
-   *
-   * Time Complexity: O(n)
-   * - Converting to array: O(n)
-   * - Reversing groups: O(n) - each element visited once
-   * - Building list: O(n)
-   * - Total: O(n)
-   *
-   * Space Complexity: O(n)
-   * - Array storage: O(n) nodes
-   * - This is NOT optimal! Follow-up wants O(1)
-   *
-   * @param head - Head of linked list
-   * @param k - Group size for reversal
-   * @returns Modified linked list head
-   */
   function reverseKGroup(head: ListNode | null, k: number): ListNode | null {
-    // EDGE CASE: Empty list or k = 1 (no reversal needed)
-    // (If list is empty or k=1, no changes needed)
-    if (head === null || k === 1) {
+    if (head === null || k <= 1) {
+      // Empty list me reverse karne ko kuch nahi hota.
+      // `k = 1` ka matlab har group already same shape me rahega.
       return head;
     }
 
-    // STEP 1: Convert linked list to array of nodes
-    // (Convert linked list to array for easier manipulation)
     const nodes: ListNode[] = [];
     let current: ListNode | null = head;
 
-    // Traverse karo aur saare nodes ko array mein store karo
-    // (Traverse and store all nodes in array)
     while (current !== null) {
+      // `nodes` original left-to-right node order ko preserve karta hai.
+      // Baad me isi array me blocks reverse karke final node order decide karenge.
       nodes.push(current);
       current = current.next;
     }
 
-    // STEP 2: Reverse k-sized groups in the array
-    // (Reverse k-sized groups in the array)
-    const n = nodes.length;
+    for (
+      let groupStart = 0;
+      groupStart + k <= nodes.length;
+      groupStart += k
+    ) {
+      let left = groupStart;
+      let right = groupStart + k - 1;
 
-    // i represents the start of each group
-    // Loop chalao har k-sized group ke liye
-    for (let i = 0; i + k <= n; i += k) {
-      // Reverse current group: elements from i to i+k-1
-      // (Reverse current group using two-pointer technique)
-      let left = i;
-      let right = i + k - 1;
-
-      // Two-pointer technique: swap elements from both ends
       while (left < right) {
-        // Swap nodes at left and right positions
+        // Current k-sized block ke sirf order ko reverse karna hai.
+        // Array swap karne se pointer juggling se pehle safe order mil jata hai.
         const temp = nodes[left];
         nodes[left] = nodes[right];
         nodes[right] = temp;
@@ -133,446 +90,216 @@ namespace ReverseKGroupBruteForce {
       }
     }
 
-    // STEP 3: Rebuild linked list from modified array
-    // (Rebuild linked list by updating next pointers)
-    // Ab array mein nodes correct order mein hain
-    // Bas next pointers ko update karna hai
-
-    for (let i = 0; i < n - 1; i++) {
-      nodes[i].next = nodes[i + 1];
+    for (let index = 0; index < nodes.length - 1; index++) {
+      // Array reversal ke baad jo adjacent nodes hain,
+      // linked list me bhi unko isi order me jodna hai.
+      nodes[index].next = nodes[index + 1];
     }
 
-    // Last node ka next null hona chahiye
-    // (Last node should point to null)
-    nodes[n - 1].next = null;
+    // Final node rebuilt list ka tail hoga.
+    // Agar isko null na karein toh old next pointer se wrong connection bach sakta hai.
+    nodes[nodes.length - 1].next = null;
 
-    // STEP 4: Return new head (first element of modified array)
-    // (Return new head of the list)
     return nodes[0];
   }
 
   /**
-   * ════════════════════════════════════════════════════════════════
-   * DRY RUN - COMPLETE VISUALIZATION
-   * ════════════════════════════════════════════════════════════════
+   * ==========================================================
+   * WHY ARRAY APPROACH WORKS
+   * ==========================================================
    *
-   * Example: head = [1,2,3,4,5], k = 2
+   * Original list:
    *
-   * Initial State:
-   * --------------
-   * Input List: 1 → 2 → 3 → 4 → 5 → null
-   * k = 2
+   *   1 -> 2 -> 3 -> 4 -> 5 -> null
    *
-   * ═════════════════════════════════════════════════════════════════
-   * PHASE 1: CONVERT LINKED LIST TO ARRAY
-   * ═════════════════════════════════════════════════════════════════
+   * `k = 2`
    *
-   * Goal: Store all nodes in array
+   * Linked list par directly block reverse karna tough lag sakta hai because:
    *
-   * Initial: nodes = [], current = 1
+   *   current node se peeche randomly jump nahi kar sakte
    *
-   * Iteration 1:
-   *   current = 1 (node with value 1)
-   *   nodes.push(1) → nodes = [1]
-   *   current = current.next = 2
+   * Array banane ke baad:
    *
-   * Iteration 2:
-   *   current = 2 (node with value 2)
-   *   nodes.push(2) → nodes = [1, 2]
-   *   current = current.next = 3
-   *
-   * Iteration 3:
-   *   current = 3 (node with value 3)
-   *   nodes.push(3) → nodes = [1, 2, 3]
-   *   current = current.next = 4
-   *
-   * Iteration 4:
-   *   current = 4 (node with value 4)
-   *   nodes.push(4) → nodes = [1, 2, 3, 4]
-   *   current = current.next = 5
-   *
-   * Iteration 5:
-   *   current = 5 (node with value 5)
-   *   nodes.push(5) → nodes = [1, 2, 3, 4, 5]
-   *   current = current.next = null
-   *
-   * Loop ends: current = null
-   *
-   * Result after Phase 1:
-   *   nodes = [1, 2, 3, 4, 5]
-   *   n = 5
-   *
-   * ═════════════════════════════════════════════════════════════════
-   * PHASE 2: REVERSE K-SIZED GROUPS IN ARRAY
-   * ═════════════════════════════════════════════════════════════════
-   *
-   * Goal: Reverse each complete k-sized group
-   *
-   * k = 2, n = 5
-   * Groups to reverse:
-   *   - Group 1: indices 0-1 (elements [1, 2])
-   *   - Group 2: indices 2-3 (elements [3, 4])
-   *   - Remaining: index 4 (element [5]) - DON'T reverse (only 1 element)
-   *
-   * ─────────────────────────────────────────────────────────────────
-   * Group 1: i = 0, Reverse indices [0, 1]
-   * ─────────────────────────────────────────────────────────────────
-   *
-   * Check: i + k <= n? → 0 + 2 <= 5? YES ✅
-   *
-   * Before reversal:
-   *   nodes = [1, 2, 3, 4, 5]
-   *           └─┬─┘
-   *          Group 1
-   *
-   * Reversal using two-pointer:
-   *   left = 0, right = 1 (0 + 2 - 1 = 1)
-   *
-   *   Iteration 1: left = 0, right = 1
-   *     left < right? YES
-   *     Swap nodes[0] and nodes[1]
-   *     Before: [1, 2, 3, 4, 5]
-   *     After:  [2, 1, 3, 4, 5]
-   *     left++, right-- → left = 1, right = 0
-   *
-   *   Loop check: left < right? 1 < 0? NO
-   *   Reversal complete!
-   *
-   * After reversal:
-   *   nodes = [2, 1, 3, 4, 5]
-   *           └─┬─┘
-   *         Reversed!
-   *
-   * Update i: i = i + k = 0 + 2 = 2
-   *
-   * ─────────────────────────────────────────────────────────────────
-   * Group 2: i = 2, Reverse indices [2, 3]
-   * ─────────────────────────────────────────────────────────────────
-   *
-   * Check: i + k <= n? → 2 + 2 <= 5? YES ✅
-   *
-   * Before reversal:
-   *   nodes = [2, 1, 3, 4, 5]
-   *                 └─┬─┘
-   *                Group 2
-   *
-   * Reversal using two-pointer:
-   *   left = 2, right = 3 (2 + 2 - 1 = 3)
-   *
-   *   Iteration 1: left = 2, right = 3
-   *     left < right? YES
-   *     Swap nodes[2] and nodes[3]
-   *     Before: [2, 1, 3, 4, 5]
-   *     After:  [2, 1, 4, 3, 5]
-   *     left++, right-- → left = 3, right = 2
-   *
-   *   Loop check: left < right? 3 < 2? NO
-   *   Reversal complete!
-   *
-   * After reversal:
-   *   nodes = [2, 1, 4, 3, 5]
-   *                 └─┬─┘
-   *               Reversed!
-   *
-   * Update i: i = i + k = 2 + 2 = 4
-   *
-   * ─────────────────────────────────────────────────────────────────
-   * Group 3: i = 4, Check if can reverse
-   * ─────────────────────────────────────────────────────────────────
-   *
-   * Check: i + k <= n? → 4 + 2 <= 5? NO ❌ (4 + 2 = 6, 6 > 5)
-   * Skip this group (only 1 element remaining)
-   *
-   * Remaining elements:
-   *   nodes = [2, 1, 4, 3, 5]
-   *                       └
-   *                   Left as-is
-   *
-   * Loop ends!
-   *
-   * Result after Phase 2:
-   *   nodes = [2, 1, 4, 3, 5]
-   *
-   * ═════════════════════════════════════════════════════════════════
-   * PHASE 3: REBUILD LINKED LIST FROM ARRAY
-   * ═════════════════════════════════════════════════════════════════
-   *
-   * Goal: Update next pointers to match array order
-   *
-   * Current array: [2, 1, 4, 3, 5]
-   * Need to set: nodes[i].next = nodes[i+1]
-   *
-   * Iteration 1: i = 0
-   *   nodes[0].next = nodes[1]
-   *   2.next = 1
-   *   List: 2 → 1
-   *
-   * Iteration 2: i = 1
-   *   nodes[1].next = nodes[2]
-   *   1.next = 4
-   *   List: 2 → 1 → 4
-   *
-   * Iteration 3: i = 2
-   *   nodes[2].next = nodes[3]
-   *   4.next = 3
-   *   List: 2 → 1 → 4 → 3
-   *
-   * Iteration 4: i = 3
-   *   nodes[3].next = nodes[4]
-   *   3.next = 5
-   *   List: 2 → 1 → 4 → 3 → 5
-   *
-   * Loop ends (i = 4 is last index)
-   *
-   * Set last node's next to null:
-   *   nodes[4].next = null
-   *   5.next = null
-   *
-   * Final List:
-   *   2 → 1 → 4 → 3 → 5 → null
-   *
-   * ═════════════════════════════════════════════════════════════════
-   * PHASE 4: RETURN NEW HEAD
-   * ═════════════════════════════════════════════════════════════════
-   *
-   * Return: nodes[0] = 2
-   *
-   * Final Result:
-   *   2 → 1 → 4 → 3 → 5 → null ✅
-   *
-   * Verification:
-   * - Input: [1,2,3,4,5], k=2
-   * - Expected: [2,1,4,3,5]
-   * - Got: [2,1,4,3,5] ✅ CORRECT!
-   *
-   * ═════════════════════════════════════════════════════════════════
-   * EDGE CASE 1: k = 3
-   * ═════════════════════════════════════════════════════════════════
-   *
-   * Example: head = [1,2,3,4,5], k = 3
-   *
-   * Phase 1: Convert to array
    *   nodes = [1, 2, 3, 4, 5]
    *
-   * Phase 2: Reverse groups
+   * Ab complete groups easy ho jate hain:
    *
-   *   Group 1: i = 0
-   *     Check: 0 + 3 <= 5? YES
-   *     Reverse indices [0, 1, 2]
+   *   [1, 2] -> [2, 1]
+   *   [3, 4] -> [4, 3]
+   *   [5]    -> incomplete, as-is
    *
-   *     Two-pointer reversal:
-   *       left = 0, right = 2
-   *       Swap 0 and 2: [3, 2, 1, 4, 5]
-   *       left++, right-- → left = 1, right = 1
-   *       left < right? NO, done
+   * Final array:
    *
-   *     Result: [3, 2, 1, 4, 5]
-   *     i = 0 + 3 = 3
+   *   [2, 1, 4, 3, 5]
    *
-   *   Group 2: i = 3
-   *     Check: 3 + 3 <= 5? NO (3 + 3 = 6 > 5)
-   *     Skip (only 2 elements remaining)
+   * Phir bas next pointers ko isi final array order ke according jod dete hain.
    *
-   * Phase 3: Rebuild
-   *   3 → 2 → 1 → 4 → 5 → null
+   * ==========================================================
+   * DRY RUN
+   * ==========================================================
    *
-   * Result: [3,2,1,4,5] ✅
+   * Input:
+   *   head = [1, 2, 3, 4, 5]
+   *   k = 2
    *
-   * ═════════════════════════════════════════════════════════════════
-   * EDGE CASE 2: k = 1 (No reversal)
-   * ═════════════════════════════════════════════════════════════════
+   * Original list:
+   *   1 -> 2 -> 3 -> 4 -> 5 -> null
    *
-   * Example: head = [1,2,3,4,5], k = 1
+   * ----------------------------------------------------------
+   * Phase 1: Store nodes
+   * ----------------------------------------------------------
+   * visit 1 -> nodes = [1]
+   * visit 2 -> nodes = [1, 2]
+   * visit 3 -> nodes = [1, 2, 3]
+   * visit 4 -> nodes = [1, 2, 3, 4]
+   * visit 5 -> nodes = [1, 2, 3, 4, 5]
    *
-   * Early return: k = 1, return head as-is
-   * Result: [1,2,3,4,5] ✅
+   * ----------------------------------------------------------
+   * Phase 2: Reverse complete groups
+   * ----------------------------------------------------------
    *
-   * ═════════════════════════════════════════════════════════════════
-   * EDGE CASE 3: k = n (Reverse entire list)
-   * ═════════════════════════════════════════════════════════════════
+   * groupStart = 0
+   * complete group? 0 + 2 <= 5 -> yes
    *
-   * Example: head = [1,2,3,4,5], k = 5
+   * group before: [1, 2]
+   * swap nodes[0] and nodes[1]
+   * array becomes: [2, 1, 3, 4, 5]
    *
-   * Phase 1: nodes = [1, 2, 3, 4, 5]
+   * groupStart = 2
+   * complete group? 2 + 2 <= 5 -> yes
    *
-   * Phase 2: Reverse groups
-   *   Group 1: i = 0
-   *     Check: 0 + 5 <= 5? YES
-   *     Reverse entire array [0, 1, 2, 3, 4]
+   * group before: [3, 4]
+   * swap nodes[2] and nodes[3]
+   * array becomes: [2, 1, 4, 3, 5]
    *
-   *     Two-pointer:
-   *       Swap 0 and 4: [5, 2, 3, 4, 1]
-   *       Swap 1 and 3: [5, 4, 3, 2, 1]
-   *       middle stays: [5, 4, 3, 2, 1]
+   * groupStart = 4
+   * complete group? 4 + 2 <= 5 -> no
+   * remaining [5] stays as-is
    *
-   *     Result: [5, 4, 3, 2, 1]
-   *     i = 0 + 5 = 5
+   * ----------------------------------------------------------
+   * Phase 3: Relink according to final array
+   * ----------------------------------------------------------
    *
-   *   Loop ends (i = 5 >= 5)
+   * 2.next = 1
+   * 1.next = 4
+   * 4.next = 3
+   * 3.next = 5
+   * 5.next = null
    *
-   * Phase 3: Rebuild
-   *   5 → 4 → 3 → 2 → 1 → null
+   * Final answer:
+   *   2 -> 1 -> 4 -> 3 -> 5 -> null
    *
-   * Result: [5,4,3,2,1] ✅
+   * ==========================================================
+   * EDGE CASES
+   * ==========================================================
    *
-   * ═════════════════════════════════════════════════════════════════
-   * WHY THIS APPROACH IS NOT OPTIMAL
-   * ═════════════════════════════════════════════════════════════════
+   * 1. head = null
+   *    return null
    *
-   * Advantages:
-   * ----------
-   * 1. ✅ Easy to understand and implement
-   * 2. ✅ Array operations are simpler than pointer manipulation
-   * 3. ✅ No risk of losing links or creating cycles
-   * 4. ✅ Debugging is easier (can print array at any step)
+   * 2. k = 1
+   *    har group size 1 hai, so list same rahegi
    *
-   * Disadvantages:
-   * -------------
-   * 1. ❌ Uses O(n) extra space for array storage
-   * 2. ❌ Follow-up question asks for O(1) space
-   * 3. ❌ Not utilizing the linked list structure properly
-   * 4. ❌ Creating/reusing nodes has overhead
-   * 5. ❌ Not suitable for very large lists (memory constraints)
+   * 3. k > list length
+   *    koi complete group hi nahi banega, so list same rahegi
    *
-   * Interview Perspective:
-   * ---------------------
-   * - Good starting point to explain your thought process
-   * - Shows you can solve the problem
-   * - But interviewer will ask: "Can you do it without extra space?"
-   * - This leads to the optimal in-place solution
-   *
-   * Real-world Use:
-   * --------------
-   * - For small lists: This is fine
-   * - For large lists or memory-constrained systems: Need optimal solution
-   * - For production code: Usually use optimal solution
+   * 4. last incomplete block
+   *    usko reverse nahi karna
    */
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // HELPER FUNCTIONS FOR TESTING
-  // ═══════════════════════════════════════════════════════════════════════
+  function createLinkedList(values: number[]): ListNode | null {
+    if (values.length === 0) {
+      return null;
+    }
 
-  /**
-   * Helper function to create linked list from array
-   */
-  function createList(arr: number[]): ListNode | null {
-    if (arr.length === 0) return null;
-
-    const head = new ListNode(arr[0]);
+    const head = new ListNode(values[0]);
     let current = head;
 
-    for (let i = 1; i < arr.length; i++) {
-      current.next = new ListNode(arr[i]);
+    for (let index = 1; index < values.length; index++) {
+      current.next = new ListNode(values[index]);
       current = current.next;
     }
 
     return head;
   }
 
-  /**
-   * Helper function to convert linked list to array
-   */
   function listToArray(head: ListNode | null): number[] {
-    const result: number[] = [];
+    const values: number[] = [];
     let current = head;
 
     while (current !== null) {
-      result.push(current.val);
+      values.push(current.val);
       current = current.next;
     }
 
-    return result;
+    return values;
   }
 
-  /**
-   * Helper function to print linked list
-   */
-  function printList(head: ListNode | null): string {
-    const arr = listToArray(head);
-    return arr.join(' → ') + ' → null';
+  function arraysEqual(first: number[], second: number[]): boolean {
+    return JSON.stringify(first) === JSON.stringify(second);
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // TEST CASES
-  // ═══════════════════════════════════════════════════════════════════════
+  export function runTests(): void {
+    const testCases = [
+      {
+        name: 'reverse every pair when k = 2',
+        input: [1, 2, 3, 4, 5],
+        k: 2,
+        expected: [2, 1, 4, 3, 5],
+      },
+      {
+        name: 'reverse complete triples when k = 3',
+        input: [1, 2, 3, 4, 5],
+        k: 3,
+        expected: [3, 2, 1, 4, 5],
+      },
+      {
+        name: 'k = 1 keeps list same',
+        input: [1, 2, 3],
+        k: 1,
+        expected: [1, 2, 3],
+      },
+      {
+        name: 'k larger than length keeps list same',
+        input: [1, 2],
+        k: 5,
+        expected: [1, 2],
+      },
+      {
+        name: 'exact multiple of k',
+        input: [1, 2, 3, 4, 5, 6],
+        k: 3,
+        expected: [3, 2, 1, 6, 5, 4],
+      },
+      {
+        name: 'empty list',
+        input: [],
+        k: 4,
+        expected: [],
+      },
+    ];
 
-  console.log('═══════════════════════════════════════════════════════════');
-  console.log('REVERSE NODES IN K-GROUP - BRUTE FORCE (ARRAY)');
-  console.log('═══════════════════════════════════════════════════════════\n');
+    let passedTests = 0;
 
-  // Test Case 1: Example 1 from problem
-  console.log('Test Case 1: [1,2,3,4,5], k = 2');
-  const head1 = createList([1, 2, 3, 4, 5]);
-  console.log('Input: ', printList(head1));
-  const result1 = reverseKGroup(head1, 2);
-  console.log('Output:', printList(result1));
-  console.log('Expected: [2,1,4,3,5]');
-  console.log('Actual:  ', listToArray(result1));
-  console.log('✓ Passed\n');
+    for (const testCase of testCases) {
+      const head = createLinkedList(testCase.input);
+      const reversedHead = reverseKGroup(head, testCase.k);
+      const actual = listToArray(reversedHead);
+      const passed = arraysEqual(actual, testCase.expected);
 
-  // Test Case 2: Example 2 from problem
-  console.log('Test Case 2: [1,2,3,4,5], k = 3');
-  const head2 = createList([1, 2, 3, 4, 5]);
-  console.log('Input: ', printList(head2));
-  const result2 = reverseKGroup(head2, 3);
-  console.log('Output:', printList(result2));
-  console.log('Expected: [3,2,1,4,5]');
-  console.log('Actual:  ', listToArray(result2));
-  console.log('✓ Passed\n');
+      if (passed) {
+        passedTests++;
+      }
 
-  // Test Case 3: k = 1 (no reversal)
-  console.log('Test Case 3: [1,2,3,4,5], k = 1 (no reversal)');
-  const head3 = createList([1, 2, 3, 4, 5]);
-  console.log('Input: ', printList(head3));
-  const result3 = reverseKGroup(head3, 1);
-  console.log('Output:', printList(result3));
-  console.log('Expected: [1,2,3,4,5]');
-  console.log('Actual:  ', listToArray(result3));
-  console.log('✓ Passed\n');
+      console.log(`Test: ${testCase.name}`);
+      console.log(`Input: [${testCase.input.join(', ')}], k = ${testCase.k}`);
+      console.log(`Expected: [${testCase.expected.join(', ')}]`);
+      console.log(`Actual: [${actual.join(', ')}]`);
+      console.log(`Result: ${passed ? 'PASS' : 'FAIL'}`);
+      console.log('--------------------------------------------------');
+    }
 
-  // Test Case 4: k = n (reverse entire list)
-  console.log('Test Case 4: [1,2,3,4,5], k = 5 (reverse entire list)');
-  const head4 = createList([1, 2, 3, 4, 5]);
-  console.log('Input: ', printList(head4));
-  const result4 = reverseKGroup(head4, 5);
-  console.log('Output:', printList(result4));
-  console.log('Expected: [5,4,3,2,1]');
-  console.log('Actual:  ', listToArray(result4));
-  console.log('✓ Passed\n');
-
-  // Test Case 5: Single node
-  console.log('Test Case 5: [1], k = 1 (single node)');
-  const head5 = createList([1]);
-  console.log('Input: ', printList(head5));
-  const result5 = reverseKGroup(head5, 1);
-  console.log('Output:', printList(result5));
-  console.log('Expected: [1]');
-  console.log('Actual:  ', listToArray(result5));
-  console.log('✓ Passed\n');
-
-  // Test Case 6: Exact multiple of k
-  console.log('Test Case 6: [1,2,3,4], k = 2 (exact multiple)');
-  const head6 = createList([1, 2, 3, 4]);
-  console.log('Input: ', printList(head6));
-  const result6 = reverseKGroup(head6, 2);
-  console.log('Output:', printList(result6));
-  console.log('Expected: [2,1,4,3]');
-  console.log('Actual:  ', listToArray(result6));
-  console.log('✓ Passed\n');
-
-  // Test Case 7: k larger than remaining
-  console.log('Test Case 7: [1,2], k = 3 (k > remaining)');
-  const head7 = createList([1, 2]);
-  console.log('Input: ', printList(head7));
-  const result7 = reverseKGroup(head7, 3);
-  console.log('Output:', printList(result7));
-  console.log('Expected: [1,2] (no reversal, less than k nodes)');
-  console.log('Actual:  ', listToArray(result7));
-  console.log('✓ Passed\n');
-
-  console.log('═══════════════════════════════════════════════════════════');
-  console.log('All test cases passed! ✅');
-  console.log('Time: O(n), Space: O(n)');
-  console.log('⚠️  Not optimal for space - Follow-up wants O(1)!');
-  console.log('═══════════════════════════════════════════════════════════');
+    console.log(`Passed ${passedTests}/${testCases.length} tests`);
+  }
 }
+
+ReverseKGroupBruteForce.runTests();

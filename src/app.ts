@@ -1,134 +1,103 @@
-namespace LongestRepeatingCharReplacement {
-    
-    // Solution 1: Using Plain Object (dictionary)
-    export function bruteForceWithObject(s: string, k: number): number {
-        let maxLength = 0;
-        const n = s.length;
+namespace Practice {
+  class TreeNode {
+    val: number;
+    left: TreeNode | null;
+    right: TreeNode | null;
 
-        for (let i = 0; i < n; i++) {
-            const charCount: Record<string, number> = {};
-            let maxFreq = 0;
+    constructor(
+      val = 0,
+      left: TreeNode | null = null,
+      right: TreeNode | null = null
+    ) {
+      this.val = val;
+      this.left = left;
+      this.right = right;
+    }
+  }
 
-            for (let j = i; j < n; j++) {
-                const char = s[j];
-                
-                // Update frequency
-                charCount[char] = (charCount[char] || 0) + 1;
-                maxFreq = Math.max(maxFreq, charCount[char]);
-
-                const windowSize = j - i + 1;
-                const charsToChange = windowSize - maxFreq;
-
-                if (charsToChange <= k) {
-                    maxLength = Math.max(maxLength, windowSize);
-                } else {
-                    // Optimization: Break early if window is invalid
-                    break;
-                }
-            }
-        }
-        return maxLength;
+  function maxDepth(root: TreeNode | null): number {
+    if (root === null) {
+      // Empty tree me ek bhi real level nahi hai.
+      return 0;
     }
 
-    // Solution 2: Using JavaScript Map
-    export function bruteForceWithMap(s: string, k: number): number {
-        let maxLength = 0;
-        const n = s.length;
+    const queue: TreeNode[] = [root];
+    let head = 0;
+    let depth = 0;
+    const stack = [];
 
-        for (let i = 0; i < n; i++) {
-            const charCount = new Map<string, number>();
-            let maxFreq = 0;
+    while (head < queue.length) {
+      const levelSize = queue.length - head;
+      const frame = [];
 
-            for (let j = i; j < n; j++) {
-                const char = s[j];
-                
-                // Map operations
-                const currentCount = (charCount.get(char) || 0) + 1;
-                charCount.set(char, currentCount);
+      for (let i = 0; i < levelSize; i++) {
+        const currentNode = queue[head];
+        frame.push(currentNode.val);
+        head++;
 
-                maxFreq = Math.max(maxFreq, currentCount);
-
-                const windowSize = j - i + 1;
-                const charsToChange = windowSize - maxFreq;
-
-                if (charsToChange <= k) {
-                    maxLength = Math.max(maxLength, windowSize);
-                } else {
-                    break;
-                }
-            }
+        if (currentNode.left !== null) {
+          queue.push(currentNode.left);
         }
-        return maxLength;
+
+        if (currentNode.right !== null) {
+          queue.push(currentNode.right);
+        }
+
+        console.log(currentNode.val);
+      }
+      stack.push(frame);
+      depth++;
     }
 
-    // Solution 3: Optimal Sliding Window
-    export function characterReplacementOptimal(s: string, k: number): number {
-        const charCount = new Map<string, number>(); // Using Map for simplicity with string keys
-        let left = 0;
-        let maxFreq = 0;
-        let maxLength = 0;
-    
-        for (let right = 0; right < s.length; right++) {
-            const char = s[right];
-            
-            // Update count
-            const count = (charCount.get(char) || 0) + 1;
-            charCount.set(char, count);
-            
-            // Track max frequency in current window
-            maxFreq = Math.max(maxFreq, count);
-    
-            // If invalid window (replacements needed > k)
-            // Note: In your code, you used `windowSize` and `charsToChange` inside `while`
-            // But `windowSize` changes as we move `left`. It's better to calculate condition directly.
-            
-            while ((right - left + 1) - maxFreq > k) {
-                const leftChar = s[left];
-                charCount.set(leftChar, charCount.get(leftChar)! - 1);
-                left++;
-                
-                // Note: We DON'T need to decrement maxFreq.
-                // Even if maxFreq is technically lower in the new smaller window, 
-                // our goal is to find a LARGER max window.
-                // A valid window only expands if we find a higher maxFreq.
-                // Keeping the old high maxFreq works because the condition
-                // (windowSize - maxFreq > k) will still effectively constrain the window size.
-            }
-    
-            maxLength = Math.max(maxLength, right - left + 1);
-        }
-     
-        return maxLength;
+    console.log(stack);
+
+    return depth;
+  }
+
+  function buildTree(values: Array<number | null>): TreeNode | null {
+    const rootValue = values[0];
+
+    if (rootValue === null || rootValue === undefined) {
+      return null;
     }
+
+    const root = new TreeNode(rootValue);
+    const queue: TreeNode[] = [root];
+    let queueIndex = 0;
+    let valueIndex = 1;
+
+    // Ye construction queue serialization ko tree me convert karti hai.
+    // Solution queue ka job different hai: ready tree ke levels count karna.
+    while (queueIndex < queue.length && valueIndex < values.length) {
+      const current = queue[queueIndex++];
+      const leftValue = values[valueIndex++];
+
+      if (leftValue !== null && leftValue !== undefined) {
+        current.left = new TreeNode(leftValue);
+        queue.push(current.left);
+      }
+
+      if (valueIndex >= values.length) {
+        break;
+      }
+
+      const rightValue = values[valueIndex++];
+
+      if (rightValue !== null && rightValue !== undefined) {
+        current.right = new TreeNode(rightValue);
+        queue.push(current.right);
+      }
+    }
+
+    return root;
+  }
+
+  export function test() {
+    const root = buildTree([3, 9, 20, null, null, 15, 7]);
+    const result = maxDepth(root);
+
+    console.log('result ', result);
+  }
 }
 
-// Test Runner
-if (require.main === module) {
-    const testCases = [
-        { s: "ABAB", k: 2, expected: 4 },
-        { s: "AABABBA", k: 1, expected: 4 },
-        { s: "ABCDE", k: 1, expected: 2 },
-        { s: "AAAA", k: 0, expected: 4 }
-    ];
-
-    console.log("--- Testing Object Solution ---");
-    testCases.forEach((t, i) => {
-        const result = LongestRepeatingCharReplacement.bruteForceWithObject(t.s, t.k);
-        const pass = result === t.expected;
-        console.log(`Test ${i + 1}: Expected: ${t.expected}, Got: ${result} [${pass ? "✅ PASS" : "❌ FAIL"}]`);
-    });
-
-    console.log("\n--- Testing Map Solution ---");
-    testCases.forEach((t, i) => {
-        const result = LongestRepeatingCharReplacement.bruteForceWithMap(t.s, t.k);
-        const pass = result === t.expected;
-        console.log(`Test ${i + 1}: Expected: ${t.expected}, Got: ${result} [${pass ? "✅ PASS" : "❌ FAIL"}]`);
-    });
-
-    console.log("\n--- Testing Optimal Solution ---");
-    testCases.forEach((t, i) => {
-        const result = LongestRepeatingCharReplacement.characterReplacementOptimal(t.s, t.k);
-        const pass = result === t.expected;
-        console.log(`Test ${i + 1}: Expected: ${t.expected}, Got: ${result} [${pass ? "✅ PASS" : "❌ FAIL"}]`);
-    });
-}
+Practice.test();

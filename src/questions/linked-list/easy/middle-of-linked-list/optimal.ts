@@ -1,187 +1,247 @@
-// import { ListNode } from '../../../../basics/Linear-Data-Structure/linkedList/Code/singlyLinkedList';
-// https://www.notion.so/Floyd-s-Cycle-Detection-Algorithm-Tortoise-and-Hare-29aa2680896880e9ad94fd8245f3f52e
 /**
- * OPTIMAL APPROACH: Fast & Slow Pointer (Tortoise & Hare Algorithm)
+ * MIDDLE OF LINKED LIST - OPTIMAL
+ * ===============================
  *
- * PROBLEM: Find the middle node of a singly linked list.
- * If two middle nodes exist, return the second one.
+ * Problem:
+ * Singly linked list ka middle node return karna hai.
+ * Agar even length me 2 middle nodes ho, toh second middle return karna hai.
  *
- * TECHNIQUE: Two-pointer technique
- * - Slow pointer: Moves 1 step at a time (🐢)
- * - Fast pointer: Moves 2 steps at a time (🐰)
+ * Intuition:
+ * Agar ek pointer 1 step chale aur dusra pointer 2 steps chale,
+ * toh fast pointer jab end tak pahunchta hai, slow pointer half distance cover kar chuka hota hai.
  *
- * KEY INSIGHT: When fast reaches the end, slow will be at the middle!
+ * Ye same idea race jaisa hai:
+ *   fast = double speed
+ *   slow = half distance
  *
- * Time Complexity: O(n) - Single pass through the list
- * Space Complexity: O(1) - Only using two pointers
+ * Algorithm:
+ * 1. Agar `head` null hai, return null.
+ * 2. `slow` aur `fast` dono ko head par start karo.
+ * 3. Jab tak `fast` aur `fast.next` exist karte hain, loop chalao.
+ * 4. Har iteration me `slow` ko 1 step aage move karo.
+ * 5. Har iteration me `fast` ko 2 steps aage move karo.
+ * 6. Jab fast end cross kare ya last node par ruk jaaye, slow middle par hota hai.
+ * 7. `slow` return karo.
  *
- * ADVANTAGES over Brute Force:
- * ✅ Single pass (vs two passes)
- * ✅ More elegant solution
- * ✅ Interview-preferred approach
+ * Time Complexity:
+ *   O(n), list ek hi pass me traverse hoti hai.
+ *
+ * Space Complexity:
+ *   O(1), sirf two pointers use hote hain.
  */
 
-namespace MiddleNodeOptimal {
-  // Definition for singly-linked list node
-  class ListNode_OMLL {
-    val: number; // Node ki value
-    next: ListNode_OMLL | null; // Agla node ka reference
+namespace MiddleOfLinkedListOptimal {
+  class ListNode {
+    val: number;
+    next: ListNode | null;
 
-    constructor(val?: number, next?: ListNode_OMLL | null) {
-      this.val = val === undefined ? 0 : val;
-      this.next = next === undefined ? null : next;
+    constructor(val = 0, next: ListNode | null = null) {
+      this.val = val;
+      this.next = next;
     }
   }
 
-  function middleNode(head: ListNode_OMLL | null): ListNode_OMLL | null {
-    // Edge Case: Agar list empty hai ya sirf ek node hai
-    // WHY: Empty list ka middle nahi hota, single node khud middle hai
-    if (head === null || head.next === null) {
-      return head;
+  function middleNode(head: ListNode | null): ListNode | null {
+    if (head === null) {
+      // Empty list me koi node nahi hota,
+      // isliye middle answer bhi null hi hoga.
+      return null;
     }
 
-    // ==================== INITIALIZE TWO POINTERS ====================
+    let slow: ListNode = head;
+    let fast: ListNode | null = head;
 
-    // Step 1: Slow pointer ko head par set karo
-    // WHY: Ye turtle ki tarah slow chalega (1 step per iteration)
-    let slow: ListNode_OMLL | null = head;
-
-    // Step 2: Fast pointer ko bhi head par set karo
-    // WHY: Ye rabbit ki tarah fast chalega (2 steps per iteration)
-    let fast: ListNode_OMLL | null = head;
-
-    // ==================== TRAVERSE WITH TWO SPEEDS ====================
-
-    // Step 3: Loop chalao jab tak fast end tak na pahunch jaye
-    // WHY:
-    // - fast !== null: Fast pointer khud null na ho (odd nodes case)
-    // - fast.next !== null: Fast ka next null na ho (even nodes case)
-    //
-    // LOOP TERMINATION CONDITIONS:
-    // Odd nodes (e.g., 5 nodes): fast last node par hoga, fast.next = null
-    // Even nodes (e.g., 6 nodes): fast null hoga (list ke bahar)
     while (fast !== null && fast.next !== null) {
-      // Step 4: Slow pointer ko 1 step aage badhao
-      // WHY: Turtle ki speed - slow and steady
-      // Slow travels: n/2 distance in total
-      slow = slow!.next; // Non-null assertion kyunki hum jaante hain slow valid hai
+      // `slow` answer candidate represent karta hai.
+      // Fast double speed se chal raha hai, isliye slow ko sirf 1 step move karte hain.
+      slow = slow.next as ListNode;
 
-      // Step 5: Fast pointer ko 2 steps aage badhao
-      // WHY: Rabbit ki speed - double the pace
-      // Fast travels: n distance in total (2x speed)
-      //
-      // IMPORTANT: fast.next.next le rahe hain, matlab 2 nodes jump kar rahe hain
+      // `fast.next !== null` condition ensure karti hai ki 2-step jump safe hai.
+      // Fast ka kaam list ka end detect karna hai.
       fast = fast.next.next;
-
-      // VISUALIZATION of one iteration:
-      // Before: slow → node1, fast → node1
-      // After:  slow → node2, fast → node3 (2 steps ahead)
     }
 
-    // ==================== RETURN MIDDLE NODE ====================
-
-    // Step 6: Loop khatam hone par slow middle par hoga
-    // WHY:
-    // Fast ne poori list traverse kar li (n steps in n/2 iterations)
-    // Slow ne half list traverse kari (n/2 steps in n/2 iterations)
-    // Therefore, slow = middle position
-    //
-    // For odd nodes: slow exactly middle par hai
-    // For even nodes: slow second middle par hai (jo humein chahiye)
+    // Odd length: fast last node par rukta hai.
+    // Even length: fast null ho jata hai.
+    // Dono cases me slow required middle/second-middle par hota hai.
     return slow;
   }
 
-  // ==================== HELPER FUNCTIONS ====================
-
   /**
-   * Helper: Array se Linked List create karo
-   * WHY: Testing aur examples ke liye
+   * ==========================================================
+   * WHY SLOW-FAST POINTER WORKS
+   * ==========================================================
+   *
+   * Example:
+   *
+   *   1 -> 2 -> 3 -> 4 -> 5 -> 6 -> null
+   *
+   * Start:
+   *
+   *   slow = 1
+   *   fast = 1
+   *
+   * Every loop:
+   *
+   *   slow moves 1 node
+   *   fast moves 2 nodes
+   *
+   * So when fast has travelled full list distance,
+   * slow has travelled half list distance.
+   *
+   * ==========================================================
+   * WHY EVEN LENGTH RETURNS SECOND MIDDLE
+   * ==========================================================
+   *
+   * For 6 nodes:
+   *
+   *   index:  0  1  2  3  4  5
+   *   value:  1  2  3  4  5  6
+   *
+   * Middle nodes are:
+   *   index 2 -> value 3
+   *   index 3 -> value 4
+   *
+   * We need second middle.
+   *
+   * Because slow moves while `fast.next` exists,
+   * slow gets one final move from index 2 to index 3 before fast becomes null.
+   *
+   * ==========================================================
+   * DRY RUN - EVEN LENGTH
+   * ==========================================================
+   *
+   * Input:
+   *   head = [1, 2, 3, 4, 5, 6]
+   *
+   * ┌────────────────────────────────────────────────────────┐
+   * │ Initial                                                │
+   * ├────────────────────────────────────────────────────────┤
+   * │ 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> null                     │
+   * │ S/F                                                    │
+   * └────────────────────────────────────────────────────────┘
+   *
+   * ┌────────────────────────────────────────────────────────┐
+   * │ Iteration 1                                            │
+   * ├────────────────────────────────────────────────────────┤
+   * │ before: slow = 1, fast = 1                             │
+   * │ move slow 1 step -> slow = 2                           │
+   * │ move fast 2 steps -> fast = 3                          │
+   * │                                                        │
+   * │ 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> null                     │
+   * │      S    F                                            │
+   * └────────────────────────────────────────────────────────┘
+   *
+   * ┌────────────────────────────────────────────────────────┐
+   * │ Iteration 2                                            │
+   * ├────────────────────────────────────────────────────────┤
+   * │ before: slow = 2, fast = 3                             │
+   * │ move slow 1 step -> slow = 3                           │
+   * │ move fast 2 steps -> fast = 5                          │
+   * │                                                        │
+   * │ 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> null                     │
+   * │           S         F                                  │
+   * └────────────────────────────────────────────────────────┘
+   *
+   * ┌────────────────────────────────────────────────────────┐
+   * │ Iteration 3                                            │
+   * ├────────────────────────────────────────────────────────┤
+   * │ before: slow = 3, fast = 5                             │
+   * │ fast.next exists, so one more loop is allowed          │
+   * │ move slow 1 step -> slow = 4                           │
+   * │ move fast 2 steps -> fast = null                       │
+   * │                                                        │
+   * │ 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> null                     │
+   * │                S                     F                 │
+   * └────────────────────────────────────────────────────────┘
+   *
+   * Loop stops because fast is null.
+   * Return slow = node(4), suffix [4, 5, 6].
    */
-  function createLinkedList(arr: number[]): ListNode_OMLL | null {
-    // Empty array ke liye null return karo
-    if (arr.length === 0) return null;
 
-    // First node create karo (head)
-    const head = new ListNode_OMLL(arr[0]);
+  function createLinkedList(values: number[]): ListNode | null {
+    if (values.length === 0) {
+      return null;
+    }
+
+    const head = new ListNode(values[0]);
     let current = head;
 
-    // Baaki nodes ko chain karo
-    for (let i = 1; i < arr.length; i++) {
-      current.next = new ListNode_OMLL(arr[i]);
+    for (let index = 1; index < values.length; index++) {
+      current.next = new ListNode(values[index]);
       current = current.next;
     }
 
     return head;
   }
 
-  /**
-   * Helper: Linked List ko array mein convert karo
-   * WHY: Output ko readable format mein print karne ke liye
-   */
-  function linkedListToArray(head: ListNode_OMLL | null): number[] {
-    const result: number[] = [];
+  function linkedListToArray(head: ListNode | null): number[] {
+    const values: number[] = [];
     let current = head;
 
-    // Traverse karke saari values collect karo
     while (current !== null) {
-      result.push(current.val);
+      values.push(current.val);
       current = current.next;
     }
 
-    return result;
+    return values;
   }
 
-  // ==================== TEST CASES WITH DETAILED OUTPUT ====================
+  function arraysEqual(first: number[], second: number[]): boolean {
+    return JSON.stringify(first) === JSON.stringify(second);
+  }
 
   export function runTests(): void {
-    console.log('========== OPTIMAL SOLUTION: FAST & SLOW POINTER ==========\n');
+    const testCases = [
+      {
+        name: 'odd length list returns exact middle',
+        input: [1, 2, 3, 4, 5],
+        expectedSuffix: [3, 4, 5],
+      },
+      {
+        name: 'even length list returns second middle',
+        input: [1, 2, 3, 4, 5, 6],
+        expectedSuffix: [4, 5, 6],
+      },
+      {
+        name: 'single node list returns same node',
+        input: [10],
+        expectedSuffix: [10],
+      },
+      {
+        name: 'two node list returns second node',
+        input: [7, 9],
+        expectedSuffix: [9],
+      },
+      {
+        name: 'empty list returns null',
+        input: [],
+        expectedSuffix: [],
+      },
+    ];
 
-    // Test Case 1: Odd nodes - [1, 2, 3, 4, 5]
-    console.log('Test Case 1: Odd Nodes');
-    const list1 = createLinkedList([1, 2, 3, 4, 5]);
-    const middle1 = middleNode(list1);
-    console.log('Input:  [1, 2, 3, 4, 5]');
-    console.log('Output:', linkedListToArray(middle1)); // Expected: [3, 4, 5]
-    console.log('Middle Node Value:', middle1?.val); // Expected: 3
-    console.log('✅ Correct! Middle at position 2 (0-indexed)\n');
+    let passedTests = 0;
 
-    // Test Case 2: Even nodes - [1, 2, 3, 4, 5, 6]
-    console.log('Test Case 2: Even Nodes');
-    const list2 = createLinkedList([1, 2, 3, 4, 5, 6]);
-    const middle2 = middleNode(list2);
-    console.log('Input:  [1, 2, 3, 4, 5, 6]');
-    console.log('Output:', linkedListToArray(middle2)); // Expected: [4, 5, 6]
-    console.log('Middle Node Value:', middle2?.val); // Expected: 4
-    console.log('✅ Correct! Second middle at position 3 (0-indexed)\n');
+    for (const testCase of testCases) {
+      const head = createLinkedList(testCase.input);
+      const middle = middleNode(head);
+      const actualSuffix = linkedListToArray(middle);
+      const passed = arraysEqual(actualSuffix, testCase.expectedSuffix);
 
-    // Test Case 3: Single node - [1]
-    console.log('Test Case 3: Single Node');
-    const list3 = createLinkedList([1]);
-    const middle3 = middleNode(list3);
-    console.log('Input:  [1]');
-    console.log('Output:', linkedListToArray(middle3)); // Expected: [1]
-    console.log('Middle Node Value:', middle3?.val); // Expected: 1
-    console.log('✅ Correct! Single node is itself middle\n');
+      if (passed) {
+        passedTests++;
+      }
 
-    // Test Case 4: Two nodes - [1, 2]
-    console.log('Test Case 4: Two Nodes');
-    const list4 = createLinkedList([1, 2]);
-    const middle4 = middleNode(list4);
-    console.log('Input:  [1, 2]');
-    console.log('Output:', linkedListToArray(middle4)); // Expected: [2]
-    console.log('Middle Node Value:', middle4?.val); // Expected: 2
-    console.log('✅ Correct! Second middle returned\n');
+      console.log(`Test: ${testCase.name}`);
+      console.log(`Input: [${testCase.input.join(', ')}]`);
+      console.log(`Expected suffix: [${testCase.expectedSuffix.join(', ')}]`);
+      console.log(`Actual suffix: [${actualSuffix.join(', ')}]`);
+      console.log(`Result: ${passed ? 'PASS' : 'FAIL'}`);
+      console.log('--------------------------------------------------');
+    }
 
-    // Test Case 5: Large odd list - [1, 2, 3, 4, 5, 6, 7]
-    console.log('Test Case 5: Large Odd List');
-    const list5 = createLinkedList([1, 2, 3, 4, 5, 6, 7]);
-    const middle5 = middleNode(list5);
-    console.log('Input:  [1, 2, 3, 4, 5, 6, 7]');
-    console.log('Output:', linkedListToArray(middle5)); // Expected: [4, 5, 6, 7]
-    console.log('Middle Node Value:', middle5?.val); // Expected: 4
-    console.log('✅ Correct! Middle at position 3 (0-indexed)\n');
+    console.log(`Passed ${passedTests}/${testCases.length} tests`);
   }
 }
 
-// Run tests
-MiddleNodeOptimal.runTests();
+MiddleOfLinkedListOptimal.runTests();

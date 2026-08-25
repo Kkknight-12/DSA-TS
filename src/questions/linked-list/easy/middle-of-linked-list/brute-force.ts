@@ -1,144 +1,223 @@
 /**
- * Brute Force Approach to find the middle of a Linked List
+ * MIDDLE OF LINKED LIST - BRUTE FORCE
+ * ===================================
  *
- * PROBLEM: Given a singly linked list, find and return the middle node.
- * If there are two middle nodes, return the second one.
+ * Problem:
+ * Singly linked list ka middle node return karna hai.
+ * Agar even length me 2 middle nodes ho, toh second middle return karna hai.
  *
- * APPROACH: Two-pass method
- * Pass 1: Count total nodes in the list
- * Pass 2: Traverse to the middle position
+ * Intuition:
+ * Linked list me direct index access nahi hota.
+ * Isliye pehle nodes count karenge, phir head se middle index tak dobara chalenge.
  *
- * Time Complexity: O(n) - Two passes through the list
- * Space Complexity: O(1) - Only using constant extra space
+ * Middle index:
+ *   total nodes = 5 -> Math.floor(5 / 2) = 2 -> node at index 2
+ *   total nodes = 6 -> Math.floor(6 / 2) = 3 -> node at index 3 (second middle)
+ *
+ * Algorithm:
+ * 1. Agar `head` null hai, return null.
+ * 2. `current` ko head se start karo aur total nodes count karo.
+ * 3. `middleIndex = Math.floor(count / 2)` calculate karo.
+ * 4. `current` ko dobara head par reset karo.
+ * 5. `middleIndex` steps tak current ko aage move karo.
+ * 6. Loop ke baad current middle node par hoga, usko return karo.
+ *
+ * Time Complexity:
+ *   O(n), list ko two passes me traverse karte hain.
+ *
+ * Space Complexity:
+ *   O(1), sirf pointers/counters use hote hain.
  */
 
-namespace MiddleNodeBruteForce {
-  // Definition for singly-linked list node
-  class ListNode_Middle {
-    val: number; // Node ka value
-    next: ListNode_Middle | null; // Agla node ka reference (null if last node)
+namespace MiddleOfLinkedListBruteForce {
+  class ListNode {
+    val: number;
+    next: ListNode | null;
 
-    constructor(val?: number, next?: ListNode_Middle | null) {
-      this.val = val === undefined ? 0 : val;
-      this.next = next === undefined ? null : next;
+    constructor(val = 0, next: ListNode | null = null) {
+      this.val = val;
+      this.next = next;
     }
   }
 
-  function middleNode_brute(
-    head: ListNode_Middle | null
-  ): ListNode_Middle | null {
-    // Edge Case: Agar list empty hai toh null return karo
-    // WHY: Empty list ka middle nahi ho sakta
+  function middleNode(head: ListNode | null): ListNode | null {
     if (head === null) {
+      // Empty list me koi node exist hi nahi karta,
+      // isliye middle node bhi null hoga.
       return null;
     }
 
-    // ==================== PASS 1: COUNT NODES ====================
+    let totalNodes = 0;
+    let current: ListNode | null = head;
 
-    // Step 1: Current pointer ko head par set karo
-    // WHY: List traverse karne ke liye starting point chahiye
-    let current: ListNode_Middle | null = head;
-
-    // Step 2: Counter initialize karo
-    // WHY: Total nodes count karne ke liye
-    let count: number = 0;
-
-    // Step 3: Poori list ko traverse karo aur count karo
-    // WHY: Middle position calculate karne ke liye total nodes chahiye
     while (current !== null) {
-      count++; // Har node par count badhao
-      current = current.next; // Agla node par jao
+      // `totalNodes` ab tak visit kiye gaye nodes ka count represent karta hai.
+      totalNodes++;
+
+      // Linked list sirf forward direction me accessible hai,
+      // isliye next node par move karke counting continue karte hain.
+      current = current.next;
     }
-    // Loop khatam hone par: count = total nodes in list
 
-    // ==================== CALCULATE MIDDLE POSITION ====================
+    const middleIndex = Math.floor(totalNodes / 2);
 
-    // Step 4: Middle position calculate karo
-    // WHY: Odd nodes: middle = count/2 (e.g., 5/2 = 2)
-    //      Even nodes: second middle = count/2 (e.g., 6/2 = 3)
-    // Math.floor ensures integer division (TypeScript automatically does this for integers)
-    const middlePosition: number = Math.floor(count / 2);
-
-    // ==================== PASS 2: FIND MIDDLE NODE ====================
-
-    // Step 5: Current pointer ko phir se head par reset karo
-    // WHY: Ab hume shuru se middle position tak traverse karna hai
     current = head;
 
-    // Step 6: Middle position tak traverse karo
-    // WHY: Hume exactly middle node tak pahunchna hai
-    // Loop middlePosition times chalega (0 se middlePosition-1 tak)
-    for (let i = 0; i < middlePosition; i++) {
-      // Type safety: TypeScript ko batao ki current null nahi hai
-      // WHY: Humne already count kiya hai, toh guaranteed hai ki nodes exist karti hain
-      if (current !== null) {
-        current = current.next; // Agla node par move karo
-      }
+    for (let stepsTaken = 0; stepsTaken < middleIndex; stepsTaken++) {
+      // `stepsTaken` batata hai head se kitne edges cross ho chuke hain.
+      // Middle index tak pahunchne ke liye exactly `middleIndex` moves chahiye.
+      current = current!.next;
     }
 
-    // Step 7: Middle node return karo (current ab middle par hai)
-    // WHY: Loop khatam hone par current middle position par hoga
     return current;
   }
 
-  // ==================== HELPER FUNCTIONS ====================
-
   /**
-   * Helper function: Array se Linked List banao
-   * WHY: Testing ke liye array ko linked list mein convert karna
+   * ==========================================================
+   * WHY `Math.floor(totalNodes / 2)`?
+   * ==========================================================
+   *
+   * Linked list positions 0-indexed socho:
+   *
+   * Odd length:
+   *   values: [1, 2, 3, 4, 5]
+   *   index:   0  1  2  3  4
+   *   middle index = 2
+   *
+   * Even length:
+   *   values: [1, 2, 3, 4, 5, 6]
+   *   index:   0  1  2  3  4  5
+   *   middle nodes = index 2 and index 3
+   *   required answer = second middle = index 3
+   *
+   * Formula:
+   *   Math.floor(5 / 2) = 2
+   *   Math.floor(6 / 2) = 3
+   *
+   * Isliye same formula odd aur even dono cases cover karta hai.
+   *
+   * ==========================================================
+   * DRY RUN
+   * ==========================================================
+   *
+   * Input:
+   *   head = [1, 2, 3, 4, 5, 6]
+   *
+   * Linked list:
+   *
+   *   1 -> 2 -> 3 -> 4 -> 5 -> 6 -> null
+   *
+   * ┌────────────────────────────────────────────────────────┐
+   * │ PASS 1: Count total nodes                              │
+   * ├────────────────────────────────────────────────────────┤
+   * │ current = 1, totalNodes = 1                            │
+   * │ current = 2, totalNodes = 2                            │
+   * │ current = 3, totalNodes = 3                            │
+   * │ current = 4, totalNodes = 4                            │
+   * │ current = 5, totalNodes = 5                            │
+   * │ current = 6, totalNodes = 6                            │
+   * │ current = null -> counting stop                        │
+   * └────────────────────────────────────────────────────────┘
+   *
+   * middleIndex = Math.floor(6 / 2) = 3
+   *
+   * ┌────────────────────────────────────────────────────────┐
+   * │ PASS 2: Move 3 steps from head                         │
+   * ├────────────────────────────────────────────────────────┤
+   * │ start: current = 1                                     │
+   * │ step 1: current = 2                                    │
+   * │ step 2: current = 3                                    │
+   * │ step 3: current = 4                                    │
+   * └────────────────────────────────────────────────────────┘
+   *
+   * Answer:
+   *   current = node(4)
+   *   return [4, 5, 6]
    */
-  function createLinkedList(arr: number[]): ListNode_Middle | null {
-    if (arr.length === 0) return null;
 
-    const head = new ListNode_Middle(arr[0]);
+  function createLinkedList(values: number[]): ListNode | null {
+    if (values.length === 0) {
+      return null;
+    }
+
+    const head = new ListNode(values[0]);
     let current = head;
 
-    for (let i = 1; i < arr.length; i++) {
-      current.next = new ListNode_Middle(arr[i]);
+    for (let index = 1; index < values.length; index++) {
+      current.next = new ListNode(values[index]);
       current = current.next;
     }
 
     return head;
   }
 
-  /**
-   * Helper function: Linked List ko array mein convert karo
-   * WHY: Output ko readable format mein print karne ke liye
-   */
-  function linkedListToArray(head: ListNode_Middle | null): number[] {
-    const result: number[] = [];
+  function linkedListToArray(head: ListNode | null): number[] {
+    const values: number[] = [];
     let current = head;
 
     while (current !== null) {
-      result.push(current.val);
+      values.push(current.val);
       current = current.next;
     }
 
-    return result;
+    return values;
   }
 
-  // ==================== TEST CASES ====================
+  function arraysEqual(first: number[], second: number[]): boolean {
+    return JSON.stringify(first) === JSON.stringify(second);
+  }
 
   export function runTests(): void {
-    // Test Case 1: Odd number of nodes
-    const list1 = createLinkedList([1, 2, 3, 4, 5]);
-    const middle1 = middleNode_brute(list1);
-    console.log('Input: [1,2,3,4,5]');
-    console.log('Output:', linkedListToArray(middle1)); // [3,4,5]
+    const testCases = [
+      {
+        name: 'odd length list returns exact middle',
+        input: [1, 2, 3, 4, 5],
+        expectedSuffix: [3, 4, 5],
+      },
+      {
+        name: 'even length list returns second middle',
+        input: [1, 2, 3, 4, 5, 6],
+        expectedSuffix: [4, 5, 6],
+      },
+      {
+        name: 'single node list returns same node',
+        input: [10],
+        expectedSuffix: [10],
+      },
+      {
+        name: 'two node list returns second node',
+        input: [7, 9],
+        expectedSuffix: [9],
+      },
+      {
+        name: 'empty list returns null',
+        input: [],
+        expectedSuffix: [],
+      },
+    ];
 
-    // Test Case 2: Even number of nodes
-    const list2 = createLinkedList([1, 2, 3, 4, 5, 6]);
-    const middle2 = middleNode_brute(list2);
-    console.log('\nInput: [1,2,3,4,5,6]');
-    console.log('Output:', linkedListToArray(middle2)); // [4,5,6]
+    let passedTests = 0;
 
-    // Test Case 3: Single node
-    const list3 = createLinkedList([1]);
-    const middle3 = middleNode_brute(list3);
-    console.log('\nInput: [1]');
-    console.log('Output:', linkedListToArray(middle3)); // [1]
+    for (const testCase of testCases) {
+      const head = createLinkedList(testCase.input);
+      const middle = middleNode(head);
+      const actualSuffix = linkedListToArray(middle);
+      const passed = arraysEqual(actualSuffix, testCase.expectedSuffix);
+
+      if (passed) {
+        passedTests++;
+      }
+
+      console.log(`Test: ${testCase.name}`);
+      console.log(`Input: [${testCase.input.join(', ')}]`);
+      console.log(`Expected suffix: [${testCase.expectedSuffix.join(', ')}]`);
+      console.log(`Actual suffix: [${actualSuffix.join(', ')}]`);
+      console.log(`Result: ${passed ? 'PASS' : 'FAIL'}`);
+      console.log('--------------------------------------------------');
+    }
+
+    console.log(`Passed ${passedTests}/${testCases.length} tests`);
   }
 }
 
-// Run tests
-MiddleNodeBruteForce.runTests();
+MiddleOfLinkedListBruteForce.runTests();

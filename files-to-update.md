@@ -1,6 +1,6 @@
 # Files Needing Explanation Format Update
 
-Total: 106 files (includes 2 new find-x files)
+Total: 155 files
 Missing: namespace wrapper, Intuition/Soch section, numbered Algorithm section, ASCII diagram, dry run, runTests()
 
 ---
@@ -13,13 +13,16 @@ Going forward, every file updated from this tracker should include this `Algorit
 
 ---
 
-## Arrays - Easy (4 files)
+## Arrays - Easy (8 files)
 
 - [x] src/questions/arrays/1darray/easy/2-sum/optimal.ts
 - [x] src/questions/arrays/1darray/easy/buy-sell-stock/optimal.ts
 - [x] src/questions/arrays/1darray/easy/find-leaders/optimal.ts
 - [x] src/questions/arrays/1darray/easy/majority-element/better.ts
 - [x] src/questions/arrays/1darray/easy/majority-element/optimal.ts
+- [x] src/questions/arrays/1darray/easy/second-smallest-and-second-largest/brute-force.ts
+- [x] src/questions/arrays/1darray/easy/second-smallest-and-second-largest/better.ts
+- [x] src/questions/arrays/1darray/easy/second-smallest-and-second-largest/optimal.ts
 
 ---
 
@@ -131,22 +134,43 @@ Going forward, every file updated from this tracker should include this `Algorit
 
 ---
 
+## Binary Tree - Easy (10 files)
+
+- [x] src/questions/binary-tree/easy/balanced-binary-tree/brute-force.ts
+- [x] src/questions/binary-tree/easy/balanced-binary-tree/optimal.ts
+- [x] src/questions/binary-tree/easy/binary-tree-inorder-traversal/iterative.ts
+- [x] src/questions/binary-tree/easy/binary-tree-inorder-traversal/recursive.ts
+- [x] src/questions/binary-tree/easy/binary-tree-postorder-traversal/iterative.ts
+- [x] src/questions/binary-tree/easy/binary-tree-postorder-traversal/recursive.ts
+- [x] src/questions/binary-tree/easy/binary-tree-preorder-traversal/iterative.ts
+- [x] src/questions/binary-tree/easy/binary-tree-preorder-traversal/recursive.ts
+- [x] src/questions/binary-tree/easy/maximum-depth-of-binary-tree/iterative.ts
+- [x] src/questions/binary-tree/easy/maximum-depth-of-binary-tree/recursive.ts
+
+---
+
+## Binary Tree - Medium (1 file)
+
+- [x] src/questions/binary-tree/medium/binary-tree-level-order-traversal/optimal.ts
+
+---
+
 ## Linked List (15 files)
 
-- [ ] src/questions/linked-list/easy/middle-of-linked-list/brute-force.ts
-- [ ] src/questions/linked-list/easy/middle-of-linked-list/optimal.ts
-- [ ] src/questions/linked-list/easy/reverse-linked-list/brute-force.ts
-- [ ] src/questions/linked-list/hard/reverse-nodes-in-k-group/brute-force.ts
-- [ ] src/questions/linked-list/hard/reverse-nodes-in-k-group/optimal.ts
-- [ ] src/questions/linked-list/medium/add-two-numbers/solution.ts
-- [ ] src/questions/linked-list/medium/copy-list-with-random-pointer/hashmap-approach.ts
-- [ ] src/questions/linked-list/medium/copy-list-with-random-pointer/optimal-interweaving.ts
-- [ ] src/questions/linked-list/medium/intersection-of-two-linked-lists/better.ts
-- [ ] src/questions/linked-list/medium/intersection-of-two-linked-lists/brute-force.ts
-- [ ] src/questions/linked-list/medium/intersection-of-two-linked-lists/optimal-switch.ts
-- [ ] src/questions/linked-list/medium/intersection-of-two-linked-lists/optimal.ts
-- [ ] src/questions/linked-list/medium/rotate-list/brute-force.ts
-- [ ] src/questions/linked-list/medium/rotate-list/optimal.ts
+- [x] src/questions/linked-list/easy/middle-of-linked-list/brute-force.ts
+- [x] src/questions/linked-list/easy/middle-of-linked-list/optimal.ts
+- [x] src/questions/linked-list/easy/reverse-linked-list/brute-force.ts
+- [x] src/questions/linked-list/hard/reverse-nodes-in-k-group/brute-force.ts
+- [x] src/questions/linked-list/hard/reverse-nodes-in-k-group/optimal.ts
+- [x] src/questions/linked-list/medium/add-two-numbers/solution.ts
+- [x] src/questions/linked-list/medium/copy-list-with-random-pointer/hashmap-approach.ts
+- [x] src/questions/linked-list/medium/copy-list-with-random-pointer/optimal-interweaving.ts
+- [x] src/questions/linked-list/medium/intersection-of-two-linked-lists/better.ts
+- [x] src/questions/linked-list/medium/intersection-of-two-linked-lists/brute-force.ts
+- [x] src/questions/linked-list/medium/intersection-of-two-linked-lists/optimal-switch.ts
+- [x] src/questions/linked-list/medium/intersection-of-two-linked-lists/optimal.ts
+- [x] src/questions/linked-list/medium/rotate-list/brute-force.ts
+- [x] src/questions/linked-list/medium/rotate-list/optimal.ts
 - [ ] src/questions/linked-list/medium/sort-012/dutch-national-flag.ts
 
 ---
